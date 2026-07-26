@@ -29,6 +29,7 @@
 - **审核题库与重复窗口：** 每日问题始终从 reviewed 题目中选择，领域、难度和时代偏好无匹配时回退完整审核题库；最近 30 天的展示、跳过和完成记录是不可绕过的硬约束。
 - **显式对话模式：** Orchestrator 只根据结构化 `requested_mode` 或清晰控制语句切换模式，不从普通哲学内容猜测；直接解释指令优先停止追问，各模式由问题数量策略统一约束。
 - **可纠正的观点归属：** 原始对话消息逐字保存，观点归属通过引用证据消息单独记录；无明确主体时默认 unknown，用户纠正会停用错误归属并保留原话与纠正消息的审计链。
+- **思考优先界面：** 今日页一次操作进入自动聚焦的回答区；对话页把模式作为显式分段控件，来源默认完全关闭并按需从侧边展开，移动端使用固定主导航和横向脉络。
 
 ## Diagrams
 
@@ -143,8 +144,8 @@ flowchart LR
 - **Acceptance:** 第三方转述不会进入用户立场；用户纠正后移除错误归属。
 - **Dependencies:** 2.2
 
-### 2.4 [ ] 实现今日与对话页面
-- **Files:** `apps/web/src/pages/TodayPage.tsx`, `apps/web/src/pages/DialoguePage.tsx`, `apps/web/src/components/DialogueOutline.tsx`, `apps/web/src/components/SourceDrawer.tsx`
+### 2.4 [x] 实现今日与对话页面 *(completed 2026-07-26)*
+- **Files:** `apps/web/package.json`, `apps/web/pnpm-lock.yaml`, `apps/web/src/main.tsx`, `apps/web/src/styles.css`, `apps/web/src/pages/TodayPage.tsx`, `apps/web/src/pages/DialoguePage.tsx`, `apps/web/src/components/DialogueOutline.tsx`, `apps/web/src/components/SourceDrawer.tsx`
 - **What:** 按低保真原型实现今日卡片、对话脉络、来源抽屉和模式操作。
 - **Acceptance:** 桌面与移动视口无内容重叠；用户三次点击内开始回答；来源默认不打断初步思考。
 - **Dependencies:** 2.2
