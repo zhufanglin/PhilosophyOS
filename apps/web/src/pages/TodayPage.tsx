@@ -7,6 +7,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import kantPortrait from "../assets/philosophers/kant-becker.jpg";
+import sartrePortrait from "../assets/philosophers/sartre-1967.jpg";
+import socratesPortrait from "../assets/philosophers/socrates-louvre.jpg";
+
 export type DailyQuestionView = {
   id: string;
   domain: string;
@@ -33,8 +37,7 @@ const questions: DailyQuestionView[] = [
     tension: "德性与结果",
     philosopher: "苏格拉底",
     source: "审核问题库 · 30 天内未出现",
-    portraitUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/b/bc/Socrate_du_Louvre.jpg",
+    portraitUrl: socratesPortrait,
   },
   {
     id: "q027",
@@ -45,8 +48,7 @@ const questions: DailyQuestionView[] = [
     tension: "合法性与正当性",
     philosopher: "康德",
     source: "审核问题库 · 30 天内未出现",
-    portraitUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/f/f2/Kant_gemaelde_3.jpg",
+    portraitUrl: kantPortrait,
   },
   {
     id: "q041",
@@ -57,8 +59,7 @@ const questions: DailyQuestionView[] = [
     tension: "处境与自由",
     philosopher: "萨特",
     source: "审核问题库 · 30 天内未出现",
-    portraitUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/e/ef/Sartre_1967_crop.jpg",
+    portraitUrl: sartrePortrait,
   },
 ];
 
@@ -86,7 +87,13 @@ export function TodayPage({ onStart }: TodayPageProps) {
 
       <section className="daily-question" aria-labelledby="daily-question-title">
         <div className="question-portrait" aria-hidden="true">
-          <img src={question.portraitUrl} alt="" />
+          <img
+            src={question.portraitUrl}
+            alt=""
+            onError={(event) => {
+              event.currentTarget.hidden = true;
+            }}
+          />
           <span>{question.philosopher}</span>
         </div>
 

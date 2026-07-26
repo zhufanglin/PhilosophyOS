@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { ExplorePage } from "./pages/ExplorePage";
 import { DialoguePage } from "./pages/DialoguePage";
 import { DailyQuestionView, TodayPage } from "./pages/TodayPage";
+import socratesPortrait from "./assets/philosophers/socrates-louvre.jpg";
 import "./styles.css";
 
 type HealthResponse = {
@@ -26,7 +27,7 @@ const fallbackQuestion: DailyQuestionView = {
   tension: "德性与结果",
   philosopher: "苏格拉底",
   source: "审核问题库 · 30 天内未出现",
-  portraitUrl: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Socrate_du_Louvre.jpg",
+  portraitUrl: socratesPortrait,
 };
 
 function App() {
@@ -87,33 +88,42 @@ function App() {
         <div>
           <a className="brand" href="#today" aria-label="PhilosophyOS 今日页">
             <span>Φ</span>
-            <strong>PhilosophyOS</strong>
+            <span className="brand-copy">
+              <strong>PhilosophyOS</strong>
+              <small>WESTERN PHILOSOPHY</small>
+            </span>
           </a>
           <nav aria-label="主导航">
+            <small className="nav-section-label">每日研习</small>
             <a className={view === "today" ? "active" : ""} href="#today" aria-current={view === "today" ? "page" : undefined}><BookMarked size={17} /> 今日</a>
             <a className={view === "dialogue" ? "active" : ""} href="#dialogue" aria-current={view === "dialogue" ? "page" : undefined}><MessageSquare size={17} /> 对话</a>
             <a className={view === "explore" ? "active" : ""} href="#explore" aria-current={view === "explore" ? "page" : undefined}><Compass size={17} /> 探索</a>
-            <span><Archive size={17} /> 思想档案</span>
-            <span><Users size={17} /> 好友</span>
-            <span><BookMarked size={17} /> 笔记工作台</span>
+            <small className="nav-section-label archive-label">个人馆藏</small>
+            <span aria-disabled="true"><Archive size={17} /> 思想档案</span>
+            <span aria-disabled="true"><Users size={17} /> 好友</span>
+            <span aria-disabled="true"><BookMarked size={17} /> 笔记工作台</span>
           </nav>
         </div>
-        <p>西方哲学 · MVP</p>
+        <div className="edition-mark">
+          <span>EDITION 01</span>
+          <p>西方哲学 · MVP</p>
+        </div>
       </aside>
 
       <div className="content-frame">
         <header className="top-bar">
           <div className="mobile-brand">
             <span>Φ</span>
-            <strong>PhilosophyOS</strong>
+            <span className="brand-copy">
+              <strong>PhilosophyOS</strong>
+              <small>WESTERN PHILOSOPHY</small>
+            </span>
           </div>
           <div className="top-bar-actions">
             <div className="api-status" aria-live="polite">
-            <span className={health ? "status-dot online" : "status-dot"} />
-            <div>
+              <span className={health ? "status-dot online" : "status-dot"} />
               <strong>{health ? "知识服务在线" : error ? "知识服务离线" : "正在连接"}</strong>
-              <span>{health ? `v${health.version}` : error ?? apiBaseUrl}</span>
-            </div>
+              <span className="api-version">{health ? `v${health.version}` : error ?? apiBaseUrl}</span>
             </div>
             <button className="profile-button" type="button" aria-label="个人账户" title="个人账户"><UserRound size={18} /></button>
           </div>
