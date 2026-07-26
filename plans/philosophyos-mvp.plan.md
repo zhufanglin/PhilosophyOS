@@ -21,6 +21,7 @@
 - **证据约束生成：** 直接引语只能来自检索片段，页码必须绑定具体版本。
 - **来源版本双重约束：** Source 保存书目版本，SourceChunk 保存不可变的版本快照；Schema 与数据库共同阻止无具体版本的直接引语进入 published 状态。
 - **稳定种子标识：** 人工可读的哲学家 slug 通过固定命名空间映射为 UUIDv5，保证跨环境和重复导入的实体标识一致。
+- **结构化混合检索：** 默认先按人物、传统、来源等级和发布状态过滤，再以 0.65 向量权重与 0.35 关键词权重排序；直接引语另经独立策略门审核。
 - **后期中国哲学：** 数据保留 `tradition`，但中国哲学使用独立分期、经典和关系词，不强制映射到西方分类。
 - **私密问题型社交：** 好友功能只服务具体哲学讨论，不建设公开动态流；个人档案和 Obsidian 默认不共享。
 - **服务端权限：** 好友、房间、消息和总结都在 API 层检查成员权限，不能依赖前端隐藏。
@@ -90,8 +91,8 @@ flowchart LR
 - **Acceptance:** 当前 CSV 全部成功导入；重复运行不产生重复数据；错误行包含明确诊断。
 - **Dependencies:** 1.2
 
-### 1.4 [ ] 实现三种检索方案实验
-- **Files:** `apps/api/app/rag/retrievers.py`, `apps/api/app/rag/citations.py`, `apps/api/tests/rag/test_retrievers.py`, `reports/rag-spike.md`
+### 1.4 [x] 实现三种检索方案实验 *(completed 2026-07-26)*
+- **Files:** `apps/api/app/rag/__init__.py`, `apps/api/app/rag/retrievers.py`, `apps/api/app/rag/citations.py`, `apps/api/tests/rag/test_retrievers.py`, `reports/rag-spike.md`
 - **What:** 完成纯向量、混合检索、结构化过滤三种方案，并按技术验证文档记录准确性、延迟和失败案例。
 - **Acceptance:** 引用相关 blocker 案例全部通过；报告给出明确推荐方案。
 - **Dependencies:** 1.2
