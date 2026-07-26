@@ -1,6 +1,7 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
+import { ExplorePage } from "./pages/ExplorePage";
 import "./styles.css";
 
 type HealthResponse = {
@@ -40,28 +41,42 @@ function App() {
   }, []);
 
   return (
-    <main className="shell">
-      <section className="hero" aria-labelledby="page-title">
-        <p className="eyebrow">PHILOSOPHYOS · LOCAL MVP</p>
-        <h1 id="page-title">把哲学问题变成长期可回看的思想轨迹。</h1>
-        <p className="intro">
-          当前工程骨架已建立。后续将在这里加入每日哲学挑战、可信引用、Obsidian
-          沉淀与好友讨论。
-        </p>
-
-        <div className="status-card" aria-live="polite">
-          <span className={health ? "status-dot online" : "status-dot"} />
-          <div>
-            <strong>{health ? "API 已连接" : error ? "API 未连接" : "正在检查 API"}</strong>
-            <p>
-              {health
-                ? `${health.service} · v${health.version}`
-                : error ?? `连接 ${apiBaseUrl}`}
-            </p>
-          </div>
+    <div className="app-frame">
+      <aside className="side-nav">
+        <div>
+          <a className="brand" href="#top" aria-label="PhilosophyOS 首页">
+            <span>Φ</span>
+            <strong>PhilosophyOS</strong>
+          </a>
+          <nav aria-label="主导航">
+            <a href="#today">今日</a>
+            <a href="#dialogue">对话</a>
+            <a className="active" href="#top" aria-current="page">探索</a>
+            <a href="#archive">思想档案</a>
+            <a href="#friends">好友</a>
+            <a href="#notebook">笔记工作台</a>
+          </nav>
         </div>
-      </section>
-    </main>
+        <p>西方哲学 · MVP</p>
+      </aside>
+
+      <div className="content-frame" id="top">
+        <header className="top-bar">
+          <div className="mobile-brand">
+            <span>Φ</span>
+            <strong>PhilosophyOS</strong>
+          </div>
+          <div className="api-status" aria-live="polite">
+            <span className={health ? "status-dot online" : "status-dot"} />
+            <div>
+              <strong>{health ? "知识服务在线" : error ? "知识服务离线" : "正在连接"}</strong>
+              <span>{health ? `v${health.version}` : error ?? apiBaseUrl}</span>
+            </div>
+          </div>
+        </header>
+        <ExplorePage apiBaseUrl={apiBaseUrl} />
+      </div>
+    </div>
   );
 }
 

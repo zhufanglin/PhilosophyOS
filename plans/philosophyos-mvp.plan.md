@@ -22,6 +22,7 @@
 - **来源版本双重约束：** Source 保存书目版本，SourceChunk 保存不可变的版本快照；Schema 与数据库共同阻止无具体版本的直接引语进入 published 状态。
 - **稳定种子标识：** 人工可读的哲学家 slug 通过固定命名空间映射为 UUIDv5，保证跨环境和重复导入的实体标识一致。
 - **结构化混合检索：** 默认先按人物、传统、来源等级和发布状态过滤，再以 0.65 向量权重与 0.35 关键词权重排序；直接引语另经独立策略门审核。
+- **知识问答契约：** 使用版本化 REST 资源返回 supported、corrected 或 insufficient 状态；引用上下文独立展开，检索命中不自动获得直接引语许可。
 - **后期中国哲学：** 数据保留 `tradition`，但中国哲学使用独立分期、经典和关系词，不强制映射到西方分类。
 - **私密问题型社交：** 好友功能只服务具体哲学讨论，不建设公开动态流；个人档案和 Obsidian 默认不共享。
 - **服务端权限：** 好友、房间、消息和总结都在 API 层检查成员权限，不能依赖前端隐藏。
@@ -97,8 +98,8 @@ flowchart LR
 - **Acceptance:** 引用相关 blocker 案例全部通过；报告给出明确推荐方案。
 - **Dependencies:** 1.2
 
-### 1.5 [ ] 提供带引用的知识问答接口
-- **Files:** `apps/api/app/routes/knowledge.py`, `apps/api/app/services/answer.py`, `apps/web/src/pages/ExplorePage.tsx`, `apps/web/src/components/CitationPanel.tsx`
+### 1.5 [x] 提供带引用的知识问答接口 *(completed 2026-07-26)*
+- **Files:** `apps/api/app/main.py`, `apps/api/app/routes/__init__.py`, `apps/api/app/routes/knowledge.py`, `apps/api/app/services/__init__.py`, `apps/api/app/services/answer.py`, `apps/api/tests/routes/__init__.py`, `apps/api/tests/routes/test_knowledge.py`, `apps/web/src/main.tsx`, `apps/web/src/styles.css`, `apps/web/src/pages/ExplorePage.tsx`, `apps/web/src/components/CitationPanel.tsx`
 - **What:** 提供人物/概念问答和引用上下文，界面区分原典、研究解释和 AI 推论。
 - **Acceptance:** 三位重点人物的测试问题可返回来源；错误著作归属被纠正；无证据时不生成引语。
 - **Dependencies:** 1.4
