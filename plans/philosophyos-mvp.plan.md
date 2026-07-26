@@ -20,6 +20,7 @@
 - **本地优先 Obsidian：** 默认只读索引，草稿经确认后写入；真实仓库接入前必须通过合成仓库安全测试。
 - **证据约束生成：** 直接引语只能来自检索片段，页码必须绑定具体版本。
 - **来源版本双重约束：** Source 保存书目版本，SourceChunk 保存不可变的版本快照；Schema 与数据库共同阻止无具体版本的直接引语进入 published 状态。
+- **稳定种子标识：** 人工可读的哲学家 slug 通过固定命名空间映射为 UUIDv5，保证跨环境和重复导入的实体标识一致。
 - **后期中国哲学：** 数据保留 `tradition`，但中国哲学使用独立分期、经典和关系词，不强制映射到西方分类。
 - **私密问题型社交：** 好友功能只服务具体哲学讨论，不建设公开动态流；个人档案和 Obsidian 默认不共享。
 - **服务端权限：** 好友、房间、消息和总结都在 API 层检查成员权限，不能依赖前端隐藏。
@@ -83,8 +84,8 @@ flowchart LR
 - **Acceptance:** 迁移可重复执行；直接引语缺少具体来源版本时无法进入 published 状态。
 - **Dependencies:** 1.1
 
-### 1.3 [ ] 导入哲学家种子数据
-- **Files:** `apps/api/app/importers/philosophers.py`, `data/seed/philosophers.csv`, `apps/api/tests/importers/test_philosophers.py`
+### 1.3 [x] 导入哲学家种子数据 *(completed 2026-07-26)*
+- **Files:** `apps/api/app/importers/__init__.py`, `apps/api/app/importers/philosophers.py`, `data/seed/philosophers.csv`, `apps/api/tests/importers/test_philosophers.py`
 - **What:** 校验并导入种子人物；拒绝未知 tradition、非法等级和重复 id；输出导入报告。
 - **Acceptance:** 当前 CSV 全部成功导入；重复运行不产生重复数据；错误行包含明确诊断。
 - **Dependencies:** 1.2
