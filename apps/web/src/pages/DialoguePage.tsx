@@ -12,6 +12,7 @@ import {
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { DialogueOutline, OutlineStep } from "../components/DialogueOutline";
+import { ReflectionReview } from "../components/ReflectionReview";
 import { DialogueSource, SourceDrawer } from "../components/SourceDrawer";
 import { DailyQuestionView } from "./TodayPage";
 
@@ -82,6 +83,7 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
   const [thinking, setThinking] = useState(false);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => inputRef.current?.focus(), []);
@@ -117,11 +119,21 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
 
   function finishDialogue() {
     setFinished(true);
-    setMode("organize");
-    setMessages((current) => [
-      ...current,
-      { id: current.length + 1, role: "assistant", mode: "organize", body: responseFor("organize") },
-    ]);
+    setReviewing(true);
+  }
+
+  if (reviewing) {
+    return (
+      <ReflectionReview
+        question={question.prompt}
+        userStatements={messages.filter((message) => message.role === "user").map((message) => message.body)}
+        onBack={() => {
+          setFinished(false);
+          setReviewing(false);
+        }}
+        onReturnToday={onBack}
+      />
+    );
   }
 
   return (

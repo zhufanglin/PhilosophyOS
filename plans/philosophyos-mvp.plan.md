@@ -30,6 +30,7 @@
 - **显式对话模式：** Orchestrator 只根据结构化 `requested_mode` 或清晰控制语句切换模式，不从普通哲学内容猜测；直接解释指令优先停止追问，各模式由问题数量策略统一约束。
 - **可纠正的观点归属：** 原始对话消息逐字保存，观点归属通过引用证据消息单独记录；无明确主体时默认 unknown，用户纠正会停用错误归属并保留原话与纠正消息的审计链。
 - **思考优先界面：** 今日页一次操作进入自动聚焦的回答区；对话页把模式作为显式分段控件，来源默认完全关闭并按需从侧边展开，移动端使用固定主导航和横向脉络。
+- **草稿与长期记忆显式确认边界：** 反思总结先生成可编辑草稿，只有用户逐项勾选并最终确认的内容才进入长期记忆；AI 建议始终保留独立来源，主体不明的内容必须先由用户修订。
 
 ## Diagrams
 
@@ -150,8 +151,8 @@ flowchart LR
 - **Acceptance:** 桌面与移动视口无内容重叠；用户三次点击内开始回答；来源默认不打断初步思考。
 - **Dependencies:** 2.2
 
-### 2.5 [ ] 实现总结确认闭环
-- **Files:** `apps/api/app/agent/reflection.py`, `apps/web/src/components/ReflectionReview.tsx`, `apps/api/tests/agent/test_reflection.py`
+### 2.5 [x] 实现总结确认闭环 *(completed 2026-07-27)*
+- **Files:** `apps/api/app/agent/reflection.py`, `apps/api/tests/agent/test_reflection.py`, `apps/web/src/components/ReflectionReview.tsx`, `apps/web/src/pages/DialoguePage.tsx`, `apps/web/src/styles.css`
 - **What:** 生成当前观点、理由、概念校正、开放问题和关联建议，并允许逐项修改确认。
 - **Acceptance:** AI 建议与用户观点视觉和数据上分离；未确认内容不进入长期记忆。
 - **Dependencies:** 2.3, 2.4
