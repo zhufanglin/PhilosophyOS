@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "philosophyos-api"
+version = "0.1.0"
+description = "FastAPI backend for PhilosophyOS."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.116,<1.0",
+    "pydantic>=2.11,<3.0",
+    "uvicorn[standard]>=0.35,<1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.28,<1.0",
+    "mypy>=1.17,<2.0",
+    "pytest>=8.4,<9.0",
+    "ruff>=0.12,<1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]

@@ -1,0 +1,67 @@
+id,name_zh,name_original,tradition,era,period,level,domains,status
+thales,泰勒斯,Thales,western,前苏格拉底,约公元前6世纪,L1,形而上学|自然哲学,seed
+pythagoras,毕达哥拉斯,Pythagoras,western,前苏格拉底,约公元前6世纪,L1,数与宇宙|灵魂,seed
+heraclitus,赫拉克利特,Heraclitus,western,前苏格拉底,约公元前6至5世纪,L1,变化|逻各斯|对立,seed
+parmenides,巴门尼德,Parmenides,western,前苏格拉底,约公元前5世纪,L1,存在|变化,seed
+democritus,德谟克利特,Democritus,western,前苏格拉底,约公元前5至4世纪,L1,原子论|因果,seed
+socrates,苏格拉底,Socrates,western,古典希腊,公元前5世纪,L2,伦理学|知识|对话,seed
+plato,柏拉图,Plato,western,古典希腊,公元前5至4世纪,L3,理念|知识|政治|灵魂,seed
+aristotle,亚里士多德,Aristotle,western,古典希腊,公元前4世纪,L3,形而上学|逻辑|伦理学|政治,seed
+epicurus,伊壁鸠鲁,Epicurus,western,希腊化,公元前4至3世纪,L2,快乐|幸福|死亡,seed
+zeno_citium,芝诺,Zeno of Citium,western,希腊化,公元前4至3世纪,L1,斯多葛主义|德性,seed
+epictetus,爱比克泰德,Epictetus,western,罗马时期,约1至2世纪,L2,控制二分|自由|德性,seed
+marcus_aurelius,马可·奥勒留,Marcus Aurelius,western,罗马时期,约2世纪,L1,斯多葛主义|自我修养,seed
+plotinus,普罗提诺,Plotinus,western,晚期古代,约3世纪,L1,新柏拉图主义|太一,seed
+augustine,奥古斯丁,Augustine of Hippo,western,中世纪早期,约4至5世纪,L2,时间|自由意志|信仰,seed
+anselm,安瑟尔谟,Anselm of Canterbury,western,中世纪,约11世纪,L1,上帝存在|信仰与理性,seed
+aquinas,托马斯·阿奎那,Thomas Aquinas,western,经院哲学,约13世纪,L2,自然法|存在|信仰与理性,seed
+duns_scotus,邓斯·司各脱,John Duns Scotus,western,经院哲学,约13至14世纪,L1,存在单义性|意志,seed
+ockham,奥卡姆,William of Ockham,western,中世纪晚期,约14世纪,L1,唯名论|简约原则,seed
+machiavelli,马基雅维利,Niccolo Machiavelli,western,文艺复兴,约15至16世纪,L2,政治现实主义|权力,seed
+francis_bacon,培根,Francis Bacon,western,近代开端,约16至17世纪,L2,经验方法|归纳|偶像,seed
+hobbes,霍布斯,Thomas Hobbes,western,近代,约17世纪,L2,社会契约|国家|自由,seed
+descartes,笛卡尔,Rene Descartes,western,理性主义,约17世纪,L2,怀疑|心物二元|自我,seed
+spinoza,斯宾诺莎,Baruch Spinoza,western,理性主义,约17世纪,L3,实体|决定论|情感|自由,seed
+leibniz,莱布尼茨,Gottfried Wilhelm Leibniz,western,理性主义,约17至18世纪,L2,单子|充足理由|可能世界,seed
+locke,洛克,John Locke,western,经验主义,约17世纪,L2,经验|人格同一性|权利,seed
+berkeley,贝克莱,George Berkeley,western,经验主义,约17至18世纪,L1,唯心主义|知觉,seed
+hume,休谟,David Hume,western,经验主义,约18世纪,L3,因果|归纳|自我|道德情感,seed
+rousseau,卢梭,Jean-Jacques Rousseau,western,启蒙运动,约18世纪,L2,社会契约|自由|文明批判,seed
+kant,康德,Immanuel Kant,western,批判哲学,约18世纪,L3,先验|理性边界|自由|道德,seed
+fichte,费希特,Johann Gottlieb Fichte,western,德国观念论,约18至19世纪,L1,自我|自由|行动,seed
+schelling,谢林,Friedrich Wilhelm Joseph Schelling,western,德国观念论,约18至19世纪,L1,自然哲学|自由,seed
+hegel,黑格尔,G. W. F. Hegel,western,德国观念论,约18至19世纪,L3,辩证法|承认|历史|自由,seed
+bentham,边沁,Jeremy Bentham,western,功利主义,约18至19世纪,L1,功利|法律|幸福,seed
+schopenhauer,叔本华,Arthur Schopenhauer,western,19世纪,约19世纪,L2,意志|表象|欲望,seed
+kierkegaard,克尔凯郭尔,Soren Kierkegaard,western,19世纪,约19世纪,L2,选择|焦虑|信仰|个体,seed
+mill,密尔,John Stuart Mill,western,19世纪,约19世纪,L2,自由|功利主义|女性解放,seed
+marx,马克思,Karl Marx,western,19世纪,约19世纪,L3,历史唯物主义|异化|资本|实践,seed
+nietzsche,尼采,Friedrich Nietzsche,western,19世纪,约19世纪,L3,道德谱系|虚无主义|价值创造,seed
+peirce,皮尔士,Charles Sanders Peirce,western,实用主义,约19至20世纪,L1,实用主义|符号|探究,seed
+william_james,威廉·詹姆斯,William James,western,实用主义,约19至20世纪,L2,经验|真理|宗教经验,seed
+frege,弗雷格,Gottlob Frege,western,分析哲学,约19至20世纪,L2,逻辑|意义与指称,seed
+russell,罗素,Bertrand Russell,western,分析哲学,约20世纪,L2,逻辑|知识|描述理论,seed
+wittgenstein,维特根斯坦,Ludwig Wittgenstein,western,分析哲学,约20世纪,L3,语言游戏|意义|规则,seed
+carnap,卡尔纳普,Rudolf Carnap,western,逻辑经验主义,约20世纪,L1,逻辑分析|科学语言,seed
+popper,波普尔,Karl Popper,western,科学哲学,约20世纪,L3,证伪|可错性|开放社会,seed
+kuhn,库恩,Thomas Kuhn,western,科学哲学,约20世纪,L2,范式|科学革命,seed
+quine,奎因,W. V. O. Quine,western,分析哲学,约20世纪,L2,经验主义批判|翻译不确定性,seed
+austin,奥斯汀,J. L. Austin,western,语言哲学,约20世纪,L1,言语行为|日常语言,seed
+anscombe,安斯康姆,G. E. M. Anscombe,western,分析哲学,约20世纪,L1,行动|意向|伦理学,seed
+husserl,胡塞尔,Edmund Husserl,western,现象学,约19至20世纪,L2,意向性|还原|生活世界,seed
+heidegger,海德格尔,Martin Heidegger,western,现象学与存在论,约20世纪,L3,此在|在世存在|时间|本真性,seed
+sartre,萨特,Jean-Paul Sartre,western,存在主义,约20世纪,L3,自由|自欺|责任|他人,seed
+beauvoir,波伏瓦,Simone de Beauvoir,western,存在主义,约20世纪,L2,他者|处境|自由|女性主义,seed
+camus,加缪,Albert Camus,western,荒诞哲学,约20世纪,L2,荒诞|反抗|意义,seed
+arendt,阿伦特,Hannah Arendt,western,政治哲学,约20世纪,L2,行动|公共领域|极权主义,seed
+gadamer,伽达默尔,Hans-Georg Gadamer,western,解释学,约20世纪,L1,理解|传统|视域融合,seed
+foucault,福柯,Michel Foucault,western,当代欧陆哲学,约20世纪,L2,权力|知识|主体化,seed
+derrida,德里达,Jacques Derrida,western,当代欧陆哲学,约20世纪,L1,解构|延异|文本,seed
+deleuze,德勒兹,Gilles Deleuze,western,当代欧陆哲学,约20世纪,L1,差异|生成|欲望,seed
+rawls,罗尔斯,John Rawls,western,政治哲学,约20世纪,L2,正义|原初状态|公平,seed
+nozick,诺齐克,Robert Nozick,western,政治哲学,约20世纪,L1,权利|最小国家|资格理论,seed
+habermas,哈贝马斯,Jurgen Habermas,western,批判理论,约20至21世纪,L2,交往行动|公共领域,seed
+macintyre,麦金太尔,Alasdair MacIntyre,western,当代伦理学,约20至21世纪,L2,德性|传统|实践,seed
+peter_singer,彼得·辛格,Peter Singer,western,应用伦理学,约20至21世纪,L2,功利主义|动物伦理|全球贫困,seed
+judith_butler,朱迪斯·巴特勒,Judith Butler,western,当代理论,约20至21世纪,L1,性别操演|规范|主体,seed
+thomas_nagel,托马斯·内格尔,Thomas Nagel,western,心灵与伦理学,约20至21世纪,L1,主观经验|客观性|道德,seed
