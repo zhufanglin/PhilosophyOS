@@ -8,6 +8,9 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.models.knowledge import Base
+from app.models.questions import DailyQuestion, QuestionInteraction
+
+_QUESTION_MODELS = (DailyQuestion, QuestionInteraction)
 
 config = context.config
 

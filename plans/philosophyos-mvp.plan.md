@@ -26,6 +26,7 @@
 - **后期中国哲学：** 数据保留 `tradition`，但中国哲学使用独立分期、经典和关系词，不强制映射到西方分类。
 - **私密问题型社交：** 好友功能只服务具体哲学讨论，不建设公开动态流；个人档案和 Obsidian 默认不共享。
 - **服务端权限：** 好友、房间、消息和总结都在 API 层检查成员权限，不能依赖前端隐藏。
+- **审核题库与重复窗口：** 每日问题始终从 reviewed 题目中选择，领域、难度和时代偏好无匹配时回退完整审核题库；最近 30 天的展示、跳过和完成记录是不可绕过的硬约束。
 
 ## Diagrams
 
@@ -122,8 +123,8 @@ flowchart LR
 | 对话页 | 回答、提示、解释、结束 | 流式响应、工具失败、模式切换 |
 | 总结页 | 确认或修改观点 | 主体不明、待确认、已保存 |
 
-### 2.1 [ ] 导入并筛选每日问题库
-- **Files:** `apps/api/app/models/questions.py`, `apps/api/app/importers/questions.py`, `apps/api/app/services/question_selector.py`, `apps/api/tests/questions/test_selector.py`
+### 2.1 [x] 导入并筛选每日问题库 *(completed 2026-07-26)*
+- **Files:** `apps/api/app/models/questions.py`, `apps/api/app/importers/questions.py`, `apps/api/app/services/question_selector.py`, `apps/api/migrations/env.py`, `apps/api/migrations/versions/20260726_0002_questions_schema.py`, `apps/api/tests/questions/__init__.py`, `apps/api/tests/questions/test_selector.py`, `apps/api/tests/models/test_knowledge.py`
 - **What:** 导入 60 道种子题，按领域、难度、历史重复和用户跳过记录筛选。
 - **Acceptance:** 30 天内不重复同题；冷启动无需用户记忆；失败时回退审核题库。
 - **Dependencies:** 1.3
