@@ -8,8 +8,10 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.models.knowledge import Base
+from app.models.memory import AttributedClaim, DialogueMessage
 from app.models.questions import DailyQuestion, QuestionInteraction
 
+_MEMORY_MODELS = (AttributedClaim, DialogueMessage)
 _QUESTION_MODELS = (DailyQuestion, QuestionInteraction)
 
 config = context.config

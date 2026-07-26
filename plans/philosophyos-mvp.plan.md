@@ -28,6 +28,7 @@
 - **服务端权限：** 好友、房间、消息和总结都在 API 层检查成员权限，不能依赖前端隐藏。
 - **审核题库与重复窗口：** 每日问题始终从 reviewed 题目中选择，领域、难度和时代偏好无匹配时回退完整审核题库；最近 30 天的展示、跳过和完成记录是不可绕过的硬约束。
 - **显式对话模式：** Orchestrator 只根据结构化 `requested_mode` 或清晰控制语句切换模式，不从普通哲学内容猜测；直接解释指令优先停止追问，各模式由问题数量策略统一约束。
+- **可纠正的观点归属：** 原始对话消息逐字保存，观点归属通过引用证据消息单独记录；无明确主体时默认 unknown，用户纠正会停用错误归属并保留原话与纠正消息的审计链。
 
 ## Diagrams
 
@@ -136,8 +137,8 @@ flowchart LR
 - **Acceptance:** 用户要求直接解释时停止追问；苏格拉底模式每轮只有一个主要问题。
 - **Dependencies:** 1.5, 2.1
 
-### 2.3 [ ] 实现观点主体识别
-- **Files:** `apps/api/app/models/memory.py`, `apps/api/app/agent/attribution.py`, `apps/api/tests/agent/test_attribution.py`
+### 2.3 [x] 实现观点主体识别 *(completed 2026-07-26)*
+- **Files:** `apps/api/app/models/memory.py`, `apps/api/app/agent/attribution.py`, `apps/api/migrations/env.py`, `apps/api/migrations/versions/20260726_0003_memory_attribution_schema.py`, `apps/api/tests/agent/test_attribution.py`, `apps/api/tests/models/test_knowledge.py`
 - **What:** 标注 user、third_party、author、assistant 和 unknown，并保存原始证据消息。
 - **Acceptance:** 第三方转述不会进入用户立场；用户纠正后移除错误归属。
 - **Dependencies:** 2.2

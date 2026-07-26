@@ -28,7 +28,9 @@ from app.schemas.knowledge import SourceChunkCreate, SourceCreate
 API_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_TABLES = {
     "alembic_version",
+    "attributed_claims",
     "daily_questions",
+    "dialogue_messages",
     "philosophy_entities",
     "question_interactions",
     "relations",
