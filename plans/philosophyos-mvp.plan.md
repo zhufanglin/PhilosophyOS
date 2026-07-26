@@ -27,6 +27,7 @@
 - **私密问题型社交：** 好友功能只服务具体哲学讨论，不建设公开动态流；个人档案和 Obsidian 默认不共享。
 - **服务端权限：** 好友、房间、消息和总结都在 API 层检查成员权限，不能依赖前端隐藏。
 - **审核题库与重复窗口：** 每日问题始终从 reviewed 题目中选择，领域、难度和时代偏好无匹配时回退完整审核题库；最近 30 天的展示、跳过和完成记录是不可绕过的硬约束。
+- **显式对话模式：** Orchestrator 只根据结构化 `requested_mode` 或清晰控制语句切换模式，不从普通哲学内容猜测；直接解释指令优先停止追问，各模式由问题数量策略统一约束。
 
 ## Diagrams
 
@@ -129,8 +130,8 @@ flowchart LR
 - **Acceptance:** 30 天内不重复同题；冷启动无需用户记忆；失败时回退审核题库。
 - **Dependencies:** 1.3
 
-### 2.2 [ ] 实现 Orchestrator 与对话模式
-- **Files:** `apps/api/app/agent/orchestrator.py`, `apps/api/app/agent/policies.py`, `apps/api/app/schemas/dialogue.py`, `apps/api/tests/agent/test_modes.py`
+### 2.2 [x] 实现 Orchestrator 与对话模式 *(completed 2026-07-26)*
+- **Files:** `apps/api/app/agent/__init__.py`, `apps/api/app/agent/orchestrator.py`, `apps/api/app/agent/policies.py`, `apps/api/app/schemas/dialogue.py`, `apps/api/tests/agent/__init__.py`, `apps/api/tests/agent/test_modes.py`
 - **What:** 实现 Socratic、Explain、Compare、Reflect 和 Organize 模式及显式切换规则。
 - **Acceptance:** 用户要求直接解释时停止追问；苏格拉底模式每轮只有一个主要问题。
 - **Dependencies:** 1.5, 2.1
