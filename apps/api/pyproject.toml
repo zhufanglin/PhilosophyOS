@@ -8,8 +8,10 @@ version = "0.1.0"
 description = "FastAPI backend for PhilosophyOS."
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.16,<2.0",
     "fastapi>=0.116,<1.0",
     "pydantic>=2.11,<3.0",
+    "sqlalchemy>=2.0,<3.0",
     "uvicorn[standard]>=0.35,<1.0",
 ]
 

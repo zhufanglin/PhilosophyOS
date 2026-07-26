@@ -19,6 +19,7 @@
 - **前后端分离：** React/TypeScript Web 界面 + FastAPI/Python API，便于实现 RAG 与本地文件桥接。
 - **本地优先 Obsidian：** 默认只读索引，草稿经确认后写入；真实仓库接入前必须通过合成仓库安全测试。
 - **证据约束生成：** 直接引语只能来自检索片段，页码必须绑定具体版本。
+- **来源版本双重约束：** Source 保存书目版本，SourceChunk 保存不可变的版本快照；Schema 与数据库共同阻止无具体版本的直接引语进入 published 状态。
 - **后期中国哲学：** 数据保留 `tradition`，但中国哲学使用独立分期、经典和关系词，不强制映射到西方分类。
 - **私密问题型社交：** 好友功能只服务具体哲学讨论，不建设公开动态流；个人档案和 Obsidian 默认不共享。
 - **服务端权限：** 好友、房间、消息和总结都在 API 层检查成员权限，不能依赖前端隐藏。
@@ -76,8 +77,8 @@ flowchart LR
 - **Acceptance:** API 健康检查与 Web 空壳可本地启动；ADR 解释技术选择和备选方案。
 - **Dependencies:** None
 
-### 1.2 [ ] 定义公共知识与来源模型
-- **Files:** `apps/api/app/models/knowledge.py`, `apps/api/app/schemas/knowledge.py`, `apps/api/migrations/versions/*_knowledge_schema.py`, `apps/api/tests/models/test_knowledge.py`
+### 1.2 [x] 定义公共知识与来源模型 *(completed 2026-07-26)*
+- **Files:** `apps/api/pyproject.toml`, `apps/api/alembic.ini`, `apps/api/app/models/__init__.py`, `apps/api/app/models/knowledge.py`, `apps/api/app/schemas/__init__.py`, `apps/api/app/schemas/knowledge.py`, `apps/api/migrations/env.py`, `apps/api/migrations/script.py.mako`, `apps/api/migrations/versions/*_knowledge_schema.py`, `apps/api/tests/models/test_knowledge.py`
 - **What:** 实现 PhilosophyEntity、Relation、Source 和 SourceChunk，包含 tradition、等级、版权状态、版本和证据字段。
 - **Acceptance:** 迁移可重复执行；直接引语缺少具体来源版本时无法进入 published 状态。
 - **Dependencies:** 1.1
