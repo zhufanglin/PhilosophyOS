@@ -107,7 +107,10 @@ DEEPSEEK_API_STYLE=chat_completions
 PHILOSOPHYOS_AI_PROVIDER=auto
 ```
 
-如果需要更强的回答质量，可以把模型改为 `deepseek-v4-pro`；如果中转站提供 DeepSeek 模型，则按中转站文档填写它给出的 `OPENAI_BASE_URL` 和模型名。
+DeepSeek 的 Base URL 默认使用 `https://api.deepseek.com`。模型只建议提供两个选项：
+
+- `deepseek-v4-flash`：默认选项，适合速度和成本优先。
+- `deepseek-v4-pro`：更强回答质量，适合复杂哲学推理。
 
 ### 4. 使用本地 `.env` 和一键启动脚本
 
