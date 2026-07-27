@@ -9,7 +9,7 @@ import {
   Sparkles,
   Square,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { DialogueOutline, OutlineStep } from "../components/DialogueOutline";
 import { ReflectionReview } from "../components/ReflectionReview";
@@ -28,6 +28,14 @@ type Message = {
   role: "assistant" | "user";
   body: string;
   mode?: DialogueMode;
+};
+
+type ProgressFlight = {
+  id: number;
+  fromX: number;
+  fromY: number;
+  deltaX: number;
+  deltaY: number;
 };
 
 const modes = [
@@ -58,13 +66,13 @@ const sources: DialogueSource[] = [
   },
 ];
 
-function responseFor(mode: DialogueMode) {
+function responseFor(mode: DialogueMode, question: DailyQuestionView) {
   const responses: Record<DialogueMode, string> = {
-    socratic: "先只检验一个前提：如果诚实带来的损失会伤害无辜的人，你的理由仍然成立吗？",
-    explain: "这里的冲突不只是诚实与利益，而是德性本身的价值与行动后果的价值。德性伦理会问诚实塑造了怎样的人，结果论则会继续计算损失由谁承担。",
-    compare: "苏格拉底式立场把正当地生活置于外在得失之上；结果论更关注行动造成的总体影响。真正的分歧在于，德性能否独立于后果构成充分理由。",
-    reflect: "先把理论放在一边。回想一次你因为诚实而付出代价的经历，那次选择保护了什么价值？",
-    organize: "暂定观点：诚实通常值得坚持。主要理由：它维护信任与自我一致。当前张力：对无辜者造成严重损失时，这一原则是否仍无例外。",
+    socratic: `先只检验一个前提：在“${question.tension}”之间，你为什么把其中一方放在更优先的位置？`,
+    explain: `这里需要区分“${question.tension}”的两端。它们并非简单对立，而是在回答不同层次的问题：我们依据什么判断，以及这个判断会造成什么。`,
+    compare: `可以把两种立场并列来看：一种优先强调“${question.tension.split("与")[0] ?? question.tension}”，另一种则从相对的一端重新检验你的理由。`,
+    reflect: `先把理论放在一边。回想一次你亲身遇到“${question.tension}”冲突的经历，当时你真正想保护的是什么？`,
+    organize: `暂定观点：你已经围绕“${question.tension}”给出了初步判断。下一步需要明确主要理由，并指出这个判断可能失效的边界。`,
   };
   return responses[mode];
 }
@@ -77,16 +85,23 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
       id: 1,
       role: "assistant",
       mode: "socratic",
-      body: "先给出你的直觉判断。你认为坚持诚实的理由，主要来自结果还是来自它本身？",
+      body: `先给出你的直觉判断。面对“${question.tension}”，你目前更倾向哪一方？为什么？`,
     },
   ]);
   const [thinking, setThinking] = useState(false);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [finished, setFinished] = useState(false);
   const [reviewing, setReviewing] = useState(false);
+  const [progressFlight, setProgressFlight] = useState<ProgressFlight | null>(null);
+  const [pulseStepId, setPulseStepId] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const sendButtonRef = useRef<HTMLButtonElement>(null);
+  const progressTimer = useRef<number | null>(null);
 
   useEffect(() => inputRef.current?.focus(), []);
+  useEffect(() => () => {
+    if (progressTimer.current !== null) window.clearTimeout(progressTimer.current);
+  }, []);
 
   const outline = useMemo<OutlineStep[]>(() => {
     const userTurns = messages.filter((message) => message.role === "user").length;
@@ -104,13 +119,38 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
     if (!answer || thinking || finished) return;
 
     const nextId = messages.length + 1;
+    const userTurns = messages.filter((message) => message.role === "user").length;
+    const nextStepId = userTurns === 0 ? "reason" : userTurns === 1 ? "boundary" : "summary";
     setMessages((current) => [...current, { id: nextId, role: "user", body: answer }]);
     setDraft("");
     setThinking(true);
+
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const start = sendButtonRef.current?.getBoundingClientRect();
+      const target = document.querySelector(`[data-step-id="${nextStepId}"] .outline-marker`)?.getBoundingClientRect();
+      if (start && target) {
+        const fromX = start.left + start.width / 2;
+        const fromY = start.top + start.height / 2;
+        setProgressFlight({
+          id: Date.now(),
+          fromX,
+          fromY,
+          deltaX: target.left + target.width / 2 - fromX,
+          deltaY: target.top + target.height / 2 - fromY,
+        });
+        setPulseStepId(nextStepId);
+        if (progressTimer.current !== null) window.clearTimeout(progressTimer.current);
+        progressTimer.current = window.setTimeout(() => {
+          setProgressFlight(null);
+          setPulseStepId(null);
+          progressTimer.current = null;
+        }, 820);
+      }
+    }
     window.setTimeout(() => {
       setMessages((current) => [
         ...current,
-        { id: nextId + 1, role: "assistant", body: responseFor(mode), mode },
+        { id: nextId + 1, role: "assistant", body: responseFor(mode, question), mode },
       ]);
       setThinking(false);
       inputRef.current?.focus();
@@ -177,7 +217,7 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
       </div>
 
       <div className="dialogue-workspace">
-        <DialogueOutline steps={outline} />
+        <DialogueOutline steps={outline} pulseStepId={pulseStepId} />
         <section className="conversation" aria-label="哲学对话">
           <div className="message-list" aria-live="polite">
             {messages.map((message) => (
@@ -207,13 +247,27 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
             />
             <div>
               <span>{draft.length}/2000</span>
-              <button className="send-button" type="submit" disabled={!draft.trim() || thinking || finished} aria-label="发送回答" title="发送回答">
+              <button ref={sendButtonRef} className="send-button" type="submit" disabled={!draft.trim() || thinking || finished} aria-label="发送回答" title="发送回答">
                 <Send size={18} />
               </button>
             </div>
           </form>
         </section>
       </div>
+
+      {progressFlight ? (
+        <span
+          className="dialogue-progress-flight"
+          key={progressFlight.id}
+          style={{
+            "--flight-from-x": `${progressFlight.fromX}px`,
+            "--flight-from-y": `${progressFlight.fromY}px`,
+            "--flight-delta-x": `${progressFlight.deltaX}px`,
+            "--flight-delta-y": `${progressFlight.deltaY}px`,
+          } as CSSProperties}
+          aria-hidden="true"
+        />
+      ) : null}
 
       <SourceDrawer open={sourcesOpen} sources={sources} onClose={() => setSourcesOpen(false)} />
     </main>

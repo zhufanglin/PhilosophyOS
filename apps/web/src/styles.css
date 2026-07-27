@@ -1250,6 +1250,7 @@ h1 {
 }
 
 .outline-marker {
+  position: relative;
   z-index: 1;
   display: grid;
   width: 19px;
@@ -1258,6 +1259,71 @@ h1 {
   border: 1px solid #cbd3cc;
   border-radius: 50%;
   background: #f7f8f6;
+}
+
+.dialogue-outline li.is-pulsing .outline-marker::after {
+  position: absolute;
+  inset: -2px;
+  border: 2px solid #b18a43;
+  border-radius: 50%;
+  content: "";
+  animation: outline-ring-arrival 760ms cubic-bezier(0.22, 1, 0.36, 1) 420ms both;
+  pointer-events: none;
+}
+
+.dialogue-progress-flight {
+  position: fixed;
+  z-index: 2200;
+  top: var(--flight-from-y);
+  left: var(--flight-from-x);
+  width: 17px;
+  height: 17px;
+  border: 2px solid #b18a43;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgb(177 138 67 / 13%);
+  animation: dialogue-ring-flight 720ms cubic-bezier(0.5, 0, 0.2, 1) both;
+  pointer-events: none;
+}
+
+.dialogue-progress-flight::after {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #2f6b4e;
+  content: "";
+}
+
+@keyframes dialogue-ring-flight {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      translate(
+        calc(var(--flight-delta-x) * 0.54),
+        calc(var(--flight-delta-y) * 0.54 - 38px)
+      )
+      scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform:
+      translate(-50%, -50%)
+      translate(var(--flight-delta-x), var(--flight-delta-y))
+      scale(0.62);
+  }
+}
+
+@keyframes outline-ring-arrival {
+  0% { opacity: 0; transform: scale(0.45); }
+  35% { opacity: 1; transform: scale(1.35); }
+  100% { opacity: 0; transform: scale(2.1); }
 }
 
 .dialogue-outline li.current,
@@ -2455,6 +2521,12 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .dialogue-progress-flight,
+  .dialogue-outline li.is-pulsing .outline-marker::after {
+    display: none;
+    animation: none;
   }
 
   *,

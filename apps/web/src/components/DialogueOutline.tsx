@@ -9,9 +9,10 @@ export type OutlineStep = {
 
 type DialogueOutlineProps = {
   steps: OutlineStep[];
+  pulseStepId?: string | null;
 };
 
-export function DialogueOutline({ steps }: DialogueOutlineProps) {
+export function DialogueOutline({ steps, pulseStepId }: DialogueOutlineProps) {
   return (
     <aside className="dialogue-outline" aria-labelledby="outline-title">
       <div className="outline-heading">
@@ -20,7 +21,11 @@ export function DialogueOutline({ steps }: DialogueOutlineProps) {
       </div>
       <ol>
         {steps.map((step, index) => (
-          <li className={step.state} key={step.id}>
+          <li
+            className={`${step.state}${pulseStepId === step.id ? " is-pulsing" : ""}`}
+            data-step-id={step.id}
+            key={step.id}
+          >
             <span className="outline-marker" aria-hidden="true">
               {step.state === "complete" ? <Check size={13} /> : <Circle size={9} />}
             </span>

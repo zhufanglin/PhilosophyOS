@@ -1,8 +1,10 @@
 import { Archive, BookMarked, Compass, MessageSquare, UserRound, Users } from "lucide-react";
-import { StrictMode, useEffect, useState } from "react";
+import { StrictMode, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 
+import { ThoughtTransition, type ThoughtTransitionState } from "./components/ThoughtTransition";
 import { ExplorePage } from "./pages/ExplorePage";
+import { ConceptPage, type ConceptTransitionRequest } from "./pages/ConceptPage";
 import { DialoguePage } from "./pages/DialoguePage";
 import { DailyQuestionView, TodayPage } from "./pages/TodayPage";
 import socratesPortrait from "./assets/philosophers/socrates-louvre.jpg";
@@ -16,7 +18,7 @@ type HealthResponse = {
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
-type AppView = "today" | "dialogue" | "explore";
+type AppView = "today" | "dialogue" | "explore" | "concept";
 
 const fallbackQuestion: DailyQuestionView = {
   id: "q014",
@@ -35,9 +37,15 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<AppView>(() => {
     const hash = window.location.hash.slice(1);
-    return hash === "dialogue" || hash === "explore" ? hash : "today";
+    return hash === "dialogue" || hash === "explore" || hash === "concept" ? hash : "today";
   });
   const [activeQuestion, setActiveQuestion] = useState(fallbackQuestion);
+  const [thoughtTransition, setThoughtTransition] = useState<ThoughtTransitionState | null>(null);
+  const transitionTimers = useRef<number[]>([]);
+
+  useEffect(() => () => {
+    transitionTimers.current.forEach((timer) => window.clearTimeout(timer));
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -66,7 +74,7 @@ function App() {
   useEffect(() => {
     function syncViewFromHash() {
       const hash = window.location.hash.slice(1);
-      setView(hash === "dialogue" || hash === "explore" ? hash : "today");
+      setView(hash === "dialogue" || hash === "explore" || hash === "concept" ? hash : "today");
     }
     window.addEventListener("hashchange", syncViewFromHash);
     return () => window.removeEventListener("hashchange", syncViewFromHash);
@@ -82,8 +90,74 @@ function App() {
     navigate("dialogue");
   }
 
+  function startConceptDialogue(request: ConceptTransitionRequest) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      startDialogue(request.question);
+      return;
+    }
+
+    setThoughtTransition({
+      phase: "contract",
+      philosopher: request.philosopher,
+      era: request.era,
+      portraitUrl: request.portraitUrl,
+      portraitPosition: request.portraitPosition,
+      quote: request.quote,
+      quoteSource: request.quoteSource,
+      originX: request.originX,
+      originY: request.originY,
+    });
+
+    transitionTimers.current.push(window.setTimeout(() => {
+      setActiveQuestion(request.question);
+      navigate("dialogue");
+      setThoughtTransition((current) => current ? { ...current, phase: "portrait" } : null);
+
+      transitionTimers.current.push(window.setTimeout(() => {
+        const answerControl = document.querySelector(".send-button")?.getBoundingClientRect()
+          ?? document.querySelector(".dialogue-composer")?.getBoundingClientRect();
+        setThoughtTransition((current) => current ? {
+          ...current,
+          phase: "reveal",
+          targetX: answerControl ? answerControl.left + answerControl.width / 2 : window.innerWidth / 2,
+          targetY: answerControl ? answerControl.top + answerControl.height / 2 : window.innerHeight * 0.78,
+        } : null);
+
+        transitionTimers.current.push(window.setTimeout(() => {
+          setThoughtTransition(null);
+        }, 760));
+      }, 1500));
+    }, 560));
+  }
+
+  const arrivalStyle = thoughtTransition?.phase === "reveal"
+    ? ({
+        "--thought-target-x": `${thoughtTransition.targetX}px`,
+        "--thought-target-y": `${thoughtTransition.targetY}px`,
+      } as CSSProperties)
+    : undefined;
+
+  if (view === "concept") {
+    return (
+      <>
+        <ConceptPage
+          onExit={() => navigate("today")}
+          onStart={startConceptDialogue}
+          transitionOrigin={thoughtTransition?.phase === "contract"
+            ? { x: thoughtTransition.originX, y: thoughtTransition.originY }
+            : undefined}
+        />
+        {thoughtTransition ? <ThoughtTransition transition={thoughtTransition} /> : null}
+      </>
+    );
+  }
+
   return (
-    <div className="app-frame">
+    <>
+    <div
+      className={`app-frame${thoughtTransition?.phase === "reveal" ? " thought-arriving" : ""}`}
+      style={arrivalStyle}
+    >
       <aside className="side-nav">
         <div>
           <a className="brand" href="#today" aria-label="PhilosophyOS 今日页">
@@ -139,6 +213,8 @@ function App() {
         <a className={view === "explore" ? "active" : ""} href="#explore"><Compass size={19} /><span>探索</span></a>
       </nav>
     </div>
+    {thoughtTransition ? <ThoughtTransition transition={thoughtTransition} /> : null}
+    </>
   );
 }
 
