@@ -127,7 +127,7 @@ sequenceDiagram
 - **Acceptance:** 未设置 `OPENAI_API_KEY` 时 `pytest` 通过；测试证明无 key 使用 deterministic fallback，mock OpenAI response 可映射为 assistant text。
 - **Dependencies:** 1.1
 
-### 3.2 [ ] 构建并测试 PhilosophyOS 提示词契约
+### 3.2 [x] 构建并测试 PhilosophyOS 提示词契约 *(completed 2026-07-27)*
 - **Files:** `apps/api/app/agent/prompting.py`, `apps/api/app/agent/orchestrator.py`, `apps/api/tests/agent/test_prompting.py`, `docs/agent/behavior-spec.md`
 - **What:** 创建服务端 prompt builder，纳入 mode、topic、turn number、user message、source policy 和“不编造引文”规则。保证 Explain 和 Organize 的问题预算仍符合既有 policy tests。
 - **Acceptance:** prompt tests 覆盖五种模式；prompt 包含来源与归属约束；现有 mode policy tests 继续通过。

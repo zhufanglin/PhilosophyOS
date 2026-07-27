@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Literal, Protocol
 
 from app.agent.policies import enforce_question_policy, resolve_mode
+from app.agent.prompting import DialoguePrompt, build_dialogue_prompt
 from app.schemas.dialogue import DialogueMode, DialogueRequest, DialogueResponse
 from app.services.answer import AnswerResult, knowledge_answer_service
 
@@ -52,6 +53,12 @@ class DialogueOrchestrator:
             evidence_status=plan.evidence_status,
             citation_ids=plan.citation_ids,
         )
+
+    def build_prompt(self, request: DialogueRequest) -> DialoguePrompt:
+        """Build the provider prompt for the resolved dialogue mode."""
+
+        decision = resolve_mode(request)
+        return build_dialogue_prompt(request=request, mode=decision.mode)
 
     def _build_plan(self, mode: DialogueMode, request: DialogueRequest) -> ResponsePlan:
         """Dispatch one turn to the selected mode implementation."""
