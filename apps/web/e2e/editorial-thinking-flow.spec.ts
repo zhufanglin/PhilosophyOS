@@ -114,8 +114,15 @@ async function mockReflectionSnapshot(page: Page) {
                   core_question: "什么时候善意隐瞒会变成逃避责任？",
                   key_insights: ["诚实不是机械地说出全部事实。"],
                   tensions: ["善意隐瞒与逃避责任之间的界限仍不清楚。"],
-                  related_philosophers: [],
-                  change_signal: { changed: true },
+                  related_philosophers: [
+                    { name: "康德", reason: "问题涉及诚实义务与道德原则。" },
+                  ],
+                  change_signal: {
+                    changed: true,
+                    previous_position: "诚实就是把事实都说出来。",
+                    current_position: "诚实需要在责任和伤害之间判断。",
+                    change_type: "概念细化",
+                  },
                   next_question: "什么时候善意隐瞒会变成逃避责任？",
                   tags: ["诚实", "德性"],
                 },
@@ -406,6 +413,14 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".archive-hero h1")).toContainText("思想时间线");
   await expect(page.locator(".timeline-card")).toContainText("诚实是在伤害与责任之间保持清醒");
   await expect(page.locator(".timeline-card")).toContainText("什么时候善意隐瞒会变成逃避责任");
+  await page.getByRole("button", { name: /展开思想节点/ }).click();
+  await expect(page.locator(".timeline-detail-panel")).toBeVisible();
+  await expect(page.locator(".timeline-detail-panel")).toContainText("核心问题");
+  await expect(page.locator(".timeline-detail-panel")).toContainText("诚实不是机械地说出全部事实");
+  await expect(page.locator(".timeline-detail-panel")).toContainText("康德");
+  await expect(page.locator(".timeline-detail-panel")).toContainText("概念细化");
+  await page.getByRole("button", { name: /收起思想节点/ }).click();
+  await expect(page.locator(".timeline-detail-panel")).toBeHidden();
 
   expect(consoleProblems.warnings).toEqual([]);
   expect(consoleProblems.errors).toEqual([]);

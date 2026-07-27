@@ -1,4 +1,4 @@
-import { Archive, CircleDot, Clock3, Sparkles } from "lucide-react";
+import { Archive, ChevronDown, CircleDot, Clock3, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type SnapshotStatus = "completed" | "pending";
@@ -21,6 +21,13 @@ type ReflectionSnapshotListItem = {
       core_question: string;
       key_insights: string[];
       tensions: string[];
+      related_philosophers: { name: string; reason: string }[];
+      change_signal: {
+        changed: boolean;
+        previous_position: string | null;
+        current_position: string | null;
+        change_type: string | null;
+      };
       next_question: string | null;
       tags: string[];
     } | null;
@@ -51,6 +58,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [items, setItems] = useState<ReflectionSnapshotListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedSnapshotId, setExpandedSnapshotId] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -95,7 +103,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         <p className="section-kicker">THOUGHT ARCHIVE</p>
         <h1>思想时间线</h1>
         <p>
-          这里会把每次对话后的思想快照串起来：哪些观点已经成形，哪些问题还在等待补生成，
+          这里会把每次对话后的思想节点串起来：哪些观点已经成形，哪些问题还在等待补生成，
           以及你的哲学思考正在往哪里移动。
         </p>
         <div className="archive-stats" aria-label="思想档案统计">
@@ -108,7 +116,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       {loading ? (
         <section className="archive-empty" role="status">
           <CircleDot size={22} />
-          <h2>正在读取思想快照</h2>
+          <h2>正在读取思想节点</h2>
           <p>我在翻你的思想版本日志，稍等一口气。</p>
         </section>
       ) : null}
@@ -124,57 +132,161 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       {!loading && !error && items.length === 0 ? (
         <section className="archive-empty">
           <CircleDot size={22} />
-          <h2>还没有思想快照</h2>
+          <h2>还没有思想节点</h2>
           <p>完成一次对话并保存后，这里会出现第一条思想变化记录。</p>
         </section>
       ) : null}
 
       {!loading && !error && items.length > 0 ? (
-        <section className="thought-timeline" aria-label="思想快照时间线">
-          {items.map((item) => {
-            const content = item.snapshot.content;
-            return (
-              <article className={`timeline-card ${item.snapshot.status}`} key={item.snapshot.snapshot_id}>
-                <div className="timeline-rail" aria-hidden="true">
-                  <span />
-                </div>
-                <div className="timeline-card-body">
-                  <div className="timeline-meta">
-                    <span>{formatSnapshotTime(item.created_at)}</span>
-                    <strong>{item.snapshot.status === "completed" ? "已生成" : "待补生成"}</strong>
-                  </div>
-                  <h2>{content?.title ?? item.question}</h2>
-                  <p>{content?.user_position ?? item.snapshot.pending_reason ?? "原始记录已保存，等待模型补生成。"}</p>
-                  {content ? (
-                    <>
-                      <div className="timeline-topic-row">
-                        <span>{content.topic}</span>
-                        <span>置信度 {Math.round(content.confidence * 100)}%</span>
-                        {content.emotional_tone ? <span>{content.emotional_tone}</span> : null}
-                      </div>
-                      {content.tensions.length > 0 ? (
-                        <div className="timeline-tensions">
-                          <strong>仍在拉扯的问题</strong>
-                          <ul>
-                            {content.tensions.slice(0, 3).map((tension) => (
-                              <li key={tension}>{tension}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-                      {content.next_question ? (
-                        <div className="timeline-next-question">
-                          下一步：{content.next_question}
-                        </div>
-                      ) : null}
-                    </>
-                  ) : null}
-                </div>
-              </article>
-            );
-          })}
+        <section className="thought-timeline" aria-label="思想节点时间线">
+          {items.map((item) => (
+            <TimelineCard
+              expanded={expandedSnapshotId === item.snapshot.snapshot_id}
+              item={item}
+              key={item.snapshot.snapshot_id}
+              onToggle={() =>
+                setExpandedSnapshotId((current) =>
+                  current === item.snapshot.snapshot_id ? null : item.snapshot.snapshot_id,
+                )
+              }
+            />
+          ))}
         </section>
       ) : null}
     </main>
+  );
+}
+
+type TimelineCardProps = {
+  item: ReflectionSnapshotListItem;
+  expanded: boolean;
+  onToggle: () => void;
+};
+
+function TimelineCard({ item, expanded, onToggle }: TimelineCardProps) {
+  const content = item.snapshot.content;
+  return (
+    <article className={`timeline-card ${item.snapshot.status} ${expanded ? "expanded" : ""}`}>
+      <div className="timeline-rail" aria-hidden="true">
+        <span />
+      </div>
+      <div className="timeline-card-body">
+        <div className="timeline-meta">
+          <span>{formatSnapshotTime(item.created_at)}</span>
+          <strong>{item.snapshot.status === "completed" ? "已生成" : "待补生成"}</strong>
+        </div>
+        <h2>{content?.title ?? item.question}</h2>
+        <p>{content?.user_position ?? item.snapshot.pending_reason ?? "原始记录已保存，等待模型补生成。"}</p>
+
+        {content ? (
+          <>
+            <div className="timeline-topic-row">
+              <span>{content.topic}</span>
+              <span>置信度 {Math.round(content.confidence * 100)}%</span>
+              {content.emotional_tone ? <span>{content.emotional_tone}</span> : null}
+            </div>
+            {content.tensions.length > 0 ? (
+              <div className="timeline-tensions">
+                <strong>仍在拉扯的问题</strong>
+                <ul>
+                  {content.tensions.slice(0, 3).map((tension) => (
+                    <li key={tension}>{tension}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {content.next_question ? (
+              <div className="timeline-next-question">下一步：{content.next_question}</div>
+            ) : null}
+          </>
+        ) : null}
+
+        <button
+          className="timeline-detail-toggle"
+          type="button"
+          aria-expanded={expanded}
+          onClick={onToggle}
+        >
+          {expanded ? "收起思想节点" : "展开思想节点"}
+          <ChevronDown size={16} />
+        </button>
+
+        {expanded ? <TimelineDetail item={item} /> : null}
+      </div>
+    </article>
+  );
+}
+
+function TimelineDetail({ item }: { item: ReflectionSnapshotListItem }) {
+  const content = item.snapshot.content;
+
+  return (
+    <div className="timeline-detail-panel">
+      <section>
+        <strong>核心问题</strong>
+        <p>{content?.core_question ?? item.question}</p>
+      </section>
+
+      {content?.change_signal.changed ? (
+        <section>
+          <strong>观点变化</strong>
+          <p>
+            {content.change_signal.previous_position
+              ? `从“${content.change_signal.previous_position}”`
+              : "这次出现了新的立场变化"}
+            {content.change_signal.current_position
+              ? ` 转向“${content.change_signal.current_position}”。`
+              : "。"}
+            {content.change_signal.change_type ? ` 类型：${content.change_signal.change_type}。` : ""}
+          </p>
+        </section>
+      ) : null}
+
+      {content?.key_insights.length ? (
+        <section>
+          <strong>关键洞见</strong>
+          <ul>
+            {content.key_insights.map((insight) => (
+              <li key={insight}>{insight}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {content?.related_philosophers.length ? (
+        <section>
+          <strong>相关哲学家</strong>
+          <div className="timeline-philosophers">
+            {content.related_philosophers.map((philosopher) => (
+              <span key={`${philosopher.name}-${philosopher.reason}`}>
+                <b>{philosopher.name}</b>
+                {philosopher.reason}
+              </span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {content?.tags.length ? (
+        <section>
+          <strong>标签</strong>
+          <div className="timeline-tags">
+            {content.tags.map((tag) => (
+              <span key={tag}>{tag}</span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section>
+        <strong>模型来源</strong>
+        <p>
+          {item.snapshot.provider_model ?? item.snapshot.provider}
+          {item.snapshot.status === "pending" && item.snapshot.pending_reason
+            ? `；待补生成原因：${item.snapshot.pending_reason}`
+            : ""}
+        </p>
+      </section>
+    </div>
   );
 }
