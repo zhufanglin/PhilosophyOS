@@ -5,6 +5,7 @@ import {
   GitCompareArrows,
   Lightbulb,
   ListTree,
+  RotateCcw,
   Send,
   Sparkles,
   Square,
@@ -42,6 +43,12 @@ type ProgressFlight = {
 type DialogueTurnResponse = {
   mode: DialogueMode;
   assistant_message: string;
+};
+
+type PendingDialogueTurn = {
+  answer: string;
+  mode: DialogueMode;
+  turnNumber: number;
 };
 
 const modes = [
@@ -96,6 +103,7 @@ export function DialoguePage({ apiBaseUrl, question, onBack }: DialoguePageProps
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [finished, setFinished] = useState(false);
   const [reviewing, setReviewing] = useState(false);
+  const [failedTurn, setFailedTurn] = useState<PendingDialogueTurn | null>(null);
   const [progressFlight, setProgressFlight] = useState<ProgressFlight | null>(null);
   const [pulseStepId, setPulseStepId] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -117,19 +125,8 @@ export function DialoguePage({ apiBaseUrl, question, onBack }: DialoguePageProps
     ];
   }, [finished, messages]);
 
-  async function submitAnswer(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const answer = draft.trim();
-    if (!answer || thinking || finished) return;
-
-    const nextId = messages.length + 1;
-    const userTurns = messages.filter((message) => message.role === "user").length;
-    const nextStepId = userTurns === 0 ? "reason" : userTurns === 1 ? "boundary" : "summary";
-    setMessages((current) => [...current, { id: nextId, role: "user", body: answer }]);
-    setDraft("");
-    setThinking(true);
-
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  function animateProgressTo(nextStepId: string) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const start = sendButtonRef.current?.getBoundingClientRect();
       const target = document.querySelector(`[data-step-id="${nextStepId}"] .outline-marker`)?.getBoundingClientRect();
       if (start && target) {
@@ -150,34 +147,72 @@ export function DialoguePage({ apiBaseUrl, question, onBack }: DialoguePageProps
           progressTimer.current = null;
         }, 820);
       }
-    }
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/v1/dialogue-turns`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_message: answer,
-          current_mode: mode,
-          requested_mode: mode,
-          topic: question.prompt,
-          turn_number: userTurns + 1,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`Dialogue API returned ${response.status}`);
-      }
-      const payload: unknown = await response.json();
-      if (!isDialogueTurnResponse(payload)) {
-        throw new Error("Dialogue API returned an invalid response");
-      }
+  }
 
-      setMessages((current) => [
+  async function requestAssistantTurn(turn: PendingDialogueTurn) {
+    const response = await fetch(`${apiBaseUrl}/api/v1/dialogue-turns`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_message: turn.answer,
+        current_mode: turn.mode,
+        requested_mode: turn.mode,
+        topic: question.prompt,
+        turn_number: turn.turnNumber,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`Dialogue API returned ${response.status}`);
+    }
+
+    const payload: unknown = await response.json();
+    if (!isDialogueTurnResponse(payload)) {
+      throw new Error("Dialogue API returned an invalid response");
+    }
+
+    setMessages((current) => {
+      const nextId = Math.max(...current.map((message) => message.id)) + 1;
+      return [
         ...current,
-        { id: nextId + 1, role: "assistant", body: payload.assistant_message, mode: payload.mode },
-      ]);
-      setMode(payload.mode);
+        { id: nextId, role: "assistant", body: payload.assistant_message, mode: payload.mode },
+      ];
+    });
+    setMode(payload.mode);
+    setFailedTurn(null);
+  }
+
+  async function submitAnswer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const answer = draft.trim();
+    if (!answer || thinking || finished) return;
+
+    const nextId = Math.max(...messages.map((message) => message.id)) + 1;
+    const userTurns = messages.filter((message) => message.role === "user").length;
+    const nextStepId = userTurns === 0 ? "reason" : userTurns === 1 ? "boundary" : "summary";
+    const pendingTurn = { answer, mode, turnNumber: userTurns + 1 };
+    setMessages((current) => [...current, { id: nextId, role: "user", body: answer }]);
+    setDraft("");
+    setFailedTurn(null);
+    setThinking(true);
+
+    animateProgressTo(nextStepId);
+    try {
+      await requestAssistantTurn(pendingTurn);
     } catch {
-      // Retry UI is introduced in task 2.2; for now keep the user's submitted turn visible.
+      setFailedTurn(pendingTurn);
+    } finally {
+      setThinking(false);
+      inputRef.current?.focus();
+    }
+  }
+
+  async function retryFailedTurn() {
+    if (!failedTurn || thinking || finished) return;
+    setThinking(true);
+    try {
+      await requestAssistantTurn(failedTurn);
+    } catch {
+      setFailedTurn(failedTurn);
     } finally {
       setThinking(false);
       inputRef.current?.focus();
@@ -270,6 +305,17 @@ export function DialoguePage({ apiBaseUrl, question, onBack }: DialoguePageProps
               </article>
             ))}
             {thinking ? <div className="thinking-state"><span /><span /><span /> 正在整理这一点</div> : null}
+            {failedTurn ? (
+              <div className="dialogue-retry-notice" role="status">
+                <div>
+                  <strong>这一轮暂时没有连上后端</strong>
+                  <p>你的回答已经保留。可以稍后重试，系统只会重新请求哲学引导，不会重复记录你的发言。</p>
+                </div>
+                <button type="button" onClick={retryFailedTurn} disabled={thinking || finished}>
+                  <RotateCcw size={15} /> 重试
+                </button>
+              </div>
+            ) : null}
             {finished ? <div className="dialogue-complete">本轮对话已整理，下一步将确认哪些内容属于你的观点。</div> : null}
           </div>
 

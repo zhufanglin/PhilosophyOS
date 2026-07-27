@@ -1497,6 +1497,57 @@ h1 {
   to { opacity: 0.25; transform: translateY(-2px); }
 }
 
+.dialogue-retry-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 0 17px 152px;
+  border-top: 1px solid #ead7bb;
+  color: #775434;
+  background: linear-gradient(90deg, rgb(245 237 221 / 0%) 0%, rgb(245 237 221 / 58%) 100%);
+}
+
+.dialogue-retry-notice strong {
+  color: #66482f;
+  font-size: 0.78rem;
+}
+
+.dialogue-retry-notice p {
+  max-width: 620px;
+  margin: 5px 0 0;
+  color: #7e705f;
+  font-size: 0.74rem;
+  line-height: 1.6;
+}
+
+.dialogue-retry-notice button {
+  display: inline-flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid #d5b784;
+  border-radius: 999px;
+  color: #76512c;
+  background: #fffaf0;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.dialogue-retry-notice button:hover {
+  border-color: #b78e52;
+  background: #fff4dc;
+}
+
+.dialogue-retry-notice button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .dialogue-complete {
   padding: 14px 16px;
   border-top: 1px solid #d8c39f;
@@ -2463,6 +2514,13 @@ h1 {
 
   .thinking-state {
     padding-left: 0;
+  }
+
+  .dialogue-retry-notice {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 15px 0;
+    background: transparent;
   }
 
   .dialogue-composer {

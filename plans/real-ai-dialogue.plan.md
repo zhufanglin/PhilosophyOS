@@ -97,7 +97,7 @@ sequenceDiagram
 - **Acceptance:** `pnpm build` 通过；`pnpm e2e` 使用 mocked `/api/v1/dialogue-turns` 通过；手动浏览器流程能确认 assistant response 来自 API。
 - **Dependencies:** 1.1
 
-### 2.2 [ ] 增加 API 失败与重试行为
+### 2.2 [x] 增加 API 失败与重试行为 *(completed 2026-07-27)*
 - **Files:** `apps/web/src/pages/DialoguePage.tsx`, `apps/web/src/styles.css`, `apps/web/e2e/editorial-thinking-flow.spec.ts`
 - **What:** 当对话请求失败或返回非法 JSON 时，显示小型 inline 错误/重试操作。用户已经提交的消息保留，重试时不重复插入用户消息。
 - **Acceptance:** E2E 覆盖一次失败后重试成功；控制台无 error/warning；390 和 320 宽度下输入区不遮挡底部导航。

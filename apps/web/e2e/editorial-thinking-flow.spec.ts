@@ -37,6 +37,37 @@ async function mockDialogueTurn(page: Page) {
   });
 }
 
+async function mockDialogueTurnWithFirstFailure(page: Page) {
+  let requestCount = 0;
+  await page.unroute("http://127.0.0.1:8000/api/v1/dialogue-turns");
+  await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
+    requestCount += 1;
+    const request = route.request().postDataJSON() as { requested_mode?: string; turn_number?: number };
+    if (requestCount === 1) {
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "temporary invalid test payload" }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        mode: request.requested_mode ?? "socratic",
+        previous_mode: request.requested_mode ?? "socratic",
+        switched: false,
+        switch_reason: "mocked retry response",
+        assistant_message: `重试后的 API 回答：第 ${request.turn_number ?? 1} 轮已经恢复。`,
+        primary_question: "你愿意继续检验哪个理由？",
+        should_ask_followup: true,
+        evidence_status: null,
+        citation_ids: [],
+      }),
+    });
+  });
+}
+
 async function expectNoHorizontalOverflow(page: Page) {
   await expect
     .poll(() =>
@@ -148,6 +179,37 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
 
   await page.locator(".reflection-saved .primary-button").click();
   await expect(page.locator(".today-page")).toBeVisible();
+  expect(warnings).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test("dialogue API failure can be retried without duplicating the user turn", async ({ page }) => {
+  const warnings: string[] = [];
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "warning") warnings.push(message.text());
+    if (message.type() === "error") errors.push(message.text());
+  });
+
+  await mockDialogueTurnWithFirstFailure(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#today");
+  await page.locator(".start-button").click();
+  await expect(page.locator(".dialogue-page")).toBeVisible();
+
+  await page.locator("#dialogue-answer").fill("我先保留这个判断，因为我还没区分原则与后果。");
+  await page.locator(".send-button").click();
+  await expect(page.locator(".message.user")).toHaveCount(1);
+  await expect(page.locator(".dialogue-retry-notice")).toBeVisible();
+  await expect(page.locator(".dialogue-retry-notice")).toContainText("你的回答已经保留");
+  await expect(page.locator(".message.assistant")).toHaveCount(1);
+
+  await page.locator(".dialogue-retry-notice button").click();
+  await expect(page.locator(".dialogue-retry-notice")).toBeHidden();
+  await expect(page.locator(".message.user")).toHaveCount(1);
+  await expect(page.locator(".message.assistant")).toHaveCount(2);
+  await expect(page.locator(".message.assistant").last()).toContainText("重试后的 API 回答");
+  await expectMobileNavClearance(page, ".dialogue-composer");
   expect(warnings).toEqual([]);
   expect(errors).toEqual([]);
 });
