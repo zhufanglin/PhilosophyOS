@@ -91,7 +91,7 @@ sequenceDiagram
 | Failure | 保留用户消息，显示可重试错误，不重复追加用户轮次 |
 | Finish | `ReflectionReview` 只接收用户原创轮次 |
 
-### 2.1 [ ] 用对话 API 替换前端假回复
+### 2.1 [x] 用对话 API 替换前端假回复 *(completed 2026-07-27)*
 - **Files:** `apps/web/src/pages/DialoguePage.tsx`, `apps/web/src/main.tsx`, `apps/web/e2e/editorial-thinking-flow.spec.ts`
 - **What:** 将 `apiBaseUrl` 传入 `DialoguePage`，提交时调用 `/api/v1/dialogue-turns`，正常路径移除前端 `responseFor` 假回复。保留模式切换、进度动画、输入框聚焦和总结行为。
 - **Acceptance:** `pnpm build` 通过；`pnpm e2e` 使用 mocked `/api/v1/dialogue-turns` 通过；手动浏览器流程能确认 assistant response 来自 API。

@@ -19,6 +19,7 @@ import { DailyQuestionView } from "./TodayPage";
 type DialogueMode = "socratic" | "explain" | "compare" | "reflect" | "organize";
 
 type DialoguePageProps = {
+  apiBaseUrl: string;
   question: DailyQuestionView;
   onBack: () => void;
 };
@@ -36,6 +37,11 @@ type ProgressFlight = {
   fromY: number;
   deltaX: number;
   deltaY: number;
+};
+
+type DialogueTurnResponse = {
+  mode: DialogueMode;
+  assistant_message: string;
 };
 
 const modes = [
@@ -66,18 +72,16 @@ const sources: DialogueSource[] = [
   },
 ];
 
-function responseFor(mode: DialogueMode, question: DailyQuestionView) {
-  const responses: Record<DialogueMode, string> = {
-    socratic: `先只检验一个前提：在“${question.tension}”之间，你为什么把其中一方放在更优先的位置？`,
-    explain: `这里需要区分“${question.tension}”的两端。它们并非简单对立，而是在回答不同层次的问题：我们依据什么判断，以及这个判断会造成什么。`,
-    compare: `可以把两种立场并列来看：一种优先强调“${question.tension.split("与")[0] ?? question.tension}”，另一种则从相对的一端重新检验你的理由。`,
-    reflect: `先把理论放在一边。回想一次你亲身遇到“${question.tension}”冲突的经历，当时你真正想保护的是什么？`,
-    organize: `暂定观点：你已经围绕“${question.tension}”给出了初步判断。下一步需要明确主要理由，并指出这个判断可能失效的边界。`,
-  };
-  return responses[mode];
+function isDialogueTurnResponse(value: unknown): value is DialogueTurnResponse {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<DialogueTurnResponse>;
+  return (
+    typeof candidate.assistant_message === "string" &&
+    modes.some((item) => item.id === candidate.mode)
+  );
 }
 
-export function DialoguePage({ question, onBack }: DialoguePageProps) {
+export function DialoguePage({ apiBaseUrl, question, onBack }: DialoguePageProps) {
   const [mode, setMode] = useState<DialogueMode>("socratic");
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -113,7 +117,7 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
     ];
   }, [finished, messages]);
 
-  function submitAnswer(event: FormEvent<HTMLFormElement>) {
+  async function submitAnswer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const answer = draft.trim();
     if (!answer || thinking || finished) return;
@@ -147,14 +151,37 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
         }, 820);
       }
     }
-    window.setTimeout(() => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/v1/dialogue-turns`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_message: answer,
+          current_mode: mode,
+          requested_mode: mode,
+          topic: question.prompt,
+          turn_number: userTurns + 1,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`Dialogue API returned ${response.status}`);
+      }
+      const payload: unknown = await response.json();
+      if (!isDialogueTurnResponse(payload)) {
+        throw new Error("Dialogue API returned an invalid response");
+      }
+
       setMessages((current) => [
         ...current,
-        { id: nextId + 1, role: "assistant", body: responseFor(mode, question), mode },
+        { id: nextId + 1, role: "assistant", body: payload.assistant_message, mode: payload.mode },
       ]);
+      setMode(payload.mode);
+    } catch {
+      // Retry UI is introduced in task 2.2; for now keep the user's submitted turn visible.
+    } finally {
       setThinking(false);
       inputRef.current?.focus();
-    }, 420);
+    }
   }
 
   function finishDialogue() {

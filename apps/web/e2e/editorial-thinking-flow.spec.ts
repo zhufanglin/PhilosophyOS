@@ -17,6 +17,26 @@ async function mockHealth(page: Page) {
   });
 }
 
+async function mockDialogueTurn(page: Page) {
+  await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
+    const request = route.request().postDataJSON() as { requested_mode?: string; turn_number?: number };
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        mode: request.requested_mode ?? "socratic",
+        previous_mode: request.requested_mode ?? "socratic",
+        switched: false,
+        switch_reason: "mocked e2e dialogue response",
+        assistant_message: `API 回答：第 ${request.turn_number ?? 1} 轮已经收到，我会继续围绕你的理由推进。`,
+        primary_question: "你愿意先检验哪个前提？",
+        should_ask_followup: true,
+        evidence_status: null,
+        citation_ids: [],
+      }),
+    });
+  });
+}
+
 async function expectNoHorizontalOverflow(page: Page) {
   await expect
     .poll(() =>
@@ -49,6 +69,7 @@ async function openReflection(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   await mockHealth(page);
+  await mockDialogueTurn(page);
 });
 
 test("editorial thinking flow works from today to saved reflection", async ({ page }) => {
@@ -83,6 +104,7 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await page.locator(".send-button").click();
   await expect(page.locator(".message.user")).toContainText("坚持诚实");
   await expect(page.locator(".message.assistant")).toHaveCount(2);
+  await expect(page.locator(".message.assistant").last()).toContainText("API 回答");
 
   await page.locator(".source-trigger").click();
   await expect(page.getByRole("dialog")).toBeVisible();

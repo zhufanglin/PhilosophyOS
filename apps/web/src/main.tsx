@@ -203,7 +203,13 @@ function App() {
           </div>
         </header>
         {view === "today" ? <TodayPage onStart={startDialogue} /> : null}
-        {view === "dialogue" ? <DialoguePage question={activeQuestion} onBack={() => navigate("today")} /> : null}
+        {view === "dialogue" ? (
+          <DialoguePage
+            apiBaseUrl={apiBaseUrl}
+            question={activeQuestion}
+            onBack={() => navigate("today")}
+          />
+        ) : null}
         {view === "explore" ? <ExplorePage apiBaseUrl={apiBaseUrl} /> : null}
       </div>
 
