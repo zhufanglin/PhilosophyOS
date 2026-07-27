@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, cast
+from typing import Literal, Protocol, cast
 
 from pydantic import SecretStr
 
@@ -32,7 +32,7 @@ class ProviderResponse:
     """Provider output normalized for the orchestrator."""
 
     assistant_message: str
-    provider: str
+    provider: Literal["deterministic", "openai"]
     model: str | None = None
 
 
@@ -46,7 +46,7 @@ class DialogueProvider(Protocol):
 class DeterministicDialogueProvider:
     """Return the already policy-checked deterministic assistant message."""
 
-    name = "deterministic"
+    name: Literal["deterministic"] = "deterministic"
 
     def generate(self, request: ProviderRequest) -> ProviderResponse:
         """Return fallback text without network access."""
@@ -76,7 +76,7 @@ class OpenAIClient(Protocol):
 class OpenAIDialogueProvider:
     """Generate assistant text through the OpenAI Responses API."""
 
-    name = "openai"
+    name: Literal["openai"] = "openai"
 
     def __init__(self, client: OpenAIClient, model: str) -> None:
         self._client = client

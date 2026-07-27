@@ -62,6 +62,7 @@ def test_direct_explanation_command_stops_socratic_questioning(
     assert question_mark_count(response.assistant_message) == 0
     assert response.evidence_status == "supported"
     assert response.citation_ids
+    assert response.provider == "deterministic"
 
 
 @pytest.mark.parametrize("turn_number", [1, 2, 3, 4, 8])

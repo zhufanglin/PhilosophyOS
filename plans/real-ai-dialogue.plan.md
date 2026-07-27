@@ -133,7 +133,7 @@ sequenceDiagram
 - **Acceptance:** prompt tests 覆盖五种模式；prompt 包含来源与归属约束；现有 mode policy tests 继续通过。
 - **Dependencies:** 3.1
 
-### 3.3 [ ] 通过选定 provider 路由对话轮次
+### 3.3 [x] 通过选定 provider 路由对话轮次 *(completed 2026-07-27)*
 - **Files:** `apps/api/app/agent/orchestrator.py`, `apps/api/app/routes/dialogue.py`, `apps/api/tests/routes/test_dialogue.py`, `apps/api/tests/agent/test_modes.py`
 - **What:** 更新编排流程：配置 provider 成功时使用 OpenAI-backed 输出；无 key 或 provider 失败时使用 deterministic fallback，并通过 provider metadata 可见。保留模式切换和 evidence status 语义。
 - **Acceptance:** route tests 覆盖 provider 成功、provider 失败降级、无 key 降级；`pytest` 通过；`pnpm e2e` 可继续使用 mocked API response。

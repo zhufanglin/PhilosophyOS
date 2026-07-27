@@ -7,8 +7,15 @@ from typing import Literal, Protocol
 
 from app.agent.policies import enforce_question_policy, resolve_mode
 from app.agent.prompting import DialoguePrompt, build_dialogue_prompt
+from app.agent.providers import (
+    DeterministicDialogueProvider,
+    DialogueProvider,
+    ProviderRequest,
+    select_dialogue_provider,
+)
 from app.schemas.dialogue import DialogueMode, DialogueRequest, DialogueResponse
 from app.services.answer import AnswerResult, knowledge_answer_service
+from app.settings import settings
 
 
 class ExplanationProvider(Protocol):
@@ -31,27 +38,50 @@ class ResponsePlan:
 class DialogueOrchestrator:
     """Resolve a mode, call the appropriate capability, and enforce its policy."""
 
-    def __init__(self, explanation_provider: ExplanationProvider | None = None) -> None:
+    def __init__(
+        self,
+        explanation_provider: ExplanationProvider | None = None,
+        dialogue_provider: DialogueProvider | None = None,
+    ) -> None:
         self._explanation_provider = explanation_provider or knowledge_answer_service
+        self._dialogue_provider = dialogue_provider or select_dialogue_provider(settings)
+        self._deterministic_provider = DeterministicDialogueProvider()
 
     def respond(self, request: DialogueRequest) -> DialogueResponse:
-        """Return one deterministic, policy-compliant dialogue turn."""
+        """Return one policy-compliant dialogue turn through the configured provider."""
 
         decision = resolve_mode(request)
         plan = self._build_plan(decision.mode, request)
         enforce_question_policy(decision.mode, plan.primary_questions)
         primary_question = plan.primary_questions[0] if plan.primary_questions else None
+        provider_request = ProviderRequest(
+            user_message=request.user_message,
+            mode=decision.mode,
+            topic=request.topic,
+            turn_number=request.turn_number,
+            prompt=build_dialogue_prompt(request=request, mode=decision.mode).render(),
+            deterministic_message=plan.message,
+        )
+        fallback_reason: str | None = None
+        try:
+            provider_response = self._dialogue_provider.generate(provider_request)
+        except Exception as error:
+            fallback_reason = f"{type(error).__name__}: {error}"
+            provider_response = self._deterministic_provider.generate(provider_request)
 
         return DialogueResponse(
             mode=decision.mode,
             previous_mode=request.current_mode,
             switched=decision.switched,
             switch_reason=decision.reason,
-            assistant_message=plan.message,
+            assistant_message=provider_response.assistant_message,
             primary_question=primary_question,
             should_ask_followup=primary_question is not None,
             evidence_status=plan.evidence_status,
             citation_ids=plan.citation_ids,
+            provider=provider_response.provider,
+            provider_model=provider_response.model,
+            provider_fallback_reason=fallback_reason,
         )
 
     def build_prompt(self, request: DialogueRequest) -> DialoguePrompt:

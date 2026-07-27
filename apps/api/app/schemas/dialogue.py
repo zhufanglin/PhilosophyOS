@@ -49,3 +49,6 @@ class DialogueResponse(BaseModel):
     should_ask_followup: bool
     evidence_status: Literal["supported", "corrected", "insufficient"] | None = None
     citation_ids: tuple[str, ...] = ()
+    provider: Literal["deterministic", "openai"] = "deterministic"
+    provider_model: str | None = None
+    provider_fallback_reason: str | None = None
