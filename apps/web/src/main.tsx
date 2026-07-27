@@ -7,6 +7,7 @@ import { ExplorePage } from "./pages/ExplorePage";
 import { ConceptPage, type ConceptTransitionRequest } from "./pages/ConceptPage";
 import { DialoguePage, type ModelProfile } from "./pages/DialoguePage";
 import { DailyQuestionView, TodayPage } from "./pages/TodayPage";
+import { ThoughtArchivePage } from "./pages/ThoughtArchivePage";
 import socratesPortrait from "./assets/philosophers/socrates-louvre.jpg";
 import "./styles.css";
 
@@ -55,7 +56,7 @@ type ModelProfileTestStates = Partial<Record<ModelProfile, ModelProfileTestState
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
-type AppView = "today" | "dialogue" | "explore" | "concept";
+type AppView = "today" | "dialogue" | "explore" | "concept" | "archive";
 
 const fallbackQuestion: DailyQuestionView = {
   id: "q014",
@@ -77,7 +78,9 @@ function App() {
   const [modelPanelOpen, setModelPanelOpen] = useState(false);
   const [view, setView] = useState<AppView>(() => {
     const hash = window.location.hash.slice(1);
-    return hash === "dialogue" || hash === "explore" || hash === "concept" ? hash : "today";
+    return hash === "dialogue" || hash === "explore" || hash === "concept" || hash === "archive"
+      ? hash
+      : "today";
   });
   const [activeQuestion, setActiveQuestion] = useState(fallbackQuestion);
   const [modelProfile, setModelProfile] = useState<ModelProfile>(() => {
@@ -168,7 +171,11 @@ function App() {
   useEffect(() => {
     function syncViewFromHash() {
       const hash = window.location.hash.slice(1);
-      setView(hash === "dialogue" || hash === "explore" || hash === "concept" ? hash : "today");
+      setView(
+        hash === "dialogue" || hash === "explore" || hash === "concept" || hash === "archive"
+          ? hash
+          : "today",
+      );
     }
     window.addEventListener("hashchange", syncViewFromHash);
     return () => window.removeEventListener("hashchange", syncViewFromHash);
@@ -436,7 +443,7 @@ function App() {
             <a className={view === "dialogue" ? "active" : ""} href="#dialogue" aria-current={view === "dialogue" ? "page" : undefined}><MessageSquare size={17} /> 对话</a>
             <a className={view === "explore" ? "active" : ""} href="#explore" aria-current={view === "explore" ? "page" : undefined}><Compass size={17} /> 探索</a>
             <small className="nav-section-label archive-label">个人馆藏</small>
-            <span aria-disabled="true"><Archive size={17} /> 思想档案</span>
+            <a className={view === "archive" ? "active" : ""} href="#archive" aria-current={view === "archive" ? "page" : undefined}><Archive size={17} /> 思想档案</a>
             <span aria-disabled="true"><Users size={17} /> 好友</span>
             <span aria-disabled="true"><BookMarked size={17} /> 笔记工作台</span>
           </nav>
@@ -517,6 +524,7 @@ function App() {
           </div>
         </header>
         {view === "today" ? <TodayPage onStart={startDialogue} /> : null}
+        {view === "archive" ? <ThoughtArchivePage apiBaseUrl={apiBaseUrl} /> : null}
         {view === "dialogue" ? (
           <DialoguePage
             apiBaseUrl={apiBaseUrl}
@@ -533,6 +541,7 @@ function App() {
         <a className={view === "today" ? "active" : ""} href="#today"><BookMarked size={19} /><span>今日</span></a>
         <a className={view === "dialogue" ? "active" : ""} href="#dialogue"><MessageSquare size={19} /><span>对话</span></a>
         <a className={view === "explore" ? "active" : ""} href="#explore"><Compass size={19} /><span>探索</span></a>
+        <a className={view === "archive" ? "active" : ""} href="#archive"><Archive size={19} /><span>档案</span></a>
       </nav>
     </div>
     {renderModelPanel()}

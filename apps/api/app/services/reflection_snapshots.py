@@ -13,6 +13,8 @@ from app.agent.providers import ProviderRequest, select_dialogue_provider
 from app.schemas.dialogue import DialogueMode, ModelProfile
 from app.schemas.reflection_snapshots import (
     ReflectionSnapshotContent,
+    ReflectionSnapshotListItem,
+    ReflectionSnapshotListResponse,
     ReflectionSnapshotRequest,
     ReflectionSnapshotResponse,
     SnapshotStatus,
@@ -93,6 +95,42 @@ def append_snapshot_record(
     }
     with snapshot_path.open("a", encoding="utf-8") as file:
         file.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+def list_reflection_snapshots(
+    current_settings: PhilosophyOSSettings = settings,
+    *,
+    limit: int = 30,
+) -> ReflectionSnapshotListResponse:
+    """Return the most recent snapshot events from the local JSONL store."""
+
+    snapshot_path = Path(current_settings.thought_snapshots_path).expanduser()
+    if not snapshot_path.exists():
+        return ReflectionSnapshotListResponse(items=[])
+
+    items: list[ReflectionSnapshotListItem] = []
+    lines = snapshot_path.read_text(encoding="utf-8").splitlines()
+    for line in reversed(lines):
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+            response = ReflectionSnapshotResponse.model_validate(record["response"])
+            question = str(record.get("request", {}).get("question", "未命名问题"))
+            created_at = str(record.get("created_at", ""))
+            items.append(
+                ReflectionSnapshotListItem(
+                    created_at=created_at,
+                    question=question,
+                    snapshot=response,
+                )
+            )
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if len(items) >= limit:
+            break
+
+    return ReflectionSnapshotListResponse(items=items)
 
 
 def create_reflection_snapshot(

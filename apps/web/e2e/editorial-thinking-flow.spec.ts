@@ -89,7 +89,44 @@ async function mockObsidianDraft(page: Page) {
 }
 
 async function mockReflectionSnapshot(page: Page) {
-  await page.route("http://127.0.0.1:8000/api/v1/reflection-snapshots", async (route) => {
+  await page.route("http://127.0.0.1:8000/api/v1/reflection-snapshots**", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          items: [
+            {
+              created_at: "2026-07-28T09:00:00+00:00",
+              question: "诚实是否总是值得坚持？",
+              snapshot: {
+                snapshot_id: "snap_timeline_e2e",
+                status: "completed",
+                provider: "openai",
+                provider_model: "doubao-seed-2-0-lite-260428",
+                pending_reason: null,
+                content: {
+                  topic: "诚实与德性",
+                  title: "诚实是在伤害与责任之间保持清醒",
+                  user_position: "用户倾向于认为诚实仍值得坚持，但需要承认例外情境。",
+                  confidence: 0.76,
+                  emotional_tone: "更清醒",
+                  core_question: "什么时候善意隐瞒会变成逃避责任？",
+                  key_insights: ["诚实不是机械地说出全部事实。"],
+                  tensions: ["善意隐瞒与逃避责任之间的界限仍不清楚。"],
+                  related_philosophers: [],
+                  change_signal: { changed: true },
+                  next_question: "什么时候善意隐瞒会变成逃避责任？",
+                  tags: ["诚实", "德性"],
+                },
+              },
+            },
+          ],
+        }),
+      });
+      return;
+    }
+
     await route.fulfill({
       status: 201,
       contentType: "application/json",
@@ -354,6 +391,22 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
 
   await page.locator(".reflection-saved .primary-button").click();
   await expect(page.locator(".today-page")).toBeVisible();
+  expect(consoleProblems.warnings).toEqual([]);
+  expect(consoleProblems.errors).toEqual([]);
+});
+
+test("thought archive page lists stored reflection snapshots", async ({ page }) => {
+  const consoleProblems = collectConsoleProblems(page);
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/#today");
+  await page.getByRole("link", { name: /思想档案/ }).click();
+
+  await expect(page.locator(".thought-archive-page")).toBeVisible();
+  await expect(page.locator(".archive-hero h1")).toContainText("思想时间线");
+  await expect(page.locator(".timeline-card")).toContainText("诚实是在伤害与责任之间保持清醒");
+  await expect(page.locator(".timeline-card")).toContainText("什么时候善意隐瞒会变成逃避责任");
+
   expect(consoleProblems.warnings).toEqual([]);
   expect(consoleProblems.errors).toEqual([]);
 });

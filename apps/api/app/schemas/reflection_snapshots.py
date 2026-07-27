@@ -72,3 +72,17 @@ class ReflectionSnapshotResponse(BaseModel):
     provider: str = "none"
     provider_model: str | None = None
     pending_reason: str | None = None
+
+
+class ReflectionSnapshotListItem(BaseModel):
+    """One stored snapshot event for timeline display."""
+
+    created_at: str
+    question: str
+    snapshot: ReflectionSnapshotResponse
+
+
+class ReflectionSnapshotListResponse(BaseModel):
+    """Recent stored snapshot events."""
+
+    items: list[ReflectionSnapshotListItem]

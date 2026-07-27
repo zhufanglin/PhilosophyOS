@@ -2,16 +2,31 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 
 from app.schemas.reflection_snapshots import (
+    ReflectionSnapshotListResponse,
     ReflectionSnapshotRequest,
     ReflectionSnapshotResponse,
 )
-from app.services.reflection_snapshots import create_reflection_snapshot
+from app.services.reflection_snapshots import create_reflection_snapshot, list_reflection_snapshots
 from app.settings import settings
 
 router = APIRouter(prefix="/api/v1", tags=["reflection-snapshots"])
+
+
+@router.get(
+    "/reflection-snapshots",
+    response_model=ReflectionSnapshotListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List recent reflection snapshots",
+)
+async def list_reflection_snapshots_endpoint(
+    limit: int = Query(default=30, ge=1, le=100),
+) -> ReflectionSnapshotListResponse:
+    """Return recent local thought snapshot records for timeline display."""
+
+    return list_reflection_snapshots(settings, limit=limit)
 
 
 @router.post(
