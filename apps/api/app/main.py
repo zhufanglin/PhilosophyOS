@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from app.routes.dialogue import router as dialogue_router
 from app.routes.knowledge import router as knowledge_router
 
 
@@ -29,6 +30,7 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
+app.include_router(dialogue_router)
 app.include_router(knowledge_router)
 
 
