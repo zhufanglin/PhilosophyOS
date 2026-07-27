@@ -32,6 +32,9 @@ async function mockDialogueTurn(page: Page) {
         should_ask_followup: true,
         evidence_status: null,
         citation_ids: [],
+        provider: "openai",
+        provider_model: "gpt-5.6",
+        provider_fallback_reason: null,
       }),
     });
   });
@@ -63,9 +66,22 @@ async function mockDialogueTurnWithFirstFailure(page: Page) {
         should_ask_followup: true,
         evidence_status: null,
         citation_ids: [],
+        provider: "openai",
+        provider_model: "gpt-5.6",
+        provider_fallback_reason: null,
       }),
     });
   });
+}
+
+function collectConsoleProblems(page: Page) {
+  const warnings: string[] = [];
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "warning") warnings.push(message.text());
+    if (message.type() === "error") errors.push(message.text());
+  });
+  return { warnings, errors };
 }
 
 async function expectNoHorizontalOverflow(page: Page) {
@@ -104,12 +120,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("editorial thinking flow works from today to saved reflection", async ({ page }) => {
-  const warnings: string[] = [];
-  const errors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "warning") warnings.push(message.text());
-    if (message.type() === "error") errors.push(message.text());
-  });
+  const consoleProblems = collectConsoleProblems(page);
 
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/#today");
@@ -179,17 +190,12 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
 
   await page.locator(".reflection-saved .primary-button").click();
   await expect(page.locator(".today-page")).toBeVisible();
-  expect(warnings).toEqual([]);
-  expect(errors).toEqual([]);
+  expect(consoleProblems.warnings).toEqual([]);
+  expect(consoleProblems.errors).toEqual([]);
 });
 
 test("dialogue API failure can be retried without duplicating the user turn", async ({ page }) => {
-  const warnings: string[] = [];
-  const errors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "warning") warnings.push(message.text());
-    if (message.type() === "error") errors.push(message.text());
-  });
+  const consoleProblems = collectConsoleProblems(page);
 
   await mockDialogueTurnWithFirstFailure(page);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -210,12 +216,13 @@ test("dialogue API failure can be retried without duplicating the user turn", as
   await expect(page.locator(".message.assistant")).toHaveCount(2);
   await expect(page.locator(".message.assistant").last()).toContainText("重试后的 API 回答");
   await expectMobileNavClearance(page, ".dialogue-composer");
-  expect(warnings).toEqual([]);
-  expect(errors).toEqual([]);
+  expect(consoleProblems.warnings).toEqual([]);
+  expect(consoleProblems.errors).toEqual([]);
 });
 
 for (const viewport of viewports) {
   test(`viewport ${viewport.name} has no overflow or bottom obstruction`, async ({ page }) => {
+    const consoleProblems = collectConsoleProblems(page);
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto("/#today");
     await expect(page.locator(".today-page")).toBeVisible();
@@ -233,5 +240,7 @@ for (const viewport of viewports) {
     await expectNoHorizontalOverflow(page);
     await expectMobileNavClearance(page, ".reflection-actions");
     await page.screenshot({ path: `${screenshotDir}/regression-reflection-${viewport.name}.png`, fullPage: true });
+    expect(consoleProblems.warnings).toEqual([]);
+    expect(consoleProblems.errors).toEqual([]);
   });
 }

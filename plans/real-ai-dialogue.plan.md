@@ -153,7 +153,7 @@ sequenceDiagram
 
 当前项目已有脚本化 UI 流程的 e2e，但没有模型 provider setup docs，也没有后端 dialogue route checks。完成后，route、前端 API 接入、provider fallback 和本地配置路径都会被自动测试与文档覆盖。
 
-### 4.1 [ ] 扩展 API-backed dialogue 回归测试
+### 4.1 [x] 扩展 API-backed dialogue 回归测试 *(completed 2026-07-27)*
 - **Files:** `apps/web/e2e/editorial-thinking-flow.spec.ts`, `apps/web/e2e/accessibility.spec.ts`, `apps/api/tests/routes/test_dialogue.py`
 - **What:** 浏览器测试 mock 新 dialogue endpoint 的成功和失败模式，断言无 console errors，并保留 1440/1024/390/320 布局门槛。
 - **Acceptance:** `pnpm build`、`pnpm e2e`、`pytest` 全部通过。

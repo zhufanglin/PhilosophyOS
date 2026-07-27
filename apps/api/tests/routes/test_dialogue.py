@@ -45,6 +45,7 @@ async def test_dialogue_turn_endpoint_returns_selected_modes(
     assert payload["should_ask_followup"] is expects_question
     assert payload["provider"] == "deterministic"
     assert payload["provider_model"] is None
+    assert payload["provider_fallback_reason"] is None
 
 
 @pytest.mark.anyio
@@ -64,6 +65,16 @@ def test_openapi_exposes_versioned_dialogue_resource() -> None:
     """The API contract includes the versioned dialogue turn resource."""
 
     assert "/api/v1/dialogue-turns" in app.openapi()["paths"]
+
+
+def test_openapi_dialogue_response_exposes_provider_metadata() -> None:
+    """The public response schema documents provider fallback metadata."""
+
+    properties = app.openapi()["components"]["schemas"]["DialogueResponse"]["properties"]
+
+    assert "provider" in properties
+    assert "provider_model" in properties
+    assert "provider_fallback_reason" in properties
 
 
 class MockOpenAIProvider:
