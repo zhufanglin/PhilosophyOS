@@ -1,4 +1,4 @@
-import { Archive, BookMarked, Compass, MessageSquare, UserRound, Users } from "lucide-react";
+import { Archive, BookMarked, Compass, MessageSquare, Settings2, UserRound, Users, X } from "lucide-react";
 import { StrictMode, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -51,6 +51,8 @@ type ModelProfileTestState = {
   message: string;
 };
 
+type ModelProfileTestStates = Partial<Record<ModelProfile, ModelProfileTestState>>;
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 type AppView = "today" | "dialogue" | "explore" | "concept";
@@ -71,7 +73,8 @@ function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modelProfiles, setModelProfiles] = useState<ModelProfileStatus[]>([]);
-  const [modelProfileTest, setModelProfileTest] = useState<ModelProfileTestState | null>(null);
+  const [modelProfileTests, setModelProfileTests] = useState<ModelProfileTestStates>({});
+  const [modelPanelOpen, setModelPanelOpen] = useState(false);
   const [view, setView] = useState<AppView>(() => {
     const hash = window.location.hash.slice(1);
     return hash === "dialogue" || hash === "explore" || hash === "concept" ? hash : "today";
@@ -178,43 +181,72 @@ function App() {
 
   function changeModelProfile(nextProfile: ModelProfile) {
     setModelProfile(nextProfile);
-    setModelProfileTest(null);
     window.localStorage.setItem("philosophyos:model-profile", nextProfile);
   }
 
-  async function testActiveModelProfile() {
-    setModelProfileTest({
-      profile: modelProfile,
-      status: "testing",
-      message: `${activeModelStatus?.label ?? "当前模型"} 连接测试中`,
-    });
+  async function testModelProfileConnection(profile: ModelProfile) {
+    const targetStatus = modelProfiles.find((item) => item.profile === profile);
+    setModelProfileTests((current) => ({
+      ...current,
+      [profile]: {
+        profile,
+        status: "testing",
+        message: `${targetStatus?.label ?? "当前模型"} 连接测试中`,
+      },
+    }));
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/v1/model-profiles/${modelProfile}/test-connection`, {
+      const response = await fetch(`${apiBaseUrl}/api/v1/model-profiles/${profile}/test-connection`, {
         method: "POST",
       });
       if (!response.ok) {
         throw new Error(`模型测试返回 ${response.status}`);
       }
       const payload = (await response.json()) as ModelProfileConnectionTestResponse;
-      setModelProfileTest({
-        profile: payload.profile,
-        status: payload.ok ? "success" : "error",
-        message: payload.message,
-      });
+      setModelProfileTests((current) => ({
+        ...current,
+        [payload.profile]: {
+          profile: payload.profile,
+          status: payload.ok ? "success" : "error",
+          message: payload.message,
+        },
+      }));
     } catch (requestError) {
-      setModelProfileTest({
-        profile: modelProfile,
-        status: "error",
-        message: requestError instanceof Error ? requestError.message : "模型连接测试失败",
-      });
+      setModelProfileTests((current) => ({
+        ...current,
+        [profile]: {
+          profile,
+          status: "error",
+          message: requestError instanceof Error ? requestError.message : "模型连接测试失败",
+        },
+      }));
     }
   }
 
+  useEffect(() => {
+    if (!modelPanelOpen) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setModelPanelOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [modelPanelOpen]);
+
   const activeModelStatus = modelProfiles.find((profile) => profile.profile === modelProfile);
+  const activeModelTest = modelProfileTests[modelProfile];
   const modelStatusCopy = activeModelStatus
     ? `${activeModelStatus.configured ? "已配置" : "未配置"} · ${activeModelStatus.model}`
     : "等待模型状态";
+  const profileOrder: ModelProfile[] = ["free", "gpt", "deepseek"];
+  const orderedModelProfiles = profileOrder
+    .map((profile) => modelProfiles.find((item) => item.profile === profile))
+    .filter((profile): profile is ModelProfileStatus => Boolean(profile));
 
   function startDialogue(question: DailyQuestionView) {
     setActiveQuestion(question);
@@ -267,6 +299,106 @@ function App() {
         "--thought-target-y": `${thoughtTransition.targetY}px`,
       } as CSSProperties)
     : undefined;
+
+  function renderModelPanel() {
+    if (!modelPanelOpen) {
+      return null;
+    }
+
+    return (
+      <div className="model-panel-layer" role="presentation" onMouseDown={() => setModelPanelOpen(false)}>
+        <section
+          className="model-settings-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="model-settings-title"
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <header>
+            <div>
+              <p className="section-kicker">MODEL ROUTING</p>
+              <h2 id="model-settings-title">模型设置</h2>
+              <p>选择本轮对话使用的模型，并在本地后端安全测试连接。API Key 只保存在后端环境变量中。</p>
+            </div>
+            <button className="icon-button" type="button" onClick={() => setModelPanelOpen(false)} aria-label="关闭模型设置">
+              <X size={18} />
+            </button>
+          </header>
+
+          <div className="model-profile-grid">
+            {orderedModelProfiles.map((profile) => {
+              const testState = modelProfileTests[profile.profile];
+              const selected = modelProfile === profile.profile;
+              return (
+                <article className={`model-profile-card${selected ? " selected" : ""}`} key={profile.profile}>
+                  <div className="model-card-heading">
+                    <div>
+                      <span className={profile.configured ? "profile-ready" : "profile-missing"}>
+                        {profile.configured ? "已配置" : "未配置"}
+                      </span>
+                      <h3>{profile.label}</h3>
+                    </div>
+                    {selected ? <strong>当前使用</strong> : null}
+                  </div>
+
+                  <dl>
+                    <div>
+                      <dt>模型</dt>
+                      <dd>{profile.model}</dd>
+                    </div>
+                    <div>
+                      <dt>服务</dt>
+                      <dd>{profile.base_url_host ?? "默认服务"}</dd>
+                    </div>
+                    <div>
+                      <dt>接口</dt>
+                      <dd>{profile.api_style === "responses" ? "Responses" : "Chat Completions"}</dd>
+                    </div>
+                  </dl>
+
+                  {testState ? (
+                    <p className={`model-card-result ${testState.status}`} role="status" aria-live="polite">
+                      {testState.message}
+                    </p>
+                  ) : (
+                    <p className="model-card-hint">
+                      {profile.configured ? "可测试该模型是否能正常回答。" : "请先在后端 .env 中填写这一组 API Key。"}
+                    </p>
+                  )}
+
+                  <div className="model-card-actions">
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => changeModelProfile(profile.profile)}
+                      disabled={selected}
+                    >
+                      {selected ? "已选择" : "切换到此模型"}
+                    </button>
+                    <button
+                      className="primary-button"
+                      type="button"
+                      onClick={() => void testModelProfileConnection(profile.profile)}
+                      disabled={!health || testState?.status === "testing"}
+                      aria-label={`测试${profile.label}连接`}
+                    >
+                      {testState?.status === "testing" ? "测试中" : "测试连接"}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <footer>
+            <span>配置文件</span>
+            <strong>apps/api/.env</strong>
+            <p>前端只选择模型档位，不接触、不存储任何 API Key。</p>
+          </footer>
+        </section>
+      </div>
+    );
+  }
 
   if (view === "concept") {
     return (
@@ -365,20 +497,20 @@ function App() {
               <strong>{modelStatusCopy}</strong>
               <button
                 type="button"
-                onClick={testActiveModelProfile}
-                disabled={!health || modelProfileTest?.status === "testing"}
-                aria-label={`测试${activeModelStatus?.label ?? "当前模型"}连接`}
+                onClick={() => setModelPanelOpen(true)}
+                aria-expanded={modelPanelOpen}
+                aria-label="打开模型设置"
               >
-                {modelProfileTest?.status === "testing" ? "测试中" : "测试"}
+                <Settings2 size={13} /> 设置
               </button>
             </div>
-            {modelProfileTest ? (
+            {activeModelTest ? (
               <div
-                className={`model-test-result ${modelProfileTest.status}`}
+                className={`model-test-result ${activeModelTest.status}`}
                 role="status"
                 aria-live="polite"
               >
-                {modelProfileTest.message}
+                {activeModelTest.message}
               </div>
             ) : null}
             <button className="profile-button" type="button" aria-label="个人账户" title="个人账户"><UserRound size={18} /></button>
@@ -402,6 +534,7 @@ function App() {
         <a className={view === "explore" ? "active" : ""} href="#explore"><Compass size={19} /><span>探索</span></a>
       </nav>
     </div>
+    {renderModelPanel()}
     {thoughtTransition ? <ThoughtTransition transition={thoughtTransition} /> : null}
     </>
   );

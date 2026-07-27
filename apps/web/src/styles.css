@@ -348,6 +348,10 @@ textarea:focus-visible {
 .model-profile-status button {
   grid-row: 1 / span 2;
   grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   min-width: 44px;
   height: 26px;
   padding: 0 9px;
@@ -399,6 +403,238 @@ textarea:focus-visible {
   border-color: rgb(122 63 67 / 20%);
   color: var(--burgundy);
   background: rgb(248 239 226 / 80%);
+}
+
+.model-panel-layer {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: grid;
+  place-items: start end;
+  padding: 72px clamp(18px, 4vw, 48px) 24px;
+  background: rgb(31 35 31 / 18%);
+  backdrop-filter: blur(3px);
+  animation: model-layer-in 180ms ease-out both;
+}
+
+.model-settings-panel {
+  width: min(840px, 100%);
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  padding: 26px;
+  border: 1px solid rgb(74 83 75 / 18%);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgb(255 253 248 / 96%), rgb(240 237 228 / 96%)),
+    var(--paper-raised);
+  box-shadow: 0 28px 80px rgb(28 35 29 / 18%);
+  transform-origin: top right;
+  animation: model-panel-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.model-settings-panel > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.model-settings-panel h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.7rem;
+  font-weight: 560;
+}
+
+.model-settings-panel header p:last-child {
+  max-width: 620px;
+  margin: 10px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.model-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.model-profile-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+  padding: 17px;
+  border: 1px solid rgb(83 66 41 / 12%);
+  border-radius: 12px;
+  background: rgb(255 253 248 / 66%);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.model-profile-card:hover {
+  border-color: rgb(40 86 64 / 22%);
+  box-shadow: 0 16px 38px rgb(46 54 45 / 8%);
+  transform: translateY(-1px);
+}
+
+.model-profile-card.selected {
+  border-color: rgb(40 86 64 / 34%);
+  background: rgb(246 249 243 / 86%);
+  box-shadow: inset 3px 0 var(--forest);
+}
+
+.model-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.model-card-heading h3 {
+  margin: 8px 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.model-card-heading > strong {
+  padding-top: 2px;
+  color: var(--forest);
+  font-size: 0.66rem;
+  font-weight: 780;
+  white-space: nowrap;
+}
+
+.profile-ready,
+.profile-missing {
+  color: var(--forest);
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.profile-missing {
+  color: var(--burgundy);
+}
+
+.model-profile-card dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.model-profile-card dl > div {
+  display: grid;
+  gap: 3px;
+  padding-top: 10px;
+  border-top: 1px solid rgb(93 73 45 / 10%);
+}
+
+.model-profile-card dt,
+.model-profile-card dd {
+  margin: 0;
+}
+
+.model-profile-card dt {
+  color: #918778;
+  font-size: 0.66rem;
+  font-weight: 780;
+}
+
+.model-profile-card dd {
+  overflow-wrap: anywhere;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.model-card-hint,
+.model-card-result {
+  min-height: 42px;
+  margin: auto 0 0;
+  padding: 11px 12px;
+  border-radius: 10px;
+  color: var(--ink-muted);
+  background: rgb(238 232 218 / 58%);
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
+.model-card-result.success {
+  color: var(--forest);
+  background: rgb(223 233 225 / 72%);
+}
+
+.model-card-result.error {
+  color: var(--burgundy);
+  background: rgb(248 239 226 / 86%);
+}
+
+.model-card-result.testing {
+  color: #84663e;
+}
+
+.model-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.model-card-actions .secondary-button,
+.model-card-actions .primary-button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.72rem;
+}
+
+.model-settings-panel > footer {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+}
+
+.model-settings-panel > footer span {
+  color: var(--burgundy);
+  font-weight: 800;
+}
+
+.model-settings-panel > footer strong {
+  color: var(--ink-soft);
+  font-weight: 750;
+}
+
+.model-settings-panel > footer p {
+  margin: 0;
+  text-align: right;
+}
+
+@keyframes model-layer-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes model-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .status-dot {
@@ -2494,6 +2730,28 @@ h1 {
     display: none;
   }
 
+  .model-panel-layer {
+    place-items: start center;
+    padding: 76px 18px 86px;
+  }
+
+  .model-settings-panel {
+    max-height: calc(100vh - 120px);
+    padding: 22px;
+  }
+
+  .model-profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .model-settings-panel > footer {
+    grid-template-columns: 1fr;
+  }
+
+  .model-settings-panel > footer p {
+    text-align: left;
+  }
+
   .answer-grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2532,6 +2790,41 @@ h1 {
 
   .model-profile-status {
     display: none;
+  }
+
+  .model-panel-layer {
+    align-items: end;
+    padding: 18px 12px calc(72px + env(safe-area-inset-bottom));
+  }
+
+  .model-settings-panel {
+    width: 100%;
+    max-height: min(78vh, 680px);
+    padding: 18px;
+    border-radius: 18px 18px 12px 12px;
+    transform-origin: bottom center;
+  }
+
+  .model-settings-panel > header {
+    gap: 12px;
+  }
+
+  .model-settings-panel h2 {
+    font-size: 1.35rem;
+  }
+
+  .model-settings-panel header p:last-child {
+    font-size: 0.76rem;
+  }
+
+  .model-card-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .model-card-actions .secondary-button,
+  .model-card-actions .primary-button {
+    width: 100%;
   }
 
   .explore-page {

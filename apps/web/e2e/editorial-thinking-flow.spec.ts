@@ -208,8 +208,13 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await expect(page.getByRole("button", { name: "免费", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "DeepSeek", exact: true }).click();
   await expect(page.getByRole("button", { name: "DeepSeek", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "打开模型设置" }).click();
+  await expect(page.getByRole("dialog", { name: "模型设置" })).toBeVisible();
+  await expect(page.locator(".model-profile-card")).toHaveCount(3);
   await page.getByRole("button", { name: "测试DeepSeek连接" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "连接成功" })).toBeVisible();
+  await expect(page.locator(".model-profile-card").filter({ hasText: "DeepSeek" }).getByRole("status")).toContainText("连接成功");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "模型设置" })).toBeHidden();
 
   const modeButtons = page.locator(".mode-control button");
   await expect(modeButtons).toHaveCount(5);
