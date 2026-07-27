@@ -77,7 +77,38 @@ $env:PHILOSOPHYOS_AI_PROVIDER='auto'
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-### 4. 对话 API smoke test
+### 4. 使用本地 `.env` 和一键启动脚本
+
+为了避免每次手动输入环境变量，可以把本机密钥放在 `apps/api/.env`。这个文件已被 `.gitignore` 忽略，不应提交到 GitHub。
+
+```env
+OPENAI_API_KEY=<填入你的新中转站 key>
+OPENAI_BASE_URL=https://api.synapai.top/v1
+OPENAI_MODEL=gpt-5.6
+PHILOSOPHYOS_AI_PROVIDER=auto
+```
+
+配置好后，在项目根目录运行：
+
+```powershell
+cd C:\Users\30290\Desktop\PhilosophyOS
+.\scripts\start-dev.ps1
+```
+
+如果 PowerShell 拦截 `.ps1` 脚本，可以改用：
+
+```powershell
+.\scripts\start-dev.cmd
+```
+
+脚本会打开两个 PowerShell 窗口：
+
+- 后端：`http://127.0.0.1:8001`
+- 前端：`http://127.0.0.1:5174/#today`
+
+这两个窗口需要保持打开；关闭窗口会停止对应服务。
+
+### 5. 对话 API smoke test
 
 ```powershell
 $body = @{
@@ -89,7 +120,7 @@ $body = @{
 } | ConvertTo-Json
 
 Invoke-WebRequest -UseBasicParsing `
-  -Uri 'http://127.0.0.1:8000/api/v1/dialogue-turns' `
+  -Uri 'http://127.0.0.1:8001/api/v1/dialogue-turns' `
   -Method Post `
   -ContentType 'application/json' `
   -Body $body
