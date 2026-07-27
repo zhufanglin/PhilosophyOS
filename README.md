@@ -66,6 +66,17 @@ $env:PHILOSOPHYOS_AI_PROVIDER='auto'
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
+如果使用 OpenAI-compatible 中转站，额外设置 `OPENAI_BASE_URL`。不设置时会使用官方 OpenAI 默认地址。
+
+```powershell
+cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
+$env:OPENAI_API_KEY='<中转站提供的 key>'
+$env:OPENAI_BASE_URL='https://你的中转站地址/v1'
+$env:OPENAI_MODEL='<中转站支持的模型名>'
+$env:PHILOSOPHYOS_AI_PROVIDER='auto'
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```
+
 ### 4. 对话 API smoke test
 
 ```powershell

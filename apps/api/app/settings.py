@@ -18,16 +18,26 @@ class PhilosophyOSSettings(BaseModel):
 
     openai_api_key: SecretStr | None = None
     openai_model: str = Field(default="gpt-5.6", min_length=1)
+    openai_base_url: str | None = None
     ai_provider: AIProviderName = "auto"
 
-    @field_validator("openai_api_key", mode="before")
+    @field_validator("openai_api_key", "openai_base_url", mode="before")
     @classmethod
-    def blank_key_becomes_none(cls, value: object) -> object:
-        """Treat empty environment variables as missing secrets."""
+    def blank_optional_values_become_none(cls, value: object) -> object:
+        """Treat empty optional environment variables as missing values."""
 
         if isinstance(value, str) and not value.strip():
             return None
         return value
+
+    @field_validator("openai_base_url")
+    @classmethod
+    def strip_base_url(cls, value: str | None) -> str | None:
+        """Normalize an optional OpenAI-compatible base URL."""
+
+        if value is None:
+            return None
+        return value.strip()
 
     @field_validator("openai_model")
     @classmethod
@@ -43,6 +53,7 @@ class PhilosophyOSSettings(BaseModel):
         return cls(
             openai_api_key=os.getenv("OPENAI_API_KEY"),
             openai_model=os.getenv("OPENAI_MODEL", "gpt-5.6"),
+            openai_base_url=os.getenv("OPENAI_BASE_URL"),
             ai_provider=os.getenv("PHILOSOPHYOS_AI_PROVIDER", "auto"),
         )
 

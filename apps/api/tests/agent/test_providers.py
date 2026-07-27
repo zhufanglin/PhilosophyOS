@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import pytest
 from pydantic import SecretStr
 
 from app.agent.providers import (
@@ -108,3 +109,35 @@ def test_mock_openai_response_maps_to_assistant_text() -> None:
     assert response.provider == "openai"
     assert response.model == "gpt-5.6"
     assert response.assistant_message == "mock OpenAI assistant text"
+
+
+def test_openai_base_url_is_passed_to_client_factory(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A configured compatible relay URL is passed only through the backend client."""
+
+    client = MockOpenAIClient()
+    captured: dict[str, object] = {}
+
+    def fake_create_openai_client(
+        api_key: SecretStr,
+        base_url: str | None = None,
+    ) -> MockOpenAIClient:
+        captured["api_key"] = api_key.get_secret_value()
+        captured["base_url"] = base_url
+        return client
+
+    monkeypatch.setattr("app.agent.providers.create_openai_client", fake_create_openai_client)
+
+    settings = PhilosophyOSSettings(
+        openai_api_key=SecretStr("test-relay-key"),
+        openai_base_url="https://relay.example.com/v1",
+        ai_provider="auto",
+    )
+
+    provider = select_dialogue_provider(settings)
+    response = provider.generate(provider_request())
+
+    assert captured == {
+        "api_key": "test-relay-key",
+        "base_url": "https://relay.example.com/v1",
+    }
+    assert response.provider == "openai"

@@ -97,10 +97,13 @@ class OpenAIDialogueProvider:
         )
 
 
-def create_openai_client(api_key: SecretStr) -> OpenAIClient:
-    """Create the official OpenAI client only when a backend key is available."""
+def create_openai_client(api_key: SecretStr, base_url: str | None = None) -> OpenAIClient:
+    """Create the OpenAI client only when a backend key is available."""
 
     from openai import OpenAI
+
+    if base_url is not None:
+        return cast(OpenAIClient, OpenAI(api_key=api_key.get_secret_value(), base_url=base_url))
 
     return cast(OpenAIClient, OpenAI(api_key=api_key.get_secret_value()))
 
@@ -112,6 +115,6 @@ def select_dialogue_provider(settings: PhilosophyOSSettings) -> DialogueProvider
         return DeterministicDialogueProvider()
 
     return OpenAIDialogueProvider(
-        client=create_openai_client(settings.openai_api_key),
+        client=create_openai_client(settings.openai_api_key, settings.openai_base_url),
         model=settings.openai_model,
     )
