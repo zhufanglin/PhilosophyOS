@@ -13,7 +13,7 @@ from app.agent.providers import (
     ProviderRequest,
     select_dialogue_provider,
 )
-from app.schemas.dialogue import DialogueMode, DialogueRequest, DialogueResponse
+from app.schemas.dialogue import DialogueMode, DialogueRequest, DialogueResponse, ModelProfile
 from app.services.answer import AnswerResult, knowledge_answer_service
 from app.settings import settings
 
@@ -44,7 +44,7 @@ class DialogueOrchestrator:
         dialogue_provider: DialogueProvider | None = None,
     ) -> None:
         self._explanation_provider = explanation_provider or knowledge_answer_service
-        self._dialogue_provider = dialogue_provider or select_dialogue_provider(settings)
+        self._dialogue_provider = dialogue_provider
         self._deterministic_provider = DeterministicDialogueProvider()
 
     def respond(self, request: DialogueRequest) -> DialogueResponse:
@@ -62,9 +62,13 @@ class DialogueOrchestrator:
             prompt=build_dialogue_prompt(request=request, mode=decision.mode).render(),
             deterministic_message=plan.message,
         )
+        model_profile = request.model_profile or ModelProfile(settings.model_profile)
+        dialogue_provider = self._dialogue_provider or select_dialogue_provider(
+            settings.model_copy(update={"model_profile": model_profile.value})
+        )
         fallback_reason: str | None = None
         try:
-            provider_response = self._dialogue_provider.generate(provider_request)
+            provider_response = dialogue_provider.generate(provider_request)
         except Exception as error:
             fallback_reason = f"{type(error).__name__}: {error}"
             provider_response = self._deterministic_provider.generate(provider_request)
@@ -81,6 +85,7 @@ class DialogueOrchestrator:
             citation_ids=plan.citation_ids,
             provider=provider_response.provider,
             provider_model=provider_response.model,
+            model_profile=model_profile,
             provider_fallback_reason=fallback_reason,
         )
 

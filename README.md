@@ -78,7 +78,7 @@ $env:PHILOSOPHYOS_AI_PROVIDER='auto'
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-如果希望同时保留 GPT 和 DeepSeek 两套 API，推荐使用 profile 配置。`PHILOSOPHYOS_MODEL_PROFILE=gpt` 使用 GPT；`PHILOSOPHYOS_MODEL_PROFILE=deepseek` 使用 DeepSeek。
+如果希望同时保留 GPT 和 DeepSeek 两套 API，推荐使用 profile 配置。启动后可以在前端顶部的“模型”切换器选择 GPT 或 DeepSeek；`.env` 只负责保存两套后端密钥和默认 profile。
 
 ```env
 PHILOSOPHYOS_MODEL_PROFILE=gpt
@@ -96,7 +96,7 @@ DEEPSEEK_API_STYLE=chat_completions
 PHILOSOPHYOS_AI_PROVIDER=auto
 ```
 
-DeepSeek 官方 API 使用 OpenAI-compatible 的 Chat Completions 风格。只切换到 DeepSeek 时，将 `apps/api/.env` 改成：
+DeepSeek 官方 API 使用 OpenAI-compatible 的 Chat Completions 风格。只想默认启动 DeepSeek 时，将 `apps/api/.env` 改成：
 
 ```env
 PHILOSOPHYOS_MODEL_PROFILE=deepseek

@@ -45,6 +45,7 @@ async def test_dialogue_turn_endpoint_returns_selected_modes(
     assert payload["should_ask_followup"] is expects_question
     assert payload["provider"] == "deterministic"
     assert payload["provider_model"] is None
+    assert payload["model_profile"] == "gpt"
     assert payload["provider_fallback_reason"] is None
 
 
@@ -74,7 +75,30 @@ def test_openapi_dialogue_response_exposes_provider_metadata() -> None:
 
     assert "provider" in properties
     assert "provider_model" in properties
+    assert "model_profile" in properties
     assert "provider_fallback_reason" in properties
+
+
+@pytest.mark.anyio
+async def test_dialogue_turn_accepts_frontend_model_profile_choice() -> None:
+    """The browser can choose a backend model profile without receiving secrets."""
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/dialogue-turns",
+            json={
+                "user_message": "我想用 DeepSeek 检查这个理由。",
+                "current_mode": "socratic",
+                "requested_mode": "socratic",
+                "model_profile": "deepseek",
+                "topic": "诚实与德性",
+                "turn_number": 1,
+            },
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["model_profile"] == "deepseek"
 
 
 class MockOpenAIProvider:

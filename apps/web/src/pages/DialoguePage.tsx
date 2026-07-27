@@ -18,10 +18,12 @@ import { DialogueSource, SourceDrawer } from "../components/SourceDrawer";
 import { DailyQuestionView } from "./TodayPage";
 
 type DialogueMode = "socratic" | "explain" | "compare" | "reflect" | "organize";
+export type ModelProfile = "gpt" | "deepseek";
 
 type DialoguePageProps = {
   apiBaseUrl: string;
   question: DailyQuestionView;
+  modelProfile: ModelProfile;
   onBack: () => void;
 };
 
@@ -43,6 +45,8 @@ type ProgressFlight = {
 type DialogueTurnResponse = {
   mode: DialogueMode;
   assistant_message: string;
+  model_profile: ModelProfile;
+  provider_model: string | null;
 };
 
 type PendingDialogueTurn = {
@@ -88,7 +92,7 @@ function isDialogueTurnResponse(value: unknown): value is DialogueTurnResponse {
   );
 }
 
-export function DialoguePage({ apiBaseUrl, question, onBack }: DialoguePageProps) {
+export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: DialoguePageProps) {
   const [mode, setMode] = useState<DialogueMode>("socratic");
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -157,6 +161,7 @@ export function DialoguePage({ apiBaseUrl, question, onBack }: DialoguePageProps
         user_message: turn.answer,
         current_mode: turn.mode,
         requested_mode: turn.mode,
+        model_profile: modelProfile,
         topic: question.prompt,
         turn_number: turn.turnNumber,
       }),

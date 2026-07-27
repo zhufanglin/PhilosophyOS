@@ -18,6 +18,13 @@ class DialogueMode(StrEnum):
     ORGANIZE = "organize"
 
 
+class ModelProfile(StrEnum):
+    """User-selectable backend model profiles."""
+
+    GPT = "gpt"
+    DEEPSEEK = "deepseek"
+
+
 class DialogueRequest(BaseModel):
     """One user turn plus explicit orchestration controls."""
 
@@ -26,6 +33,7 @@ class DialogueRequest(BaseModel):
     user_message: str = Field(min_length=1, max_length=4000)
     current_mode: DialogueMode = DialogueMode.SOCRATIC
     requested_mode: DialogueMode | None = None
+    model_profile: ModelProfile | None = None
     topic: str | None = Field(default=None, max_length=300)
     turn_number: int = Field(default=1, ge=1)
 
@@ -51,4 +59,5 @@ class DialogueResponse(BaseModel):
     citation_ids: tuple[str, ...] = ()
     provider: Literal["deterministic", "openai"] = "deterministic"
     provider_model: str | None = None
+    model_profile: ModelProfile = ModelProfile.GPT
     provider_fallback_reason: str | None = None

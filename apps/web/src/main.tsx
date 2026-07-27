@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { ThoughtTransition, type ThoughtTransitionState } from "./components/ThoughtTransition";
 import { ExplorePage } from "./pages/ExplorePage";
 import { ConceptPage, type ConceptTransitionRequest } from "./pages/ConceptPage";
-import { DialoguePage } from "./pages/DialoguePage";
+import { DialoguePage, type ModelProfile } from "./pages/DialoguePage";
 import { DailyQuestionView, TodayPage } from "./pages/TodayPage";
 import socratesPortrait from "./assets/philosophers/socrates-louvre.jpg";
 import "./styles.css";
@@ -40,6 +40,10 @@ function App() {
     return hash === "dialogue" || hash === "explore" || hash === "concept" ? hash : "today";
   });
   const [activeQuestion, setActiveQuestion] = useState(fallbackQuestion);
+  const [modelProfile, setModelProfile] = useState<ModelProfile>(() => {
+    const saved = window.localStorage.getItem("philosophyos:model-profile");
+    return saved === "deepseek" ? "deepseek" : "gpt";
+  });
   const [thoughtTransition, setThoughtTransition] = useState<ThoughtTransitionState | null>(null);
   const transitionTimers = useRef<number[]>([]);
 
@@ -83,6 +87,11 @@ function App() {
   function navigate(nextView: AppView) {
     window.location.hash = nextView;
     setView(nextView);
+  }
+
+  function changeModelProfile(nextProfile: ModelProfile) {
+    setModelProfile(nextProfile);
+    window.localStorage.setItem("philosophyos:model-profile", nextProfile);
   }
 
   function startDialogue(question: DailyQuestionView) {
@@ -199,6 +208,25 @@ function App() {
               <strong>{health ? "知识服务在线" : error ? "知识服务离线" : "正在连接"}</strong>
               <span className="api-version">{health ? `v${health.version}` : error ?? apiBaseUrl}</span>
             </div>
+            <div className="model-switcher" aria-label="选择大模型">
+              <span>模型</span>
+              <button
+                className={modelProfile === "gpt" ? "active" : ""}
+                type="button"
+                aria-pressed={modelProfile === "gpt"}
+                onClick={() => changeModelProfile("gpt")}
+              >
+                GPT
+              </button>
+              <button
+                className={modelProfile === "deepseek" ? "active" : ""}
+                type="button"
+                aria-pressed={modelProfile === "deepseek"}
+                onClick={() => changeModelProfile("deepseek")}
+              >
+                DeepSeek
+              </button>
+            </div>
             <button className="profile-button" type="button" aria-label="个人账户" title="个人账户"><UserRound size={18} /></button>
           </div>
         </header>
@@ -207,6 +235,7 @@ function App() {
           <DialoguePage
             apiBaseUrl={apiBaseUrl}
             question={activeQuestion}
+            modelProfile={modelProfile}
             onBack={() => navigate("today")}
           />
         ) : null}

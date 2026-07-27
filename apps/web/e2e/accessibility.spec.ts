@@ -19,7 +19,11 @@ async function mockHealth(page: Page) {
 
 async function mockDialogueTurn(page: Page) {
   await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
-    const request = route.request().postDataJSON() as { requested_mode?: string; turn_number?: number };
+    const request = route.request().postDataJSON() as {
+      model_profile?: string;
+      requested_mode?: string;
+      turn_number?: number;
+    };
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -34,6 +38,7 @@ async function mockDialogueTurn(page: Page) {
         citation_ids: [],
         provider: "openai",
         provider_model: "gpt-5.6",
+        model_profile: request.model_profile ?? "gpt",
         provider_fallback_reason: null,
       }),
     });
