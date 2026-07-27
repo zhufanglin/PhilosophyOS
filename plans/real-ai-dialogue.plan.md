@@ -121,7 +121,7 @@ sequenceDiagram
 | `OPENAI_MODEL` | string | `gpt-5.6` | Responses API 使用的模型 |
 | `PHILOSOPHYOS_AI_PROVIDER` | enum | `auto` | `auto`、`openai` 或 `deterministic` |
 
-### 3.1 [ ] 增加 provider settings 与 OpenAI client 边界
+### 3.1 [x] 增加 provider settings 与 OpenAI client 边界 *(completed 2026-07-27)*
 - **Files:** `apps/api/pyproject.toml`, `apps/api/app/agent/providers.py`, `apps/api/app/settings.py`, `apps/api/tests/agent/test_providers.py`, `.env.example`
 - **What:** 增加 OpenAI SDK 依赖，创建类型化 settings，实现 deterministic 和 OpenAI 两个 provider。单元测试不真实访问网络，只 mock OpenAI client 边界。
 - **Acceptance:** 未设置 `OPENAI_API_KEY` 时 `pytest` 通过；测试证明无 key 使用 deterministic fallback，mock OpenAI response 可映射为 assistant text。
