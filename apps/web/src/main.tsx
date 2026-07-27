@@ -30,6 +30,27 @@ type ModelProfilesResponse = {
   profiles: ModelProfileStatus[];
 };
 
+type ModelProfileConnectionTestResponse = {
+  profile: ModelProfile;
+  ok: boolean;
+  code:
+    | "ok"
+    | "not_configured"
+    | "authentication_failed"
+    | "model_not_found"
+    | "rate_limited"
+    | "timeout"
+    | "upstream_error";
+  message: string;
+  model: string;
+};
+
+type ModelProfileTestState = {
+  profile: ModelProfile;
+  status: "testing" | "success" | "error";
+  message: string;
+};
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 type AppView = "today" | "dialogue" | "explore" | "concept";
@@ -50,6 +71,7 @@ function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modelProfiles, setModelProfiles] = useState<ModelProfileStatus[]>([]);
+  const [modelProfileTest, setModelProfileTest] = useState<ModelProfileTestState | null>(null);
   const [view, setView] = useState<AppView>(() => {
     const hash = window.location.hash.slice(1);
     return hash === "dialogue" || hash === "explore" || hash === "concept" ? hash : "today";
@@ -156,7 +178,37 @@ function App() {
 
   function changeModelProfile(nextProfile: ModelProfile) {
     setModelProfile(nextProfile);
+    setModelProfileTest(null);
     window.localStorage.setItem("philosophyos:model-profile", nextProfile);
+  }
+
+  async function testActiveModelProfile() {
+    setModelProfileTest({
+      profile: modelProfile,
+      status: "testing",
+      message: `${activeModelStatus?.label ?? "当前模型"} 连接测试中`,
+    });
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/v1/model-profiles/${modelProfile}/test-connection`, {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error(`模型测试返回 ${response.status}`);
+      }
+      const payload = (await response.json()) as ModelProfileConnectionTestResponse;
+      setModelProfileTest({
+        profile: payload.profile,
+        status: payload.ok ? "success" : "error",
+        message: payload.message,
+      });
+    } catch (requestError) {
+      setModelProfileTest({
+        profile: modelProfile,
+        status: "error",
+        message: requestError instanceof Error ? requestError.message : "模型连接测试失败",
+      });
+    }
   }
 
   const activeModelStatus = modelProfiles.find((profile) => profile.profile === modelProfile);
@@ -311,7 +363,24 @@ function App() {
             >
               <span>{activeModelStatus?.label ?? "模型"}</span>
               <strong>{modelStatusCopy}</strong>
+              <button
+                type="button"
+                onClick={testActiveModelProfile}
+                disabled={!health || modelProfileTest?.status === "testing"}
+                aria-label={`测试${activeModelStatus?.label ?? "当前模型"}连接`}
+              >
+                {modelProfileTest?.status === "testing" ? "测试中" : "测试"}
+              </button>
             </div>
+            {modelProfileTest ? (
+              <div
+                className={`model-test-result ${modelProfileTest.status}`}
+                role="status"
+                aria-live="polite"
+              >
+                {modelProfileTest.message}
+              </div>
+            ) : null}
             <button className="profile-button" type="button" aria-label="个人账户" title="个人账户"><UserRound size={18} /></button>
           </div>
         </header>

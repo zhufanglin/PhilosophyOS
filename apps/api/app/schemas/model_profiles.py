@@ -5,9 +5,21 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from app.settings import ModelProfile, OpenAIAPIStyle
+
+ConnectionTestCode = Literal[
+    "ok",
+    "not_configured",
+    "authentication_failed",
+    "model_not_found",
+    "rate_limited",
+    "timeout",
+    "upstream_error",
+]
 
 
 class ModelProfileStatus(BaseModel):
@@ -26,3 +38,13 @@ class ModelProfilesResponse(BaseModel):
 
     selected_profile: ModelProfile
     profiles: list[ModelProfileStatus]
+
+
+class ModelProfileConnectionTestResponse(BaseModel):
+    """Safe result of one backend-to-provider connection test."""
+
+    profile: ModelProfile
+    ok: bool
+    code: ConnectionTestCode
+    message: str = Field(min_length=1)
+    model: str = Field(min_length=1)

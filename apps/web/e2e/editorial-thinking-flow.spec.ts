@@ -54,6 +54,26 @@ async function mockModelProfiles(page: Page) {
   });
 }
 
+async function mockModelProfileConnectionTest(page: Page) {
+  await page.route(
+    "http://127.0.0.1:8000/api/v1/model-profiles/*/test-connection",
+    async (route) => {
+      const profile = route.request().url().match(/model-profiles\/([^/]+)\/test-connection/)?.[1]
+        ?? "free";
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          profile,
+          ok: true,
+          code: "ok",
+          message: "连接成功：测试环境已确认模型可用。",
+          model: profile === "deepseek" ? "deepseek-v4-flash" : "gpt-5.6",
+        }),
+      });
+    },
+  );
+}
+
 async function mockDialogueTurn(page: Page) {
   await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
     const request = route.request().postDataJSON() as {
@@ -165,6 +185,7 @@ async function openReflection(page: Page) {
 test.beforeEach(async ({ page }) => {
   await mockHealth(page);
   await mockModelProfiles(page);
+  await mockModelProfileConnectionTest(page);
   await mockDialogueTurn(page);
 });
 
@@ -184,9 +205,11 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await page.locator(".start-button").click();
   await expect(page.locator(".dialogue-page")).toBeVisible();
 
-  await expect(page.getByRole("button", { name: "免费" })).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "DeepSeek" }).click();
-  await expect(page.getByRole("button", { name: "DeepSeek" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "免费", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "DeepSeek", exact: true }).click();
+  await expect(page.getByRole("button", { name: "DeepSeek", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "测试DeepSeek连接" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "连接成功" })).toBeVisible();
 
   const modeButtons = page.locator(".mode-control button");
   await expect(modeButtons).toHaveCount(5);
@@ -197,7 +220,7 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
 
   await page.locator("#dialogue-answer").fill("即使诚实带来损失，我仍然倾向于坚持诚实，因为信任本身是一种关系基础。");
   await page.locator(".send-button").click();
-  await expect(page.getByRole("status")).toContainText("DeepSeek 正在思考中");
+  await expect(page.locator(".thinking-state")).toContainText("DeepSeek 正在思考中");
   await expect(page.locator(".message.user")).toContainText("坚持诚实");
   await expect(page.locator(".message.assistant")).toHaveCount(2);
   await expect(page.locator(".message.assistant").last()).toContainText("API 回答");

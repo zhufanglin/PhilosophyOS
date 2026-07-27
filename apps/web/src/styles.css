@@ -311,14 +311,17 @@ textarea:focus-visible {
 
 .model-profile-status {
   display: grid;
-  gap: 2px;
-  max-width: 190px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  align-items: center;
+  max-width: 230px;
   padding: 3px 0 3px 14px;
   border-left: 1px solid var(--rule);
   color: var(--ink-muted);
 }
 
 .model-profile-status span {
+  grid-column: 1;
   color: var(--burgundy);
   font-family: Georgia, serif;
   font-size: 0.58rem;
@@ -328,6 +331,7 @@ textarea:focus-visible {
 }
 
 .model-profile-status strong {
+  grid-column: 1;
   overflow: hidden;
   color: #84663e;
   font-size: 0.66rem;
@@ -339,6 +343,62 @@ textarea:focus-visible {
 
 .model-profile-status.configured strong {
   color: var(--forest);
+}
+
+.model-profile-status button {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  min-width: 44px;
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid rgb(80 91 83 / 18%);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: rgb(255 253 248 / 70%);
+  cursor: pointer;
+  font-size: 0.64rem;
+  font-weight: 750;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.model-profile-status button:hover:not(:disabled) {
+  border-color: rgb(40 86 64 / 28%);
+  color: var(--forest);
+  background: #fffdf8;
+  transform: translateY(-1px);
+}
+
+.model-profile-status button:disabled {
+  cursor: wait;
+  opacity: 0.56;
+}
+
+.model-test-result {
+  max-width: 260px;
+  padding: 6px 10px;
+  border: 1px solid rgb(126 91 48 / 16%);
+  border-radius: 999px;
+  color: #84663e;
+  background: rgb(255 253 248 / 72%);
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.model-test-result.success {
+  border-color: rgb(40 86 64 / 18%);
+  color: var(--forest);
+  background: rgb(223 233 225 / 70%);
+}
+
+.model-test-result.error {
+  border-color: rgb(122 63 67 / 20%);
+  color: var(--burgundy);
+  background: rgb(248 239 226 / 80%);
 }
 
 .status-dot {
@@ -2422,6 +2482,16 @@ h1 {
   .model-profile-status strong,
   .model-profile-status.configured strong {
     color: #b8c0b9;
+  }
+
+  .model-profile-status button {
+    border-color: #4e584d;
+    color: #f4f1e8;
+    background: rgb(49 58 49 / 82%);
+  }
+
+  .model-test-result {
+    display: none;
   }
 
   .answer-grid {

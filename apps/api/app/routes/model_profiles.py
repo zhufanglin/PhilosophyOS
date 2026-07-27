@@ -6,8 +6,15 @@ from urllib.parse import urlparse
 
 from fastapi import APIRouter
 
-from app.schemas.model_profiles import ModelProfilesResponse, ModelProfileStatus
-from app.settings import PhilosophyOSSettings, settings
+from app.agent.providers import ProviderRequest, select_dialogue_provider
+from app.schemas.dialogue import DialogueMode
+from app.schemas.model_profiles import (
+    ConnectionTestCode,
+    ModelProfileConnectionTestResponse,
+    ModelProfilesResponse,
+    ModelProfileStatus,
+)
+from app.settings import ModelProfile, PhilosophyOSSettings, settings
 
 router = APIRouter(prefix="/api/v1", tags=["model-profiles"])
 
@@ -69,3 +76,78 @@ async def list_model_profiles() -> ModelProfilesResponse:
     """Return key-free backend model profile status for the frontend."""
 
     return build_model_profiles_response(settings)
+
+
+def classify_connection_error(error: Exception) -> tuple[ConnectionTestCode, str]:
+    """Map upstream/provider failures to safe user-facing diagnostics."""
+
+    status_code = getattr(error, "status_code", None)
+    if status_code in {401, 403}:
+        return "authentication_failed", "认证失败：请检查 API Key 是否正确或是否已启用。"
+    if status_code == 404:
+        return "model_not_found", "模型不可用：请检查模型名或中转站是否支持该模型。"
+    if status_code == 429:
+        return "rate_limited", "请求被限流：额度可能不足，或服务商暂时限制访问。"
+    if status_code in {408, 504} or isinstance(error, TimeoutError):
+        return "timeout", "连接超时：请稍后重试，或检查网络与 Base URL。"
+    return "upstream_error", "连接失败：请检查 Base URL、模型名、接口风格和服务商状态。"
+
+
+def build_connection_test_response(
+    profile: ModelProfile,
+    current_settings: PhilosophyOSSettings = settings,
+) -> ModelProfileConnectionTestResponse:
+    """Test one configured model profile without exposing secrets."""
+
+    profile_settings = current_settings.model_copy(update={"model_profile": profile})
+    if profile_settings.selected_api_key is None:
+        return ModelProfileConnectionTestResponse(
+            profile=profile,
+            ok=False,
+            code="not_configured",
+            message="尚未配置 API Key：请先在后端 .env 中填写这一组模型配置。",
+            model=profile_settings.selected_model,
+        )
+
+    provider = select_dialogue_provider(profile_settings)
+    request = ProviderRequest(
+        user_message="测试连接",
+        mode=DialogueMode.EXPLAIN,
+        topic="模型连接测试",
+        turn_number=1,
+        prompt="请只回复：连接成功",
+        deterministic_message="连接成功",
+    )
+
+    try:
+        provider.generate(request)
+    except Exception as error:
+        code, message = classify_connection_error(error)
+        return ModelProfileConnectionTestResponse(
+            profile=profile,
+            ok=False,
+            code=code,
+            message=message,
+            model=profile_settings.selected_model,
+        )
+
+    return ModelProfileConnectionTestResponse(
+        profile=profile,
+        ok=True,
+        code="ok",
+        message="连接成功：后端已能通过当前配置调用该模型。",
+        model=profile_settings.selected_model,
+    )
+
+
+@router.post(
+    "/model-profiles/{profile}/test-connection",
+    response_model=ModelProfileConnectionTestResponse,
+    summary="Test one model profile connection",
+)
+async def test_model_profile_connection(
+    profile: ModelProfile,
+) -> ModelProfileConnectionTestResponse:
+    """Run a short key-free model connection test for the selected profile."""
+
+    return build_connection_test_response(profile, settings)

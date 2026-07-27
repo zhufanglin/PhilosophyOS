@@ -17,6 +17,61 @@ async function mockHealth(page: Page) {
   });
 }
 
+async function mockModelProfiles(page: Page) {
+  await page.route("http://127.0.0.1:8000/api/v1/model-profiles", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        selected_profile: "free",
+        profiles: [
+          {
+            profile: "free",
+            label: "免费",
+            configured: true,
+            model: "doubao-seed-2-0-lite-260428",
+            base_url_host: "ark.cn-beijing.volces.com",
+            api_style: "responses",
+          },
+          {
+            profile: "gpt",
+            label: "GPT",
+            configured: true,
+            model: "gpt-5.6",
+            base_url_host: "api.synapai.top",
+            api_style: "responses",
+          },
+          {
+            profile: "deepseek",
+            label: "DeepSeek",
+            configured: true,
+            model: "deepseek-v4-flash",
+            base_url_host: "api.deepseek.com",
+            api_style: "chat_completions",
+          },
+        ],
+      }),
+    });
+  });
+}
+
+async function mockModelProfileConnectionTest(page: Page) {
+  await page.route(
+    "http://127.0.0.1:8000/api/v1/model-profiles/*/test-connection",
+    async (route) => {
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          profile: "free",
+          ok: true,
+          code: "ok",
+          message: "连接成功：测试环境已确认模型可用。",
+          model: "doubao-seed-2-0-lite-260428",
+        }),
+      });
+    },
+  );
+}
+
 async function mockDialogueTurn(page: Page) {
   await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
     const request = route.request().postDataJSON() as {
@@ -58,6 +113,8 @@ async function expectNoSeriousAxeViolations(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   await mockHealth(page);
+  await mockModelProfiles(page);
+  await mockModelProfileConnectionTest(page);
   await mockDialogueTurn(page);
 });
 
