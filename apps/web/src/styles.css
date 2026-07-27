@@ -2013,6 +2013,14 @@ h1 {
   line-height: 1.6;
 }
 
+.dialogue-retry-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .dialogue-retry-notice button {
   display: inline-flex;
   min-height: 34px;
@@ -3148,6 +3156,15 @@ h1 {
     flex-direction: column;
     padding: 15px 0;
     background: transparent;
+  }
+
+  .dialogue-retry-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .dialogue-retry-notice button {
+    width: 100%;
   }
 
   .dialogue-composer {

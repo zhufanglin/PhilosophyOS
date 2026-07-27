@@ -142,6 +142,46 @@ async function mockDialogueTurnWithFirstFailure(page: Page) {
   });
 }
 
+async function mockDialogueTurnWithDeepSeekFailureThenFreeSuccess(page: Page) {
+  const requestedProfiles: string[] = [];
+  await page.unroute("http://127.0.0.1:8000/api/v1/dialogue-turns");
+  await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
+    const request = route.request().postDataJSON() as {
+      model_profile?: string;
+      requested_mode?: string;
+      turn_number?: number;
+    };
+    requestedProfiles.push(request.model_profile ?? "free");
+    if (request.model_profile === "deepseek") {
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "mock deepseek outage" }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        mode: request.requested_mode ?? "socratic",
+        previous_mode: request.requested_mode ?? "socratic",
+        switched: false,
+        switch_reason: "mocked free fallback response",
+        assistant_message: `免费模型兜底回答：第 ${request.turn_number ?? 1} 轮已经恢复。`,
+        primary_question: "我们继续检验这个理由。",
+        should_ask_followup: true,
+        evidence_status: null,
+        citation_ids: [],
+        provider: "openai",
+        provider_model: "doubao-seed-2-0-lite-260428",
+        model_profile: request.model_profile ?? "free",
+        provider_fallback_reason: null,
+      }),
+    });
+  });
+  return requestedProfiles;
+}
+
 function collectConsoleProblems(page: Page) {
   const warnings: string[] = [];
   const errors: string[] = [];
@@ -298,6 +338,32 @@ test("dialogue API failure can be retried without duplicating the user turn", as
   await expect(page.locator(".message.assistant")).toHaveCount(2);
   await expect(page.locator(".message.assistant").last()).toContainText("重试后的 API 回答");
   await expectMobileNavClearance(page, ".dialogue-composer");
+  expect(consoleProblems.warnings).toEqual([]);
+  expect(consoleProblems.errors).toEqual([]);
+});
+
+test("deepseek failure can switch to free model without duplicating the user turn", async ({ page }) => {
+  const consoleProblems = collectConsoleProblems(page);
+  const requestedProfiles = await mockDialogueTurnWithDeepSeekFailureThenFreeSuccess(page);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#today");
+  await page.locator(".start-button").click();
+  await expect(page.locator(".dialogue-page")).toBeVisible();
+
+  await page.getByRole("button", { name: "DeepSeek", exact: true }).click();
+  await page.locator("#dialogue-answer").fill("我想先用 DeepSeek 检验这个理由。");
+  await page.locator(".send-button").click();
+  await expect(page.locator(".message.user")).toHaveCount(1);
+  await expect(page.locator(".dialogue-retry-notice")).toContainText("DeepSeek 暂时不可用");
+  await expect(page.locator(".message.assistant")).toHaveCount(1);
+
+  await page.getByRole("button", { name: "切换到免费模型并重试" }).click();
+  await expect(page.getByRole("button", { name: "免费", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".message.user")).toHaveCount(1);
+  await expect(page.locator(".message.assistant")).toHaveCount(2);
+  await expect(page.locator(".message.assistant").last()).toContainText("免费模型兜底回答");
+  expect(requestedProfiles).toEqual(["deepseek", "free"]);
   expect(consoleProblems.warnings).toEqual([]);
   expect(consoleProblems.errors).toEqual([]);
 });

@@ -24,6 +24,7 @@ type DialoguePageProps = {
   apiBaseUrl: string;
   question: DailyQuestionView;
   modelProfile: ModelProfile;
+  onModelProfileChange: (profile: ModelProfile) => void;
   onBack: () => void;
 };
 
@@ -53,6 +54,7 @@ type PendingDialogueTurn = {
   answer: string;
   mode: DialogueMode;
   turnNumber: number;
+  modelProfile: ModelProfile;
 };
 
 const modes = [
@@ -67,6 +69,12 @@ const modelProfileLabels: Record<ModelProfile, string> = {
   free: "免费模型",
   gpt: "GPT",
   deepseek: "DeepSeek",
+};
+
+const modelFailureGuidance: Record<ModelProfile, string> = {
+  free: "免费模型暂时不可用，请检查豆包/火山方舟配置，或稍后再试。",
+  gpt: "GPT 暂时不可用，你可以切换到免费模型继续，或稍后再试。",
+  deepseek: "DeepSeek 暂时不可用，你可以切换到免费模型继续，或稍后再试。",
 };
 
 const sources: DialogueSource[] = [
@@ -98,7 +106,13 @@ function isDialogueTurnResponse(value: unknown): value is DialogueTurnResponse {
   );
 }
 
-export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: DialoguePageProps) {
+export function DialoguePage({
+  apiBaseUrl,
+  question,
+  modelProfile,
+  onModelProfileChange,
+  onBack,
+}: DialoguePageProps) {
   const [mode, setMode] = useState<DialogueMode>("socratic");
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -114,12 +128,13 @@ export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: Dia
   const [finished, setFinished] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const [failedTurn, setFailedTurn] = useState<PendingDialogueTurn | null>(null);
+  const [thinkingProfile, setThinkingProfile] = useState<ModelProfile | null>(null);
   const [progressFlight, setProgressFlight] = useState<ProgressFlight | null>(null);
   const [pulseStepId, setPulseStepId] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sendButtonRef = useRef<HTMLButtonElement>(null);
   const progressTimer = useRef<number | null>(null);
-  const thinkingCopy = `${modelProfileLabels[modelProfile]} 正在思考中`;
+  const thinkingCopy = `${modelProfileLabels[thinkingProfile ?? modelProfile]} 正在思考中`;
 
   useEffect(() => inputRef.current?.focus(), []);
   useEffect(() => () => {
@@ -168,7 +183,7 @@ export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: Dia
         user_message: turn.answer,
         current_mode: turn.mode,
         requested_mode: turn.mode,
-        model_profile: modelProfile,
+        model_profile: turn.modelProfile,
         topic: question.prompt,
         turn_number: turn.turnNumber,
       }),
@@ -201,10 +216,11 @@ export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: Dia
     const nextId = Math.max(...messages.map((message) => message.id)) + 1;
     const userTurns = messages.filter((message) => message.role === "user").length;
     const nextStepId = userTurns === 0 ? "reason" : userTurns === 1 ? "boundary" : "summary";
-    const pendingTurn = { answer, mode, turnNumber: userTurns + 1 };
+    const pendingTurn = { answer, mode, turnNumber: userTurns + 1, modelProfile };
     setMessages((current) => [...current, { id: nextId, role: "user", body: answer }]);
     setDraft("");
     setFailedTurn(null);
+    setThinkingProfile(modelProfile);
     setThinking(true);
 
     animateProgressTo(nextStepId);
@@ -214,12 +230,14 @@ export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: Dia
       setFailedTurn(pendingTurn);
     } finally {
       setThinking(false);
+      setThinkingProfile(null);
       inputRef.current?.focus();
     }
   }
 
   async function retryFailedTurn() {
     if (!failedTurn || thinking || finished) return;
+    setThinkingProfile(failedTurn.modelProfile);
     setThinking(true);
     try {
       await requestAssistantTurn(failedTurn);
@@ -227,6 +245,25 @@ export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: Dia
       setFailedTurn(failedTurn);
     } finally {
       setThinking(false);
+      setThinkingProfile(null);
+      inputRef.current?.focus();
+    }
+  }
+
+  async function switchToFreeAndRetry() {
+    if (!failedTurn || failedTurn.modelProfile === "free" || thinking || finished) return;
+    const freeTurn = { ...failedTurn, modelProfile: "free" as const };
+    onModelProfileChange("free");
+    setFailedTurn(freeTurn);
+    setThinkingProfile("free");
+    setThinking(true);
+    try {
+      await requestAssistantTurn(freeTurn);
+    } catch {
+      setFailedTurn(freeTurn);
+    } finally {
+      setThinking(false);
+      setThinkingProfile(null);
       inputRef.current?.focus();
     }
   }
@@ -324,12 +361,19 @@ export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: Dia
             {failedTurn ? (
               <div className="dialogue-retry-notice" role="status">
                 <div>
-                  <strong>这一轮暂时没有连上后端</strong>
-                  <p>你的回答已经保留。可以稍后重试，系统只会重新请求哲学引导，不会重复记录你的发言。</p>
+                  <strong>{modelProfileLabels[failedTurn.modelProfile]} 暂时没有完成回应</strong>
+                  <p>{modelFailureGuidance[failedTurn.modelProfile]} 你的回答已经保留，系统只会重新请求哲学引导，不会重复记录你的发言。</p>
                 </div>
-                <button type="button" onClick={retryFailedTurn} disabled={thinking || finished}>
-                  <RotateCcw size={15} /> 重试
-                </button>
+                <div className="dialogue-retry-actions">
+                  {failedTurn.modelProfile !== "free" ? (
+                    <button type="button" onClick={switchToFreeAndRetry} disabled={thinking || finished}>
+                      <RotateCcw size={15} /> 切换到免费模型并重试
+                    </button>
+                  ) : null}
+                  <button type="button" onClick={retryFailedTurn} disabled={thinking || finished}>
+                    <RotateCcw size={15} /> 重试原模型
+                  </button>
+                </div>
               </div>
             ) : null}
             {finished ? <div className="dialogue-complete">本轮对话已整理，下一步将确认哪些内容属于你的观点。</div> : null}

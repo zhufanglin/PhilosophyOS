@@ -522,6 +522,7 @@ function App() {
             apiBaseUrl={apiBaseUrl}
             question={activeQuestion}
             modelProfile={modelProfile}
+            onModelProfileChange={changeModelProfile}
             onBack={() => navigate("today")}
           />
         ) : null}
