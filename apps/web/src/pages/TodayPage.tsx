@@ -63,9 +63,22 @@ const questions: DailyQuestionView[] = [
   },
 ];
 
+function formatToday(date: Date) {
+  const parts = new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    weekday: "long",
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")} 年 ${value("month")} 月 ${value("day")} 日 · ${value("weekday")}`;
+}
+
 export function TodayPage({ onStart }: TodayPageProps) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const question = questions[questionIndex];
+  const todayLabel = formatToday(new Date());
 
   function chooseAnotherQuestion() {
     setQuestionIndex((current) => (current + 1) % questions.length);
@@ -73,38 +86,52 @@ export function TodayPage({ onStart }: TodayPageProps) {
 
   return (
     <main className="today-page" id="today">
-      <header className="page-heading today-heading">
+      <header className="today-heading">
         <div>
-          <p className="section-kicker">2026 年 7 月 26 日 · 星期日</p>
-          <h1>今日思考</h1>
-          <p>留一点时间，把一个判断想得更清楚。</p>
+          <p className="section-kicker">{todayLabel}</p>
+          <p className="today-heading-title">今日思考</p>
         </div>
-        <div className="daily-meta" aria-label="今日练习状态">
-          <span><Clock3 size={16} /> 约 12 分钟</span>
-          <span><ShieldCheck size={16} /> 审核题目</span>
+        <div className="today-heading-aside">
+          <p>留一点时间，把一个判断想得更清楚。</p>
+          <div className="daily-meta" aria-label="今日练习状态">
+            <span><Clock3 size={15} /> 约 12 分钟</span>
+            <span><ShieldCheck size={15} /> 审核题目</span>
+          </div>
         </div>
       </header>
 
       <section className="daily-question" aria-labelledby="daily-question-title">
-        <div className="question-portrait" aria-hidden="true">
-          <img
-            src={question.portraitUrl}
-            alt=""
-            onError={(event) => {
-              event.currentTarget.hidden = true;
-            }}
-          />
-          <span>{question.philosopher}</span>
-        </div>
+        <figure className="question-portrait">
+          <div className="portrait-frame">
+            <span className="portrait-fallback" aria-hidden="true">Φ</span>
+            <img
+              key={question.id}
+              src={question.portraitUrl}
+              alt={`${question.philosopher}肖像`}
+              data-philosopher={question.philosopher}
+              onError={(event) => {
+                event.currentTarget.hidden = true;
+              }}
+            />
+          </div>
+          <figcaption>
+            <span>PORTRAIT / {question.id.toUpperCase()}</span>
+            <strong>{question.philosopher}</strong>
+            <small>{question.era}</small>
+          </figcaption>
+        </figure>
 
-        <div className="daily-question-copy">
+        <article className="daily-question-copy">
+          <div className="question-series">
+            <span>DAILY QUESTION</span>
+            <span>{question.id.toUpperCase()}</span>
+          </div>
           <div className="question-tags" aria-label="问题分类">
             <span>{question.domain}</span>
             <span>{question.difficulty}</span>
             <span>{question.era}</span>
           </div>
-          <p className="section-kicker">TODAY'S QUESTION</p>
-          <h2 id="daily-question-title">{question.prompt}</h2>
+          <h1 id="daily-question-title">{question.prompt}</h1>
           <dl className="question-context">
             <div>
               <dt>核心张力</dt>
@@ -123,16 +150,23 @@ export function TodayPage({ onStart }: TodayPageProps) {
               <RefreshCw size={17} /> 换一题
             </button>
           </div>
-        </div>
+        </article>
       </section>
 
       <section className="today-footnote" aria-label="最近进度">
-        <BookOpenCheck size={19} />
+        <div className="continue-index">
+          <BookOpenCheck size={18} />
+          <span>CONTINUE / 01</span>
+        </div>
         <div>
-          <strong>上一次：自由与因果</strong>
+          <span>上一次思考</span>
+          <strong>自由与因果</strong>
           <span>已完成 4 轮追问，观点等待确认</span>
         </div>
-        <span className="progress-value">4 / 5</span>
+        <div className="progress-value">
+          <span>完成进度</span>
+          <strong>4 / 5</strong>
+        </div>
       </section>
     </main>
   );
