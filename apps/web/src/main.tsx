@@ -16,6 +16,20 @@ type HealthResponse = {
   version: string;
 };
 
+type ModelProfileStatus = {
+  profile: ModelProfile;
+  label: string;
+  configured: boolean;
+  model: string;
+  base_url_host: string | null;
+  api_style: "responses" | "chat_completions";
+};
+
+type ModelProfilesResponse = {
+  selected_profile: ModelProfile;
+  profiles: ModelProfileStatus[];
+};
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 type AppView = "today" | "dialogue" | "explore" | "concept";
@@ -35,6 +49,7 @@ const fallbackQuestion: DailyQuestionView = {
 function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [modelProfiles, setModelProfiles] = useState<ModelProfileStatus[]>([]);
   const [view, setView] = useState<AppView>(() => {
     const hash = window.location.hash.slice(1);
     return hash === "dialogue" || hash === "explore" || hash === "concept" ? hash : "today";
@@ -54,26 +69,76 @@ function App() {
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadHealth() {
+    async function loadSystemStatus() {
       try {
-        const response = await fetch(`${apiBaseUrl}/health`, {
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`API 返回 ${response.status}`);
+        const [healthResponse, profilesResponse] = await Promise.all([
+          fetch(`${apiBaseUrl}/health`, { signal: controller.signal }),
+          fetch(`${apiBaseUrl}/api/v1/model-profiles`, { signal: controller.signal }),
+        ]);
+        if (!healthResponse.ok) {
+          throw new Error(`API 返回 ${healthResponse.status}`);
         }
-        setHealth((await response.json()) as HealthResponse);
+        if (!profilesResponse.ok) {
+          throw new Error(`模型配置返回 ${profilesResponse.status}`);
+        }
+        setHealth((await healthResponse.json()) as HealthResponse);
+        const profilesPayload = (await profilesResponse.json()) as ModelProfilesResponse;
+        setModelProfiles(profilesPayload.profiles);
       } catch (requestError) {
         if (requestError instanceof DOMException && requestError.name === "AbortError") {
           return;
         }
-        setError(requestError instanceof Error ? requestError.message : "无法连接 API");
+
+        try {
+          const response = await fetch(`${apiBaseUrl}/health`, {
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            throw new Error(`API 返回 ${response.status}`);
+          }
+          setHealth((await response.json()) as HealthResponse);
+          setError("模型配置状态暂时不可用");
+        } catch (healthError) {
+          if (healthError instanceof DOMException && healthError.name === "AbortError") {
+            return;
+          }
+          setError(healthError instanceof Error ? healthError.message : "无法连接 API");
+        }
       }
     }
 
-    void loadHealth();
+    void loadSystemStatus();
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!health) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadModelProfiles() {
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/model-profiles`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          throw new Error(`模型配置返回 ${response.status}`);
+        }
+        const payload = (await response.json()) as ModelProfilesResponse;
+        setModelProfiles(payload.profiles);
+      } catch (requestError) {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") {
+          return;
+        }
+        setError("模型配置状态暂时不可用");
+      }
+    }
+
+    void loadModelProfiles();
+    return () => controller.abort();
+  }, [health]);
 
   useEffect(() => {
     function syncViewFromHash() {
@@ -93,6 +158,11 @@ function App() {
     setModelProfile(nextProfile);
     window.localStorage.setItem("philosophyos:model-profile", nextProfile);
   }
+
+  const activeModelStatus = modelProfiles.find((profile) => profile.profile === modelProfile);
+  const modelStatusCopy = activeModelStatus
+    ? `${activeModelStatus.configured ? "已配置" : "未配置"} · ${activeModelStatus.model}`
+    : "等待模型状态";
 
   function startDialogue(question: DailyQuestionView) {
     setActiveQuestion(question);
@@ -234,6 +304,13 @@ function App() {
               >
                 DeepSeek
               </button>
+            </div>
+            <div
+              className={`model-profile-status${activeModelStatus?.configured ? " configured" : ""}`}
+              title={activeModelStatus?.base_url_host ?? undefined}
+            >
+              <span>{activeModelStatus?.label ?? "模型"}</span>
+              <strong>{modelStatusCopy}</strong>
             </div>
             <button className="profile-button" type="button" aria-label="个人账户" title="个人账户"><UserRound size={18} /></button>
           </div>
