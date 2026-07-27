@@ -28,6 +28,7 @@ type ReviewItem = {
 
 type ReflectionReviewProps = {
   apiBaseUrl: string;
+  modelProfile: "free" | "gpt" | "deepseek";
   question: string;
   userStatements: string[];
   onBack: () => void;
@@ -38,6 +39,20 @@ type ObsidianDraftResponse = {
   file_name: string;
   absolute_path: string;
   message: string;
+};
+
+type ReflectionSnapshotResponse = {
+  snapshot_id: string;
+  status: "completed" | "pending";
+  provider: string;
+  provider_model: string | null;
+  pending_reason: string | null;
+  content: {
+    title: string;
+    topic: string;
+    user_position: string;
+    next_question: string | null;
+  } | null;
 };
 
 const aiItems: ReviewItem[] = [
@@ -106,6 +121,7 @@ function initialItems(userStatements: string[]): ReviewItem[] {
 
 export function ReflectionReview({
   apiBaseUrl,
+  modelProfile,
   question,
   userStatements,
   onBack,
@@ -114,6 +130,7 @@ export function ReflectionReview({
   const [items, setItems] = useState<ReviewItem[]>(() => initialItems(userStatements));
   const [saved, setSaved] = useState(false);
   const [draftResult, setDraftResult] = useState<ObsidianDraftResponse | null>(null);
+  const [snapshotResult, setSnapshotResult] = useState<ReflectionSnapshotResponse | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
   const selectedItems = useMemo(() => items.filter((item) => item.selected), [items]);
@@ -145,6 +162,27 @@ export function ReflectionReview({
     });
   }
 
+  async function createReflectionSnapshot() {
+    const response = await fetch(`${apiBaseUrl}/api/v1/reflection-snapshots`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question,
+        user_statements: userStatements,
+        selected_items: selectedItems.map((item) => ({
+          label: item.label,
+          text: item.text,
+          origin: item.origin === "ai" ? "ai" : "user",
+        })),
+        model_profile: modelProfile,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`Reflection snapshot API returned ${response.status}`);
+    }
+    return (await response.json()) as ReflectionSnapshotResponse;
+  }
+
   async function saveObsidianDraft() {
     if (!canSave || savingDraft) return;
     setSavingDraft(true);
@@ -169,6 +207,18 @@ export function ReflectionReview({
       }
       const payload = (await response.json()) as ObsidianDraftResponse;
       setDraftResult(payload);
+      try {
+        setSnapshotResult(await createReflectionSnapshot());
+      } catch (error) {
+        setSnapshotResult({
+          snapshot_id: "pending",
+          status: "pending",
+          provider: "none",
+          provider_model: null,
+          pending_reason: error instanceof Error ? error.message : "思想快照暂未生成",
+          content: null,
+        });
+      }
       setSaved(true);
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "保存 Obsidian 草稿失败");
@@ -198,6 +248,23 @@ export function ReflectionReview({
             <strong>{draftResult.message}</strong>
             <span>{draftResult.file_name}</span>
             <code>{draftResult.absolute_path}</code>
+          </div>
+        ) : null}
+        {snapshotResult ? (
+          <div className={`thought-snapshot-result ${snapshotResult.status}`} role="status">
+            <strong>
+              {snapshotResult.status === "completed"
+                ? "AI 思想快照已生成"
+                : "原始记录已保存，思想快照待补生成"}
+            </strong>
+            {snapshotResult.content ? (
+              <>
+                <span>{snapshotResult.content.title}</span>
+                <p>{snapshotResult.content.user_position}</p>
+              </>
+            ) : (
+              <span>{snapshotResult.pending_reason}</span>
+            )}
           </div>
         ) : null}
         <button className="primary-button" type="button" onClick={onReturnToday}>

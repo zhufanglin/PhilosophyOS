@@ -88,6 +88,28 @@ async function mockObsidianDraft(page: Page) {
   });
 }
 
+async function mockReflectionSnapshot(page: Page) {
+  await page.route("http://127.0.0.1:8000/api/v1/reflection-snapshots", async (route) => {
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        snapshot_id: "snap_e2e",
+        status: "completed",
+        provider: "openai",
+        provider_model: "doubao-seed-2-0-lite-260428",
+        pending_reason: null,
+        content: {
+          topic: "诚实与德性",
+          title: "诚实是在伤害与责任之间保持清醒",
+          user_position: "用户倾向于认为诚实仍值得坚持，但需要承认例外情境。",
+          next_question: "什么时候善意隐瞒会变成逃避责任？",
+        },
+      }),
+    });
+  });
+}
+
 async function mockDialogueTurn(page: Page) {
   await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
     const request = route.request().postDataJSON() as {
@@ -241,6 +263,7 @@ test.beforeEach(async ({ page }) => {
   await mockModelProfiles(page);
   await mockModelProfileConnectionTest(page);
   await mockObsidianDraft(page);
+  await mockReflectionSnapshot(page);
   await mockDialogueTurn(page);
 });
 
@@ -326,6 +349,8 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await expect(page.locator(".saved-summary")).not.toContainText("关联建议");
   await expect(page.locator(".obsidian-draft-result")).toContainText("Obsidian 草稿已生成");
   await expect(page.locator(".obsidian-draft-result")).toContainText("2026-07-28-诚实与德性.md");
+  await expect(page.locator(".thought-snapshot-result")).toContainText("AI 思想快照已生成");
+  await expect(page.locator(".thought-snapshot-result")).toContainText("诚实是在伤害与责任之间保持清醒");
 
   await page.locator(".reflection-saved .primary-button").click();
   await expect(page.locator(".today-page")).toBeVisible();

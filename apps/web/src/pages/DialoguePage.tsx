@@ -277,6 +277,7 @@ export function DialoguePage({
     return (
       <ReflectionReview
         apiBaseUrl={apiBaseUrl}
+        modelProfile={modelProfile}
         question={question.prompt}
         userStatements={messages.filter((message) => message.role === "user").map((message) => message.body)}
         onBack={() => {

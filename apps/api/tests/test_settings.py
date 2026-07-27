@@ -125,3 +125,13 @@ def test_obsidian_drafts_dir_loads_from_backend_env(monkeypatch: pytest.MonkeyPa
     settings = PhilosophyOSSettings.from_env()
 
     assert settings.obsidian_drafts_dir == "D:\\Obsidian\\草稿"
+
+
+def test_thought_snapshots_path_loads_from_backend_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """THOUGHT_SNAPSHOTS_PATH configures the local thought snapshot event log."""
+
+    monkeypatch.setenv("THOUGHT_SNAPSHOTS_PATH", " data\\local\\custom-snapshots.jsonl ")
+
+    settings = PhilosophyOSSettings.from_env()
+
+    assert settings.thought_snapshots_path == "data\\local\\custom-snapshots.jsonl"

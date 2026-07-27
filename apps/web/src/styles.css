@@ -2599,6 +2599,39 @@ h1 {
   font-size: 0.68rem;
 }
 
+.thought-snapshot-result {
+  display: grid;
+  width: min(660px, 100%);
+  gap: 7px;
+  margin: -10px 0 24px;
+  padding: 15px 17px;
+  border: 1px solid rgb(111 76 45 / 18%);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgb(255 253 247 / 78%), rgb(239 226 205 / 52%)),
+    var(--paper);
+  color: var(--ink);
+  text-align: left;
+}
+
+.thought-snapshot-result.pending {
+  border-color: rgb(137 112 79 / 22%);
+  background: rgb(246 239 225 / 66%);
+}
+
+.thought-snapshot-result strong {
+  color: var(--forest);
+  font-size: 0.82rem;
+}
+
+.thought-snapshot-result span,
+.thought-snapshot-result p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+
 .saved-summary > div {
   display: grid;
   grid-template-columns: auto 120px minmax(0, 1fr);

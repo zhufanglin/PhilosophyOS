@@ -40,6 +40,10 @@ class PhilosophyOSSettings(BaseModel):
         default=r"D:\Obsidian\storage\Stu的哲学思考\PhilosophyOS\草稿",
         min_length=1,
     )
+    thought_snapshots_path: str = Field(
+        default=r"data\local\thought-snapshots.jsonl",
+        min_length=1,
+    )
 
     @field_validator(
         "openai_api_key",
@@ -76,6 +80,7 @@ class PhilosophyOSSettings(BaseModel):
         "deepseek_model",
         "deepseek_base_url",
         "obsidian_drafts_dir",
+        "thought_snapshots_path",
     )
     @classmethod
     def strip_required_strings(cls, value: str) -> str:
@@ -158,6 +163,10 @@ class PhilosophyOSSettings(BaseModel):
             obsidian_drafts_dir=os.getenv(
                 "OBSIDIAN_DRAFTS_DIR",
                 r"D:\Obsidian\storage\Stu的哲学思考\PhilosophyOS\草稿",
+            ),
+            thought_snapshots_path=os.getenv(
+                "THOUGHT_SNAPSHOTS_PATH",
+                r"data\local\thought-snapshots.jsonl",
             ),
         )
 
