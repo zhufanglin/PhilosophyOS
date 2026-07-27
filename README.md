@@ -86,7 +86,7 @@ PHILOSOPHYOS_MODEL_PROFILE=free
 FREE_API_KEY=<填入平台免费模型 key，例如豆包/火山方舟>
 FREE_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
 FREE_MODEL=doubao-seed-2-0-lite-260428
-FREE_API_STYLE=chat_completions
+FREE_API_STYLE=responses
 
 GPT_API_KEY=<填入你的 GPT 或 GPT 中转站 key>
 GPT_BASE_URL=https://api.synapai.top/v1

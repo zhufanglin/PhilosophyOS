@@ -26,7 +26,7 @@ class PhilosophyOSSettings(BaseModel):
     free_api_key: SecretStr | None = None
     free_model: str = Field(default="doubao-seed-2-0-lite-260428", min_length=1)
     free_base_url: str = Field(default="https://ark.cn-beijing.volces.com/api/v3", min_length=1)
-    free_api_style: OpenAIAPIStyle = "chat_completions"
+    free_api_style: OpenAIAPIStyle = "responses"
     gpt_api_key: SecretStr | None = None
     gpt_model: str | None = None
     gpt_base_url: str | None = None
@@ -140,7 +140,7 @@ class PhilosophyOSSettings(BaseModel):
             free_api_key=os.getenv("FREE_API_KEY"),
             free_model=os.getenv("FREE_MODEL", "doubao-seed-2-0-lite-260428"),
             free_base_url=os.getenv("FREE_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3"),
-            free_api_style=os.getenv("FREE_API_STYLE", "chat_completions"),
+            free_api_style=os.getenv("FREE_API_STYLE", "responses"),
             gpt_api_key=os.getenv("GPT_API_KEY"),
             gpt_model=os.getenv("GPT_MODEL"),
             gpt_base_url=os.getenv("GPT_BASE_URL"),

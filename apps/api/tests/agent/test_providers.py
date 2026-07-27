@@ -266,10 +266,10 @@ def test_deepseek_profile_selects_chat_completions_provider(
     assert response.assistant_message == "mock DeepSeek text"
 
 
-def test_free_profile_selects_chat_completions_provider(
+def test_free_profile_selects_responses_provider(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Provider selection routes the free model profile through Chat Completions."""
+    """Provider selection routes the free model profile through Responses."""
 
     client = MockOpenAIClient()
     captured: dict[str, object] = {}
@@ -289,7 +289,7 @@ def test_free_profile_selects_chat_completions_provider(
         free_api_key=SecretStr("test-free-key"),
         free_base_url="https://ark.cn-beijing.volces.com/api/v3",
         free_model="doubao-seed-2-0-lite-260428",
-        free_api_style="chat_completions",
+        free_api_style="responses",
         ai_provider="auto",
     )
 
@@ -300,5 +300,5 @@ def test_free_profile_selects_chat_completions_provider(
         "api_key": "test-free-key",
         "base_url": "https://ark.cn-beijing.volces.com/api/v3",
     }
-    assert client.mock_chat_completions.model == "doubao-seed-2-0-lite-260428"
-    assert response.assistant_message == "mock DeepSeek text"
+    assert client.mock_responses.model == "doubao-seed-2-0-lite-260428"
+    assert response.assistant_message == "mock OpenAI assistant text"
