@@ -1587,12 +1587,12 @@ h1 {
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(430px, 92vw);
+  width: min(480px, 94vw);
   overflow-y: auto;
-  padding: 28px;
-  border-left: 1px solid #d7ddd8;
-  background: #fff;
-  box-shadow: -20px 0 60px rgb(29 41 33 / 14%);
+  padding: 30px 34px 48px;
+  border-left: 1px solid var(--rule-strong);
+  background: var(--paper-raised);
+  box-shadow: -16px 0 48px rgb(29 41 33 / 12%);
   transform: translateX(105%);
   transition: transform 180ms ease;
 }
@@ -1606,24 +1606,47 @@ h1 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e1e6e2;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--rule-strong);
 }
 
 .source-drawer h2 {
-  margin: 0;
-  font-family: Georgia, "Noto Serif SC", serif;
-  font-size: 1.35rem;
+  margin: 2px 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.55rem;
+  font-weight: 600;
+}
+
+.source-drawer > header > div > p:last-child {
+  max-width: 340px;
+  margin: 9px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  line-height: 1.6;
 }
 
 .drawer-source-list {
   display: grid;
   gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .drawer-source {
-  padding: 22px 0;
-  border-bottom: 1px solid #e3e7e4;
+  position: relative;
+  padding: 26px 0 26px 42px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.drawer-source-index {
+  position: absolute;
+  top: 27px;
+  left: 0;
+  color: var(--burgundy);
+  font-family: Georgia, serif;
+  font-size: 0.68rem;
+  font-weight: 700;
 }
 
 .drawer-source-meta {
@@ -1637,35 +1660,50 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #2d6248;
-  font-size: 0.72rem;
+  color: var(--forest);
+  font-size: 0.68rem;
   font-weight: 750;
 }
 
-.drawer-source-meta small,
-.drawer-source-author {
-  color: #89938c;
+.drawer-source-citation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 12px;
+  margin: 7px 0 0;
+  color: var(--ink-muted);
   font-size: 0.7rem;
 }
 
-.drawer-source h3 {
-  margin: 14px 0 4px;
-  font-family: Georgia, "Noto Serif SC", serif;
-  font-size: 1.05rem;
+.drawer-source-citation strong {
+  color: var(--ink-soft);
+  font-weight: 650;
 }
 
-.drawer-source p {
-  color: #59655d;
+.drawer-source h3 {
+  margin: 11px 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.drawer-source .drawer-source-summary {
+  margin: 15px 0 0;
+  padding-left: 14px;
+  border-left: 1px solid var(--rule-strong);
+  color: var(--ink-soft);
+  font-family: var(--font-serif);
   font-size: 0.82rem;
-  line-height: 1.7;
+  line-height: 1.78;
 }
 
 .drawer-source a {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #286247;
-  font-size: 0.75rem;
+  margin-top: 15px;
+  color: var(--document-blue);
+  font-size: 0.72rem;
   font-weight: 700;
   text-decoration: none;
 }
@@ -1676,6 +1714,7 @@ h1 {
   width: min(1080px, 100%);
   margin: 0 auto;
   padding: 42px clamp(26px, 5vw, 64px) 96px;
+  color: var(--ink);
 }
 
 .reflection-header {
@@ -1684,13 +1723,13 @@ h1 {
   gap: 18px;
   align-items: start;
   padding-bottom: 30px;
-  border-bottom: 1px solid #dce2dd;
+  border-bottom: 1px solid var(--rule-strong);
 }
 
 .reflection-header h1,
 .reflection-saved h1 {
   margin: 0;
-  font-family: Georgia, "Noto Serif SC", "Songti SC", serif;
+  font-family: var(--font-serif);
   font-size: 38px;
   font-weight: 520;
   line-height: 1.25;
@@ -1699,18 +1738,20 @@ h1 {
 .reflection-header > div > p:last-child {
   max-width: 760px;
   margin: 12px 0 0;
-  color: #657168;
-  font-family: Georgia, "Noto Serif SC", serif;
+  color: var(--ink-muted);
+  font-family: var(--font-serif);
   line-height: 1.65;
 }
 
 .pending-badge {
-  padding: 6px 10px;
-  border: 1px solid #e1c68f;
-  border-radius: 999px;
-  color: #76571f;
-  background: #fbf3df;
-  font-size: 0.72rem;
+  padding: 4px 0 5px;
+  border: 0;
+  border-bottom: 1px solid var(--gold);
+  border-radius: 0;
+  color: var(--burgundy);
+  background: transparent;
+  font-size: 0.68rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -1722,12 +1763,12 @@ h1 {
 
 .reflection-user-section,
 .reflection-ai-section {
-  padding-left: 22px;
-  border-left: 4px solid #377456;
+  padding-top: 20px;
+  border-top: 2px solid var(--forest);
 }
 
 .reflection-ai-section {
-  border-left-color: #87948b;
+  border-top-color: var(--document-blue);
 }
 
 .reflection-section-heading {
@@ -1740,7 +1781,7 @@ h1 {
 
 .reflection-section-heading h2 {
   margin: 9px 0 0;
-  font-family: Georgia, "Noto Serif SC", serif;
+  font-family: var(--font-serif);
   font-size: 23px;
   font-weight: 560;
 }
@@ -1748,7 +1789,7 @@ h1 {
 .reflection-section-heading > p {
   max-width: 320px;
   margin: 0;
-  color: #7c877f;
+  color: var(--ink-muted);
   font-size: 0.75rem;
   line-height: 1.55;
   text-align: right;
@@ -1758,18 +1799,19 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #2b6548;
+  color: var(--forest);
   font-size: 0.7rem;
   font-weight: 750;
 }
 
 .origin-badge.ai {
-  color: #59665e;
+  color: var(--document-blue);
 }
 
 .review-item-list {
   display: grid;
-  gap: 10px;
+  gap: 0;
+  border-bottom: 1px solid var(--rule-strong);
 }
 
 .review-item {
@@ -1777,21 +1819,21 @@ h1 {
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 14px;
   align-items: start;
-  padding: 18px;
-  border: 1px solid #d9e0da;
-  border-radius: 8px;
-  background: #fff;
+  padding: 20px 8px;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: 0;
+  background: transparent;
   transition: border-color 150ms ease, background 150ms ease;
 }
 
 .review-item.ai {
-  border-color: #dde1de;
-  background: #f5f7f5;
+  background: rgb(238 242 244 / 34%);
 }
 
 .review-item.selected {
-  border-color: #75a68a;
-  background: #eff7f1;
+  box-shadow: inset 3px 0 var(--forest);
+  background: var(--forest-soft);
 }
 
 .review-check {
@@ -1818,27 +1860,33 @@ h1 {
 
 .review-item-label {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 7px;
-  color: #526058;
+  color: var(--ink-soft);
 }
 
 .review-item-label strong {
   font-size: 0.78rem;
 }
 
-.review-item-label span {
-  padding: 3px 6px;
-  border-radius: 4px;
-  color: #8a5c25;
-  background: #faedd7;
+.review-item-label .review-origin {
+  margin-left: auto;
+  padding-left: 8px;
+  border-left: 1px solid var(--rule-strong);
+  color: var(--ink-muted);
+  background: transparent;
   font-size: 0.64rem;
 }
 
+.review-item-label .review-origin.ai { color: var(--document-blue); }
+.review-item-label .review-origin.user { color: var(--forest); }
+.review-item-label .review-origin.unresolved { color: var(--burgundy); }
+
 .review-item-content p {
   margin: 9px 0 0;
-  color: #2d352f;
-  font-family: Georgia, "Noto Serif SC", "Songti SC", serif;
+  color: var(--ink);
+  font-family: var(--font-serif);
   font-size: 0.98rem;
   line-height: 1.72;
 }
@@ -1883,10 +1931,10 @@ h1 {
   gap: 20px;
   margin-top: 34px;
   padding: 15px 18px;
-  border: 1px solid #ccd6cf;
-  border-radius: 8px;
-  background: rgb(255 255 255 / 96%);
-  box-shadow: 0 16px 40px rgb(30 44 35 / 11%);
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  background: rgb(251 251 248 / 97%);
+  box-shadow: 0 12px 30px rgb(30 44 35 / 8%);
 }
 
 .reflection-actions > div {
@@ -1956,7 +2004,7 @@ h1 {
   gap: 10px;
   align-items: start;
   padding: 13px 15px;
-  border-bottom: 1px solid #dce2dd;
+  border-bottom: 1px solid var(--rule);
 }
 
 .saved-summary svg {
@@ -1966,6 +2014,13 @@ h1 {
 .saved-summary span {
   color: #748078;
   font-size: 0.75rem;
+}
+
+.saved-summary span small {
+  display: block;
+  margin-top: 4px;
+  color: var(--document-blue);
+  font-size: 0.62rem;
 }
 
 .saved-summary strong {
@@ -2421,6 +2476,10 @@ h1 {
     padding: 22px 18px 84px;
   }
 
+  .drawer-source {
+    padding-left: 34px;
+  }
+
   .reflection-page {
     padding: 24px 14px 90px;
   }
@@ -2448,8 +2507,8 @@ h1 {
 
   .reflection-user-section,
   .reflection-ai-section {
-    padding-left: 12px;
-    border-left-width: 3px;
+    padding-left: 0;
+    border-left: 0;
   }
 
   .reflection-section-heading {

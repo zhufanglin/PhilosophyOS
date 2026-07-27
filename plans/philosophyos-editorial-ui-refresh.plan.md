@@ -94,7 +94,7 @@ flowchart LR
 - **Acceptance:** 五种模式均可切换且状态清晰；发送后用户和 AI 内容来源明确；桌面正文行宽适合长读，移动端输入框不遮挡底部导航；问题标题不被省略；现有总结入口仍可到达；`pnpm build` 通过。
 - **Dependencies:** 1.1, 1.2
 
-### 2.2 [ ] 统一来源与总结确认的学术语言
+### 2.2 [x] 统一来源与总结确认的学术语言 *(completed 2026-07-27)*
 - **Files:** `apps/web/src/components/SourceDrawer.tsx`, `apps/web/src/components/ReflectionReview.tsx`, `apps/web/src/styles.css`
 - **What:** 将来源抽屉改为文献目录和页边注式排版，保留原典/研究解释层级；让总结页沿用相同字体、规则线、来源标识和操作语言。补齐抽屉打开后的焦点进入、焦点约束、Escape 关闭和焦点恢复。
 - **Acceptance:** 来源条目显示作者、版本位置、摘要和外链；抽屉可完全用键盘操作且关闭后焦点返回触发按钮；总结默认不可保存，AI 建议编辑后仍保持 AI 来源，最终只显示已选项目；390 和 320 视口操作区不遮挡内容。

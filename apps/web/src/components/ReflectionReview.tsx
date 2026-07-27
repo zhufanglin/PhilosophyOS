@@ -145,7 +145,7 @@ export function ReflectionReview({
           {selectedItems.map((item) => (
             <div key={item.id}>
               <Check size={16} />
-              <span>{item.label}</span>
+              <span>{item.label}<small>{item.origin === "ai" ? "AI 建议" : "你的观点"}</small></span>
               <strong>{item.text}</strong>
             </div>
           ))}
@@ -243,7 +243,9 @@ function ReviewItemRow({ item, onToggle, onEdit, onSave }: ReviewItemRowProps) {
         <div className="review-item-label">
           <Icon size={16} />
           <strong>{item.label}</strong>
-          {item.origin === "unresolved" ? <span>主体待确认</span> : null}
+          <span className={`review-origin ${item.origin}`}>
+            {item.origin === "ai" ? "AI 来源" : item.origin === "user" ? "用户原文" : "主体待确认"}
+          </span>
         </div>
         {item.editing ? (
           <textarea
