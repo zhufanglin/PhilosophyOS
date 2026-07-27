@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, SecretStr, field_validator
 
 AIProviderName = Literal["auto", "openai", "deterministic"]
 OpenAIAPIStyle = Literal["responses", "chat_completions"]
-ModelProfile = Literal["gpt", "deepseek"]
+ModelProfile = Literal["free", "gpt", "deepseek"]
 
 
 class PhilosophyOSSettings(BaseModel):
@@ -22,7 +22,11 @@ class PhilosophyOSSettings(BaseModel):
     openai_model: str = Field(default="gpt-5.6", min_length=1)
     openai_base_url: str | None = None
     openai_api_style: OpenAIAPIStyle = "responses"
-    model_profile: ModelProfile = "gpt"
+    model_profile: ModelProfile = "free"
+    free_api_key: SecretStr | None = None
+    free_model: str = Field(default="doubao-seed-2-0-lite-260428", min_length=1)
+    free_base_url: str = Field(default="https://ark.cn-beijing.volces.com/api/v3", min_length=1)
+    free_api_style: OpenAIAPIStyle = "chat_completions"
     gpt_api_key: SecretStr | None = None
     gpt_model: str | None = None
     gpt_base_url: str | None = None
@@ -40,6 +44,7 @@ class PhilosophyOSSettings(BaseModel):
         "gpt_model",
         "gpt_base_url",
         "gpt_api_style",
+        "free_api_key",
         "deepseek_api_key",
         mode="before",
     )
@@ -60,7 +65,13 @@ class PhilosophyOSSettings(BaseModel):
             return None
         return value.strip()
 
-    @field_validator("openai_model", "deepseek_model", "deepseek_base_url")
+    @field_validator(
+        "openai_model",
+        "free_model",
+        "free_base_url",
+        "deepseek_model",
+        "deepseek_base_url",
+    )
     @classmethod
     def strip_required_strings(cls, value: str) -> str:
         """Normalize required settings without silently accepting emptiness."""
@@ -80,6 +91,8 @@ class PhilosophyOSSettings(BaseModel):
     def selected_api_key(self) -> SecretStr | None:
         """Return the API key for the selected model profile."""
 
+        if self.model_profile == "free":
+            return self.free_api_key
         if self.model_profile == "deepseek":
             return self.deepseek_api_key
         return self.gpt_api_key or self.openai_api_key
@@ -88,6 +101,8 @@ class PhilosophyOSSettings(BaseModel):
     def selected_model(self) -> str:
         """Return the model for the selected model profile."""
 
+        if self.model_profile == "free":
+            return self.free_model
         if self.model_profile == "deepseek":
             return self.deepseek_model
         return self.gpt_model or self.openai_model
@@ -96,6 +111,8 @@ class PhilosophyOSSettings(BaseModel):
     def selected_base_url(self) -> str | None:
         """Return the OpenAI-compatible base URL for the selected model profile."""
 
+        if self.model_profile == "free":
+            return self.free_base_url
         if self.model_profile == "deepseek":
             return self.deepseek_base_url
         return self.gpt_base_url or self.openai_base_url
@@ -104,6 +121,8 @@ class PhilosophyOSSettings(BaseModel):
     def selected_api_style(self) -> OpenAIAPIStyle:
         """Return the API style for the selected model profile."""
 
+        if self.model_profile == "free":
+            return self.free_api_style
         if self.model_profile == "deepseek":
             return self.deepseek_api_style
         return self.gpt_api_style or self.openai_api_style
@@ -117,7 +136,11 @@ class PhilosophyOSSettings(BaseModel):
             openai_model=os.getenv("OPENAI_MODEL", "gpt-5.6"),
             openai_base_url=os.getenv("OPENAI_BASE_URL"),
             openai_api_style=os.getenv("OPENAI_API_STYLE", "responses"),
-            model_profile=os.getenv("PHILOSOPHYOS_MODEL_PROFILE", "gpt"),
+            model_profile=os.getenv("PHILOSOPHYOS_MODEL_PROFILE", "free"),
+            free_api_key=os.getenv("FREE_API_KEY"),
+            free_model=os.getenv("FREE_MODEL", "doubao-seed-2-0-lite-260428"),
+            free_base_url=os.getenv("FREE_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3"),
+            free_api_style=os.getenv("FREE_API_STYLE", "chat_completions"),
             gpt_api_key=os.getenv("GPT_API_KEY"),
             gpt_model=os.getenv("GPT_MODEL"),
             gpt_base_url=os.getenv("GPT_BASE_URL"),

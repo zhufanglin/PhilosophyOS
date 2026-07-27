@@ -21,6 +21,7 @@ class DialogueMode(StrEnum):
 class ModelProfile(StrEnum):
     """User-selectable backend model profiles."""
 
+    FREE = "free"
     GPT = "gpt"
     DEEPSEEK = "deepseek"
 
@@ -59,5 +60,5 @@ class DialogueResponse(BaseModel):
     citation_ids: tuple[str, ...] = ()
     provider: Literal["deterministic", "openai"] = "deterministic"
     provider_model: str | None = None
-    model_profile: ModelProfile = ModelProfile.GPT
+    model_profile: ModelProfile = ModelProfile.FREE
     provider_fallback_reason: str | None = None

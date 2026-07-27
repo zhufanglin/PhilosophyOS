@@ -211,6 +211,7 @@ def test_openai_base_url_is_passed_to_client_factory(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr("app.agent.providers.create_openai_client", fake_create_openai_client)
 
     settings = PhilosophyOSSettings(
+        model_profile="gpt",
         openai_api_key=SecretStr("test-relay-key"),
         openai_base_url="https://relay.example.com/v1",
         openai_api_style="responses",
@@ -262,4 +263,42 @@ def test_deepseek_profile_selects_chat_completions_provider(
         "base_url": "https://api.deepseek.com",
     }
     assert client.mock_chat_completions.model == "deepseek-v4-flash"
+    assert response.assistant_message == "mock DeepSeek text"
+
+
+def test_free_profile_selects_chat_completions_provider(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Provider selection routes the free model profile through Chat Completions."""
+
+    client = MockOpenAIClient()
+    captured: dict[str, object] = {}
+
+    def fake_create_openai_client(
+        api_key: SecretStr,
+        base_url: str | None = None,
+    ) -> MockOpenAIClient:
+        captured["api_key"] = api_key.get_secret_value()
+        captured["base_url"] = base_url
+        return client
+
+    monkeypatch.setattr("app.agent.providers.create_openai_client", fake_create_openai_client)
+
+    settings = PhilosophyOSSettings(
+        model_profile="free",
+        free_api_key=SecretStr("test-free-key"),
+        free_base_url="https://ark.cn-beijing.volces.com/api/v3",
+        free_model="doubao-seed-2-0-lite-260428",
+        free_api_style="chat_completions",
+        ai_provider="auto",
+    )
+
+    provider = select_dialogue_provider(settings)
+    response = provider.generate(provider_request())
+
+    assert captured == {
+        "api_key": "test-free-key",
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+    }
+    assert client.mock_chat_completions.model == "doubao-seed-2-0-lite-260428"
     assert response.assistant_message == "mock DeepSeek text"

@@ -38,7 +38,7 @@ async function mockDialogueTurn(page: Page) {
         citation_ids: [],
         provider: "openai",
         provider_model: "gpt-5.6",
-        model_profile: request.model_profile ?? "gpt",
+        model_profile: request.model_profile ?? "free",
         provider_fallback_reason: null,
       }),
     });

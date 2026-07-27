@@ -45,7 +45,7 @@ async def test_dialogue_turn_endpoint_returns_selected_modes(
     assert payload["should_ask_followup"] is expects_question
     assert payload["provider"] == "deterministic"
     assert payload["provider_model"] is None
-    assert payload["model_profile"] == "gpt"
+    assert payload["model_profile"] == "free"
     assert payload["provider_fallback_reason"] is None
 
 
@@ -99,6 +99,28 @@ async def test_dialogue_turn_accepts_frontend_model_profile_choice() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["model_profile"] == "deepseek"
+
+
+@pytest.mark.anyio
+async def test_dialogue_turn_accepts_free_model_profile_choice() -> None:
+    """The browser can choose the free profile as the default model source."""
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/dialogue-turns",
+            json={
+                "user_message": "我想先用免费模型做一次普通追问。",
+                "current_mode": "socratic",
+                "requested_mode": "socratic",
+                "model_profile": "free",
+                "topic": "诚实与德性",
+                "turn_number": 1,
+            },
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["model_profile"] == "free"
 
 
 class MockOpenAIProvider:

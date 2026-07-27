@@ -18,7 +18,7 @@ import { DialogueSource, SourceDrawer } from "../components/SourceDrawer";
 import { DailyQuestionView } from "./TodayPage";
 
 type DialogueMode = "socratic" | "explain" | "compare" | "reflect" | "organize";
-export type ModelProfile = "gpt" | "deepseek";
+export type ModelProfile = "free" | "gpt" | "deepseek";
 
 type DialoguePageProps = {
   apiBaseUrl: string;

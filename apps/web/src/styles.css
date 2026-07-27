@@ -280,7 +280,8 @@ textarea:focus-visible {
 }
 
 .model-switcher button {
-  min-width: 64px;
+  min-width: 52px;
+  padding: 0 11px;
   height: 28px;
   border: 0;
   border-radius: 999px;
@@ -2410,7 +2411,8 @@ h1 {
   }
 
   .model-switcher button {
-    min-width: 58px;
+    min-width: 0;
+    padding: 0 9px;
   }
 
   .explore-page {
@@ -2830,10 +2832,21 @@ h1 {
   .top-bar {
     padding-right: 16px;
     padding-left: 16px;
+    justify-content: flex-end;
+  }
+
+  .mobile-brand {
+    display: none;
   }
 
   .mobile-brand .brand-copy small {
     display: none;
+  }
+
+  .model-switcher button {
+    padding-right: 7px;
+    padding-left: 7px;
+    font-size: 0.62rem;
   }
 
   .api-status strong {

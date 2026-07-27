@@ -38,7 +38,7 @@ async function mockDialogueTurn(page: Page) {
         citation_ids: [],
         provider: "openai",
         provider_model: "gpt-5.6",
-        model_profile: request.model_profile ?? "gpt",
+        model_profile: request.model_profile ?? "free",
         provider_fallback_reason: null,
       }),
     });
@@ -77,7 +77,7 @@ async function mockDialogueTurnWithFirstFailure(page: Page) {
         citation_ids: [],
         provider: "openai",
         provider_model: "gpt-5.6",
-        model_profile: request.model_profile ?? "gpt",
+        model_profile: request.model_profile ?? "free",
         provider_fallback_reason: null,
       }),
     });
@@ -145,6 +145,7 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await page.locator(".start-button").click();
   await expect(page.locator(".dialogue-page")).toBeVisible();
 
+  await expect(page.getByRole("button", { name: "免费" })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "DeepSeek" }).click();
   await expect(page.getByRole("button", { name: "DeepSeek" })).toHaveAttribute("aria-pressed", "true");
 

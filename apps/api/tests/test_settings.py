@@ -97,3 +97,21 @@ def test_deepseek_profile_uses_deepseek_specific_settings() -> None:
     assert settings.selected_model == "deepseek-v4-pro"
     assert settings.selected_base_url == "https://api.deepseek.com"
     assert settings.selected_api_style == "chat_completions"
+
+
+def test_free_profile_uses_free_model_settings() -> None:
+    """Free profile can point to a platform-provided low-cost default model."""
+
+    settings = PhilosophyOSSettings(
+        model_profile="free",
+        free_api_key="free-key",
+        free_model="doubao-seed-2-0-lite-260428",
+        free_base_url="https://ark.cn-beijing.volces.com/api/v3",
+        free_api_style="chat_completions",
+    )
+
+    assert settings.selected_api_key is not None
+    assert settings.selected_api_key.get_secret_value() == "free-key"
+    assert settings.selected_model == "doubao-seed-2-0-lite-260428"
+    assert settings.selected_base_url == "https://ark.cn-beijing.volces.com/api/v3"
+    assert settings.selected_api_style == "chat_completions"

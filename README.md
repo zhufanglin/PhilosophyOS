@@ -78,10 +78,15 @@ $env:PHILOSOPHYOS_AI_PROVIDER='auto'
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-如果希望同时保留 GPT 和 DeepSeek 两套 API，推荐使用 profile 配置。启动后可以在前端顶部的“模型”切换器选择 GPT 或 DeepSeek；`.env` 只负责保存两套后端密钥和默认 profile。
+如果希望同时保留免费模型、GPT 和 DeepSeek 三套 API，推荐使用 profile 配置。启动后可以在前端顶部的“模型”切换器选择“免费 / GPT / DeepSeek”；`.env` 只负责保存后端密钥和默认 profile。
 
 ```env
-PHILOSOPHYOS_MODEL_PROFILE=gpt
+PHILOSOPHYOS_MODEL_PROFILE=free
+
+FREE_API_KEY=<填入平台免费模型 key，例如豆包/火山方舟>
+FREE_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+FREE_MODEL=doubao-seed-2-0-lite-260428
+FREE_API_STYLE=chat_completions
 
 GPT_API_KEY=<填入你的 GPT 或 GPT 中转站 key>
 GPT_BASE_URL=https://api.synapai.top/v1
@@ -95,6 +100,8 @@ DEEPSEEK_API_STYLE=chat_completions
 
 PHILOSOPHYOS_AI_PROVIDER=auto
 ```
+
+免费模型目前建议使用豆包/火山方舟免费额度。后续如果替换成通义、OpenRouter Free 或其他免费模型，只需要改 `FREE_*` 这一组配置，不影响 GPT 和 DeepSeek。
 
 DeepSeek 官方 API 使用 OpenAI-compatible 的 Chat Completions 风格。只想默认启动 DeepSeek 时，将 `apps/api/.env` 改成：
 

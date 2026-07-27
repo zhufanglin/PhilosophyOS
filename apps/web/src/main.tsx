@@ -42,7 +42,7 @@ function App() {
   const [activeQuestion, setActiveQuestion] = useState(fallbackQuestion);
   const [modelProfile, setModelProfile] = useState<ModelProfile>(() => {
     const saved = window.localStorage.getItem("philosophyos:model-profile");
-    return saved === "deepseek" ? "deepseek" : "gpt";
+    return saved === "gpt" || saved === "deepseek" ? saved : "free";
   });
   const [thoughtTransition, setThoughtTransition] = useState<ThoughtTransitionState | null>(null);
   const transitionTimers = useRef<number[]>([]);
@@ -210,6 +210,14 @@ function App() {
             </div>
             <div className="model-switcher" aria-label="选择大模型">
               <span>模型</span>
+              <button
+                className={modelProfile === "free" ? "active" : ""}
+                type="button"
+                aria-pressed={modelProfile === "free"}
+                onClick={() => changeModelProfile("free")}
+              >
+                免费
+              </button>
               <button
                 className={modelProfile === "gpt" ? "active" : ""}
                 type="button"
