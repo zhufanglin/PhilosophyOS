@@ -179,42 +179,46 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
   return (
     <main className="dialogue-page" id="dialogue">
       <header className="dialogue-header">
-        <button className="icon-button" type="button" onClick={onBack} aria-label="返回今日" title="返回今日">
-          <ArrowLeft size={20} />
-        </button>
+        <div className="dialogue-header-toolbar">
+          <button className="icon-button" type="button" onClick={onBack} aria-label="返回今日" title="返回今日">
+            <ArrowLeft size={20} />
+          </button>
+          <span>思考工作台</span>
+          <div className="dialogue-header-actions">
+            <button className="secondary-button source-trigger" type="button" onClick={() => setSourcesOpen(true)}>
+              <BookOpen size={17} /> 来源 <span>{sources.length}</span>
+            </button>
+            <button className="secondary-button finish-button" type="button" onClick={finishDialogue} disabled={finished}>
+              <Square size={15} /> {finished ? "已结束" : "结束"}
+            </button>
+          </div>
+        </div>
+
         <div className="dialogue-question-title">
           <span>{question.domain} · {question.difficulty}</span>
           <h1>{question.prompt}</h1>
         </div>
-        <div className="dialogue-header-actions">
-          <button className="secondary-button source-trigger" type="button" onClick={() => setSourcesOpen(true)}>
-            <BookOpen size={17} /> 来源 <span>{sources.length}</span>
-          </button>
-          <button className="secondary-button finish-button" type="button" onClick={finishDialogue} disabled={finished}>
-            <Square size={15} /> {finished ? "已结束" : "结束"}
-          </button>
+
+        <div className="mode-bar" aria-label="对话模式">
+          <span>研究方法</span>
+          <div className="mode-control" role="group" aria-label="选择对话方式">
+            {modes.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  className={mode === item.id ? "active" : ""}
+                  type="button"
+                  key={item.id}
+                  aria-pressed={mode === item.id}
+                  onClick={() => setMode(item.id)}
+                >
+                  <Icon size={15} /> {item.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
-
-      <div className="mode-bar" aria-label="对话模式">
-        <span>对话方式</span>
-        <div className="mode-control" role="group" aria-label="选择对话方式">
-          {modes.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                className={mode === item.id ? "active" : ""}
-                type="button"
-                key={item.id}
-                aria-pressed={mode === item.id}
-                onClick={() => setMode(item.id)}
-              >
-                <Icon size={15} /> {item.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       <div className="dialogue-workspace">
         <DialogueOutline steps={outline} pulseStepId={pulseStepId} />
@@ -223,11 +227,19 @@ export function DialoguePage({ question, onBack }: DialoguePageProps) {
             {messages.map((message) => (
               <article className={`message ${message.role}`} key={message.id}>
                 <div className="message-label">
-                  <span>{message.role === "assistant" ? "Φ" : "你"}</span>
-                  <strong>{message.role === "assistant" ? "PhilosophyOS" : "你的回答"}</strong>
-                  {message.mode ? <small>{modes.find((item) => item.id === message.mode)?.label}</small> : null}
+                  <span aria-hidden="true">{message.role === "assistant" ? "Φ" : "你"}</span>
+                  <div>
+                    <strong>{message.role === "assistant" ? "哲学引导" : "研究者"}</strong>
+                    <small>
+                      {message.role === "assistant"
+                        ? `PhilosophyOS · ${modes.find((item) => item.id === message.mode)?.label ?? "回应"}`
+                        : "个人论证 · 本轮记录"}
+                    </small>
+                  </div>
                 </div>
-                <p>{message.body}</p>
+                <div className="message-argument">
+                  <p>{message.body}</p>
+                </div>
               </article>
             ))}
             {thinking ? <div className="thinking-state"><span /><span /><span /> 正在整理这一点</div> : null}

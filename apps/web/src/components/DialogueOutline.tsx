@@ -1,4 +1,4 @@
-import { Check, Circle, MessageCircleQuestion } from "lucide-react";
+import { Check, Circle } from "lucide-react";
 
 export type OutlineStep = {
   id: string;
@@ -16,8 +16,8 @@ export function DialogueOutline({ steps, pulseStepId }: DialogueOutlineProps) {
   return (
     <aside className="dialogue-outline" aria-labelledby="outline-title">
       <div className="outline-heading">
-        <MessageCircleQuestion size={17} />
-        <h2 id="outline-title">对话脉络</h2>
+        <span>Research index</span>
+        <h2 id="outline-title">研究阶段</h2>
       </div>
       <ol>
         {steps.map((step, index) => (
