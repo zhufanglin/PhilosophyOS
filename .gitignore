@@ -13,6 +13,7 @@ node_modules/
 apps/web/dist/
 *.tsbuildinfo
 .playwright-cli/
+apps/web/test-results/
 output/playwright/
 
 # Environment and secrets

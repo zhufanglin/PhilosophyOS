@@ -4,7 +4,7 @@
   --paper-muted: #e9ece7;
   --ink: #20231f;
   --ink-soft: #4f5751;
-  --ink-muted: #788078;
+  --ink-muted: #5f665f;
   --forest: #285640;
   --forest-soft: #dfe9e1;
   --document-blue: #36596f;
@@ -165,7 +165,7 @@ textarea:focus-visible {
   gap: 10px;
   min-height: 42px;
   padding: 9px 10px 9px 12px;
-  color: #a1a7a2;
+  color: var(--ink-muted);
   font-size: 0.88rem;
 }
 
@@ -1260,7 +1260,7 @@ h1 {
   min-height: 82px;
   padding: 14px 0 12px;
   border-bottom: 1px solid var(--rule);
-  color: #929991;
+  color: var(--ink-muted);
 }
 
 .dialogue-outline li:not(:last-child)::after {
@@ -1551,7 +1551,7 @@ h1 {
 }
 
 .dialogue-composer > div > span {
-  color: #98a19a;
+  color: var(--ink-muted);
   font-size: 0.68rem;
 }
 
@@ -1947,7 +1947,7 @@ h1 {
 }
 
 .reflection-actions span {
-  color: #78837b;
+  color: var(--ink-muted);
   font-size: 0.7rem;
 }
 
@@ -2093,7 +2093,7 @@ h1 {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    color: #778179;
+    color: var(--ink-muted);
     font-size: 0.7rem;
     text-decoration: none;
   }

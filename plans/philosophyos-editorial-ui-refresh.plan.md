@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | in-progress |
+| Status | complete |
 | Created | 2026-07-27 |
 | Ticket | N/A |
 | Branch | TBD |
@@ -100,7 +100,7 @@ flowchart LR
 - **Acceptance:** 来源条目显示作者、版本位置、摘要和外链；抽屉可完全用键盘操作且关闭后焦点返回触发按钮；总结默认不可保存，AI 建议编辑后仍保持 AI 来源，最终只显示已选项目；390 和 320 视口操作区不遮挡内容。
 - **Dependencies:** 2.1
 
-### 2.3 [ ] 建立视觉与功能回归门槛
+### 2.3 [x] 建立视觉与功能回归门槛 *(completed 2026-07-27)*
 - **Files:** `apps/web/package.json`, `apps/web/playwright.config.ts`, `apps/web/e2e/editorial-thinking-flow.spec.ts`, `apps/web/e2e/accessibility.spec.ts`, `output/playwright/`
 - **What:** 为今日换题、开始思考、模式切换、发送回答、来源开关、结束、总结编辑勾选、保存和返回今日建立最小 Playwright 回归；覆盖 1440×1000、1024×768、390×844、320×700，检查横向溢出、固定元素遮挡、控制台错误、键盘流程和严重可访问性问题。
 - **Acceptance:** `pnpm build` 和新增 E2E 全部通过；目标视口无横向溢出、文本截断或底部遮挡；控制台 error/warning 为 0；WCAG 严重/高等级问题为 0；关键页面保存桌面和移动端验收截图。

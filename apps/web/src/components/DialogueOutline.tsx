@@ -19,7 +19,7 @@ export function DialogueOutline({ steps, pulseStepId }: DialogueOutlineProps) {
         <span>Research index</span>
         <h2 id="outline-title">研究阶段</h2>
       </div>
-      <ol>
+      <ol tabIndex={0}>
         {steps.map((step, index) => (
           <li
             className={`${step.state}${pulseStepId === step.id ? " is-pulsing" : ""}`}
