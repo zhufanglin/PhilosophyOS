@@ -225,3 +225,41 @@ def test_openai_base_url_is_passed_to_client_factory(monkeypatch: pytest.MonkeyP
         "base_url": "https://relay.example.com/v1",
     }
     assert response.provider == "openai"
+
+
+def test_deepseek_profile_selects_chat_completions_provider(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Provider selection routes DeepSeek settings into the Chat Completions style."""
+
+    client = MockOpenAIClient()
+    captured: dict[str, object] = {}
+
+    def fake_create_openai_client(
+        api_key: SecretStr,
+        base_url: str | None = None,
+    ) -> MockOpenAIClient:
+        captured["api_key"] = api_key.get_secret_value()
+        captured["base_url"] = base_url
+        return client
+
+    monkeypatch.setattr("app.agent.providers.create_openai_client", fake_create_openai_client)
+
+    settings = PhilosophyOSSettings(
+        model_profile="deepseek",
+        deepseek_api_key=SecretStr("test-deepseek-key"),
+        deepseek_base_url="https://api.deepseek.com",
+        deepseek_model="deepseek-v4-flash",
+        deepseek_api_style="chat_completions",
+        ai_provider="auto",
+    )
+
+    provider = select_dialogue_provider(settings)
+    response = provider.generate(provider_request())
+
+    assert captured == {
+        "api_key": "test-deepseek-key",
+        "base_url": "https://api.deepseek.com",
+    }
+    assert client.mock_chat_completions.model == "deepseek-v4-flash"
+    assert response.assistant_message == "mock DeepSeek text"

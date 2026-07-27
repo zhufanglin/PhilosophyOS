@@ -78,13 +78,32 @@ $env:PHILOSOPHYOS_AI_PROVIDER='auto'
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-DeepSeek 官方 API 使用 OpenAI-compatible 的 Chat Completions 风格。切换到 DeepSeek 时，将 `apps/api/.env` 改成：
+如果希望同时保留 GPT 和 DeepSeek 两套 API，推荐使用 profile 配置。`PHILOSOPHYOS_MODEL_PROFILE=gpt` 使用 GPT；`PHILOSOPHYOS_MODEL_PROFILE=deepseek` 使用 DeepSeek。
 
 ```env
-OPENAI_API_KEY=<填入你的 DeepSeek key>
-OPENAI_BASE_URL=https://api.deepseek.com
-OPENAI_MODEL=deepseek-v4-flash
-OPENAI_API_STYLE=chat_completions
+PHILOSOPHYOS_MODEL_PROFILE=gpt
+
+GPT_API_KEY=<填入你的 GPT 或 GPT 中转站 key>
+GPT_BASE_URL=https://api.synapai.top/v1
+GPT_MODEL=gpt-5.6
+GPT_API_STYLE=responses
+
+DEEPSEEK_API_KEY=<填入你的 DeepSeek key>
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-v4-flash
+DEEPSEEK_API_STYLE=chat_completions
+
+PHILOSOPHYOS_AI_PROVIDER=auto
+```
+
+DeepSeek 官方 API 使用 OpenAI-compatible 的 Chat Completions 风格。只切换到 DeepSeek 时，将 `apps/api/.env` 改成：
+
+```env
+PHILOSOPHYOS_MODEL_PROFILE=deepseek
+DEEPSEEK_API_KEY=<填入你的 DeepSeek key>
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-v4-flash
+DEEPSEEK_API_STYLE=chat_completions
 PHILOSOPHYOS_AI_PROVIDER=auto
 ```
 
@@ -99,6 +118,7 @@ OPENAI_API_KEY=<填入你的新中转站 key>
 OPENAI_BASE_URL=https://api.synapai.top/v1
 OPENAI_MODEL=gpt-5.6
 OPENAI_API_STYLE=responses
+PHILOSOPHYOS_MODEL_PROFILE=gpt
 PHILOSOPHYOS_AI_PROVIDER=auto
 ```
 

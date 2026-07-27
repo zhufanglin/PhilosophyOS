@@ -166,11 +166,12 @@ def create_openai_client(api_key: SecretStr, base_url: str | None = None) -> Ope
 def select_dialogue_provider(settings: PhilosophyOSSettings) -> DialogueProvider:
     """Choose the configured provider, falling back locally when no key is present."""
 
-    if settings.ai_provider == "deterministic" or settings.openai_api_key is None:
+    api_key = settings.selected_api_key
+    if settings.ai_provider == "deterministic" or api_key is None:
         return DeterministicDialogueProvider()
 
     return OpenAIDialogueProvider(
-        client=create_openai_client(settings.openai_api_key, settings.openai_base_url),
-        model=settings.openai_model,
-        api_style=settings.openai_api_style,
+        client=create_openai_client(api_key, settings.selected_base_url),
+        model=settings.selected_model,
+        api_style=settings.selected_api_style,
     )

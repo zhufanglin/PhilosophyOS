@@ -37,3 +37,63 @@ def test_openai_api_style_loads_from_backend_env(monkeypatch: pytest.MonkeyPatch
     settings = PhilosophyOSSettings.from_env()
 
     assert settings.openai_api_style == "chat_completions"
+
+
+def test_gpt_profile_uses_gpt_specific_settings_first() -> None:
+    """GPT profile can use its own key/model/base URL without losing legacy fallback."""
+
+    settings = PhilosophyOSSettings(
+        model_profile="gpt",
+        openai_api_key="legacy-key",
+        openai_model="legacy-model",
+        openai_base_url="https://legacy.example.com/v1",
+        openai_api_style="responses",
+        gpt_api_key="gpt-key",
+        gpt_model="gpt-5.6",
+        gpt_base_url="https://gpt.example.com/v1",
+        gpt_api_style="chat_completions",
+    )
+
+    assert settings.selected_api_key is not None
+    assert settings.selected_api_key.get_secret_value() == "gpt-key"
+    assert settings.selected_model == "gpt-5.6"
+    assert settings.selected_base_url == "https://gpt.example.com/v1"
+    assert settings.selected_api_style == "chat_completions"
+
+
+def test_gpt_profile_falls_back_to_legacy_openai_settings() -> None:
+    """Existing OPENAI_* configuration remains valid for the GPT profile."""
+
+    settings = PhilosophyOSSettings(
+        model_profile="gpt",
+        openai_api_key="legacy-key",
+        openai_model="gpt-5.6",
+        openai_base_url="https://relay.example.com/v1",
+        openai_api_style="responses",
+    )
+
+    assert settings.selected_api_key is not None
+    assert settings.selected_api_key.get_secret_value() == "legacy-key"
+    assert settings.selected_model == "gpt-5.6"
+    assert settings.selected_base_url == "https://relay.example.com/v1"
+    assert settings.selected_api_style == "responses"
+
+
+def test_deepseek_profile_uses_deepseek_specific_settings() -> None:
+    """DeepSeek profile uses its own key/model/base URL and Chat Completions style."""
+
+    settings = PhilosophyOSSettings(
+        model_profile="deepseek",
+        openai_api_key="legacy-key",
+        gpt_api_key="gpt-key",
+        deepseek_api_key="deepseek-key",
+        deepseek_model="deepseek-v4-pro",
+        deepseek_base_url="https://api.deepseek.com",
+        deepseek_api_style="chat_completions",
+    )
+
+    assert settings.selected_api_key is not None
+    assert settings.selected_api_key.get_secret_value() == "deepseek-key"
+    assert settings.selected_model == "deepseek-v4-pro"
+    assert settings.selected_base_url == "https://api.deepseek.com"
+    assert settings.selected_api_style == "chat_completions"

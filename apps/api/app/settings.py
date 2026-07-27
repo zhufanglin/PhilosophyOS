@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, SecretStr, field_validator
 
 AIProviderName = Literal["auto", "openai", "deterministic"]
 OpenAIAPIStyle = Literal["responses", "chat_completions"]
+ModelProfile = Literal["gpt", "deepseek"]
 
 
 class PhilosophyOSSettings(BaseModel):
@@ -21,9 +22,27 @@ class PhilosophyOSSettings(BaseModel):
     openai_model: str = Field(default="gpt-5.6", min_length=1)
     openai_base_url: str | None = None
     openai_api_style: OpenAIAPIStyle = "responses"
+    model_profile: ModelProfile = "gpt"
+    gpt_api_key: SecretStr | None = None
+    gpt_model: str | None = None
+    gpt_base_url: str | None = None
+    gpt_api_style: OpenAIAPIStyle | None = None
+    deepseek_api_key: SecretStr | None = None
+    deepseek_model: str = Field(default="deepseek-v4-flash", min_length=1)
+    deepseek_base_url: str = Field(default="https://api.deepseek.com", min_length=1)
+    deepseek_api_style: OpenAIAPIStyle = "chat_completions"
     ai_provider: AIProviderName = "auto"
 
-    @field_validator("openai_api_key", "openai_base_url", mode="before")
+    @field_validator(
+        "openai_api_key",
+        "openai_base_url",
+        "gpt_api_key",
+        "gpt_model",
+        "gpt_base_url",
+        "gpt_api_style",
+        "deepseek_api_key",
+        mode="before",
+    )
     @classmethod
     def blank_optional_values_become_none(cls, value: object) -> object:
         """Treat empty optional environment variables as missing values."""
@@ -32,7 +51,7 @@ class PhilosophyOSSettings(BaseModel):
             return None
         return value
 
-    @field_validator("openai_base_url")
+    @field_validator("openai_base_url", "gpt_base_url")
     @classmethod
     def strip_base_url(cls, value: str | None) -> str | None:
         """Normalize an optional OpenAI-compatible base URL."""
@@ -41,12 +60,53 @@ class PhilosophyOSSettings(BaseModel):
             return None
         return value.strip()
 
-    @field_validator("openai_model")
+    @field_validator("openai_model", "deepseek_model", "deepseek_base_url")
     @classmethod
-    def strip_model(cls, value: str) -> str:
-        """Normalize model names without silently accepting emptiness."""
+    def strip_required_strings(cls, value: str) -> str:
+        """Normalize required settings without silently accepting emptiness."""
 
         return value.strip()
+
+    @field_validator("gpt_model")
+    @classmethod
+    def strip_optional_model(cls, value: str | None) -> str | None:
+        """Normalize optional model names."""
+
+        if value is None:
+            return None
+        return value.strip()
+
+    @property
+    def selected_api_key(self) -> SecretStr | None:
+        """Return the API key for the selected model profile."""
+
+        if self.model_profile == "deepseek":
+            return self.deepseek_api_key
+        return self.gpt_api_key or self.openai_api_key
+
+    @property
+    def selected_model(self) -> str:
+        """Return the model for the selected model profile."""
+
+        if self.model_profile == "deepseek":
+            return self.deepseek_model
+        return self.gpt_model or self.openai_model
+
+    @property
+    def selected_base_url(self) -> str | None:
+        """Return the OpenAI-compatible base URL for the selected model profile."""
+
+        if self.model_profile == "deepseek":
+            return self.deepseek_base_url
+        return self.gpt_base_url or self.openai_base_url
+
+    @property
+    def selected_api_style(self) -> OpenAIAPIStyle:
+        """Return the API style for the selected model profile."""
+
+        if self.model_profile == "deepseek":
+            return self.deepseek_api_style
+        return self.gpt_api_style or self.openai_api_style
 
     @classmethod
     def from_env(cls) -> PhilosophyOSSettings:
@@ -57,6 +117,15 @@ class PhilosophyOSSettings(BaseModel):
             openai_model=os.getenv("OPENAI_MODEL", "gpt-5.6"),
             openai_base_url=os.getenv("OPENAI_BASE_URL"),
             openai_api_style=os.getenv("OPENAI_API_STYLE", "responses"),
+            model_profile=os.getenv("PHILOSOPHYOS_MODEL_PROFILE", "gpt"),
+            gpt_api_key=os.getenv("GPT_API_KEY"),
+            gpt_model=os.getenv("GPT_MODEL"),
+            gpt_base_url=os.getenv("GPT_BASE_URL"),
+            gpt_api_style=os.getenv("GPT_API_STYLE"),
+            deepseek_api_key=os.getenv("DEEPSEEK_API_KEY"),
+            deepseek_model=os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash"),
+            deepseek_base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+            deepseek_api_style=os.getenv("DEEPSEEK_API_STYLE", "chat_completions"),
             ai_provider=os.getenv("PHILOSOPHYOS_AI_PROVIDER", "auto"),
         )
 
