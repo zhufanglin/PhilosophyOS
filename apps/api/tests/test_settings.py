@@ -27,3 +27,13 @@ def test_blank_openai_base_url_is_ignored(monkeypatch: pytest.MonkeyPatch) -> No
     settings = PhilosophyOSSettings.from_env()
 
     assert settings.openai_base_url is None
+
+
+def test_openai_api_style_loads_from_backend_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """OPENAI_API_STYLE 可切换 Responses 与 Chat Completions 调用风格。"""
+
+    monkeypatch.setenv("OPENAI_API_STYLE", "chat_completions")
+
+    settings = PhilosophyOSSettings.from_env()
+
+    assert settings.openai_api_style == "chat_completions"

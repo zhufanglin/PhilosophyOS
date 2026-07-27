@@ -73,9 +73,22 @@ cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
 $env:OPENAI_API_KEY='<中转站提供的 key>'
 $env:OPENAI_BASE_URL='https://你的中转站地址/v1'
 $env:OPENAI_MODEL='<中转站支持的模型名>'
+$env:OPENAI_API_STYLE='responses'
 $env:PHILOSOPHYOS_AI_PROVIDER='auto'
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
+
+DeepSeek 官方 API 使用 OpenAI-compatible 的 Chat Completions 风格。切换到 DeepSeek 时，将 `apps/api/.env` 改成：
+
+```env
+OPENAI_API_KEY=<填入你的 DeepSeek key>
+OPENAI_BASE_URL=https://api.deepseek.com
+OPENAI_MODEL=deepseek-v4-flash
+OPENAI_API_STYLE=chat_completions
+PHILOSOPHYOS_AI_PROVIDER=auto
+```
+
+如果需要更强的回答质量，可以把模型改为 `deepseek-v4-pro`；如果中转站提供 DeepSeek 模型，则按中转站文档填写它给出的 `OPENAI_BASE_URL` 和模型名。
 
 ### 4. 使用本地 `.env` 和一键启动脚本
 
@@ -85,6 +98,7 @@ $env:PHILOSOPHYOS_AI_PROVIDER='auto'
 OPENAI_API_KEY=<填入你的新中转站 key>
 OPENAI_BASE_URL=https://api.synapai.top/v1
 OPENAI_MODEL=gpt-5.6
+OPENAI_API_STYLE=responses
 PHILOSOPHYOS_AI_PROVIDER=auto
 ```
 

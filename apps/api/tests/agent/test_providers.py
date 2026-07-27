@@ -11,6 +11,8 @@ import pytest
 from pydantic import SecretStr
 
 from app.agent.providers import (
+    ChatCompletionsResource,
+    ChatResource,
     DeterministicDialogueProvider,
     OpenAIDialogueProvider,
     ProviderRequest,
@@ -86,14 +88,74 @@ class MockOpenAIClient:
 
     def __init__(self) -> None:
         self._responses = MockResponsesResource()
+        self._chat = MockChatResource()
 
     @property
     def responses(self) -> ResponsesResource:
         return self._responses
 
     @property
+    def chat(self) -> ChatResource:
+        return self._chat
+
+    @property
     def mock_responses(self) -> MockResponsesResource:
         return self._responses
+
+    @property
+    def mock_chat_completions(self) -> MockChatCompletionsResource:
+        return self._chat.mock_completions
+
+
+@dataclass
+class MockChatMessage:
+    """Tiny chat completion message object."""
+
+    content: str
+
+
+@dataclass
+class MockChatChoice:
+    """Tiny chat completion choice object."""
+
+    message: MockChatMessage
+
+
+@dataclass
+class MockChatCompletionResponse:
+    """Tiny response object matching the choices boundary."""
+
+    choices: list[MockChatChoice]
+
+
+class MockChatCompletionsResource:
+    """Capture Chat Completions calls without network access."""
+
+    def __init__(self) -> None:
+        self.model: str | None = None
+        self.messages: list[dict[str, str]] | None = None
+
+    def create(self, *, model: str, messages: list[dict[str, str]]) -> MockChatCompletionResponse:
+        self.model = model
+        self.messages = messages
+        return MockChatCompletionResponse(
+            choices=[MockChatChoice(message=MockChatMessage(content="  mock DeepSeek text  "))]
+        )
+
+
+class MockChatResource:
+    """Mock chat namespace with completions resource."""
+
+    def __init__(self) -> None:
+        self._completions = MockChatCompletionsResource()
+
+    @property
+    def completions(self) -> ChatCompletionsResource:
+        return self._completions
+
+    @property
+    def mock_completions(self) -> MockChatCompletionsResource:
+        return self._completions
 
 
 def test_mock_openai_response_maps_to_assistant_text() -> None:
@@ -109,6 +171,27 @@ def test_mock_openai_response_maps_to_assistant_text() -> None:
     assert response.provider == "openai"
     assert response.model == "gpt-5.6"
     assert response.assistant_message == "mock OpenAI assistant text"
+
+
+def test_chat_completions_style_maps_to_assistant_text() -> None:
+    """OpenAI-compatible Chat Completions output supports DeepSeek-style providers."""
+
+    client = MockOpenAIClient()
+    provider = OpenAIDialogueProvider(
+        client=client,
+        model="deepseek-v4-flash",
+        api_style="chat_completions",
+    )
+
+    response = provider.generate(provider_request())
+
+    assert client.mock_chat_completions.model == "deepseek-v4-flash"
+    assert client.mock_chat_completions.messages == [
+        {"role": "user", "content": "请以苏格拉底式方式回应。"}
+    ]
+    assert response.provider == "openai"
+    assert response.model == "deepseek-v4-flash"
+    assert response.assistant_message == "mock DeepSeek text"
 
 
 def test_openai_base_url_is_passed_to_client_factory(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -130,6 +213,7 @@ def test_openai_base_url_is_passed_to_client_factory(monkeypatch: pytest.MonkeyP
     settings = PhilosophyOSSettings(
         openai_api_key=SecretStr("test-relay-key"),
         openai_base_url="https://relay.example.com/v1",
+        openai_api_style="responses",
         ai_provider="auto",
     )
 

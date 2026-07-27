@@ -8,7 +8,7 @@ from typing import Literal, Protocol, cast
 from pydantic import SecretStr
 
 from app.schemas.dialogue import DialogueMode
-from app.settings import PhilosophyOSSettings
+from app.settings import OpenAIAPIStyle, PhilosophyOSSettings
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +65,21 @@ class ResponsesResource(Protocol):
         """Create a non-streaming response."""
 
 
+class ChatCompletionsResource(Protocol):
+    """Small subset of the OpenAI Chat Completions API used by compatible providers."""
+
+    def create(self, *, model: str, messages: list[dict[str, str]]) -> object:
+        """Create a non-streaming chat completion."""
+
+
+class ChatResource(Protocol):
+    """Chat namespace exposed by the OpenAI-compatible SDK client."""
+
+    @property
+    def completions(self) -> ChatCompletionsResource:
+        """Return the Chat Completions resource."""
+
+
 class OpenAIClient(Protocol):
     """Structural boundary for the official OpenAI Python client."""
 
@@ -72,17 +87,35 @@ class OpenAIClient(Protocol):
     def responses(self) -> ResponsesResource:
         """Return the Responses API resource."""
 
+    @property
+    def chat(self) -> ChatResource:
+        """Return the Chat API resource."""
+
 
 class OpenAIDialogueProvider:
-    """Generate assistant text through the OpenAI Responses API."""
+    """Generate assistant text through an OpenAI or OpenAI-compatible API."""
 
     name: Literal["openai"] = "openai"
 
-    def __init__(self, client: OpenAIClient, model: str) -> None:
+    def __init__(
+        self,
+        client: OpenAIClient,
+        model: str,
+        api_style: OpenAIAPIStyle = "responses",
+    ) -> None:
         self._client = client
         self._model = model
+        self._api_style = api_style
 
     def generate(self, request: ProviderRequest) -> ProviderResponse:
+        """Call the configured model API and normalize its text output."""
+
+        if self._api_style == "chat_completions":
+            return self._generate_with_chat_completions(request)
+
+        return self._generate_with_responses(request)
+
+    def _generate_with_responses(self, request: ProviderRequest) -> ProviderResponse:
         """Call the Responses API and normalize its text output."""
 
         response = self._client.responses.create(model=self._model, input=request.prompt)
@@ -92,6 +125,28 @@ class OpenAIDialogueProvider:
 
         return ProviderResponse(
             assistant_message=output_text.strip(),
+            provider=self.name,
+            model=self._model,
+        )
+
+    def _generate_with_chat_completions(self, request: ProviderRequest) -> ProviderResponse:
+        """Call Chat Completions for OpenAI-compatible providers such as DeepSeek."""
+
+        response = self._client.chat.completions.create(
+            model=self._model,
+            messages=[{"role": "user", "content": request.prompt}],
+        )
+        choices = getattr(response, "choices", None)
+        if not isinstance(choices, list) or not choices:
+            raise ValueError("Chat completion response did not include choices")
+
+        message = getattr(choices[0], "message", None)
+        content = getattr(message, "content", None)
+        if not isinstance(content, str) or not content.strip():
+            raise ValueError("Chat completion response did not include message content")
+
+        return ProviderResponse(
+            assistant_message=content.strip(),
             provider=self.name,
             model=self._model,
         )
@@ -117,4 +172,5 @@ def select_dialogue_provider(settings: PhilosophyOSSettings) -> DialogueProvider
     return OpenAIDialogueProvider(
         client=create_openai_client(settings.openai_api_key, settings.openai_base_url),
         model=settings.openai_model,
+        api_style=settings.openai_api_style,
     )
