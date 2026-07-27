@@ -14,6 +14,7 @@ PhilosophyOS 是一个以每日哲学挑战、苏格拉底式对话、可信文�
 | [docs/content/source-policy.md](docs/content/source-policy.md) | 来源、版权、引用和版本管理规范 |
 | [docs/architecture/knowledge-model.md](docs/architecture/knowledge-model.md) | 知识实体、关系、记忆和 Obsidian 数据模型 |
 | [docs/product/wireframes.md](docs/product/wireframes.md) | 核心页面低保真原型与状态说明 |
+| [docs/operations/模型配置与启动说明.md](docs/operations/模型配置与启动说明.md) | 本地启动、多模型配置、连接测试与常见故障排查 |
 | [docs/product/social-discussion.md](docs/product/social-discussion.md) | 好友关系、私密讨论、权限和安全规范 |
 | [docs/agent/behavior-spec.md](docs/agent/behavior-spec.md) | Agent 模式、工具调用和输出约束 |
 | [docs/evaluation/evaluation-plan.md](docs/evaluation/evaluation-plan.md) | 质量评测维度、门槛和回归流程 |
