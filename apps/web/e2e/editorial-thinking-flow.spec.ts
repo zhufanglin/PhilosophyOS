@@ -74,6 +74,20 @@ async function mockModelProfileConnectionTest(page: Page) {
   );
 }
 
+async function mockObsidianDraft(page: Page) {
+  await page.route("http://127.0.0.1:8000/api/v1/obsidian-drafts", async (route) => {
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        file_name: "2026-07-28-诚实与德性.md",
+        absolute_path: "D:\\Obsidian\\storage\\Stu的哲学思考\\PhilosophyOS\\草稿\\2026-07-28-诚实与德性.md",
+        message: "Obsidian 草稿已生成，请在 Obsidian 中确认后再归档。",
+      }),
+    });
+  });
+}
+
 async function mockDialogueTurn(page: Page) {
   await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
     const request = route.request().postDataJSON() as {
@@ -226,6 +240,7 @@ test.beforeEach(async ({ page }) => {
   await mockHealth(page);
   await mockModelProfiles(page);
   await mockModelProfileConnectionTest(page);
+  await mockObsidianDraft(page);
   await mockDialogueTurn(page);
 });
 
@@ -309,6 +324,8 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await expect(page.locator(".saved-summary")).toContainText("AI");
   await expect(page.locator(".saved-summary")).not.toContainText("开放问题");
   await expect(page.locator(".saved-summary")).not.toContainText("关联建议");
+  await expect(page.locator(".obsidian-draft-result")).toContainText("Obsidian 草稿已生成");
+  await expect(page.locator(".obsidian-draft-result")).toContainText("2026-07-28-诚实与德性.md");
 
   await page.locator(".reflection-saved .primary-button").click();
   await expect(page.locator(".today-page")).toBeVisible();

@@ -115,3 +115,13 @@ def test_free_profile_uses_free_model_settings() -> None:
     assert settings.selected_model == "doubao-seed-2-0-lite-260428"
     assert settings.selected_base_url == "https://ark.cn-beijing.volces.com/api/v3"
     assert settings.selected_api_style == "responses"
+
+
+def test_obsidian_drafts_dir_loads_from_backend_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """OBSIDIAN_DRAFTS_DIR configures the fixed backend draft output directory."""
+
+    monkeypatch.setenv("OBSIDIAN_DRAFTS_DIR", " D:\\Obsidian\\草稿 ")
+
+    settings = PhilosophyOSSettings.from_env()
+
+    assert settings.obsidian_drafts_dir == "D:\\Obsidian\\草稿"

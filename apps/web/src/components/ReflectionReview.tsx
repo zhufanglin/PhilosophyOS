@@ -27,10 +27,17 @@ type ReviewItem = {
 };
 
 type ReflectionReviewProps = {
+  apiBaseUrl: string;
   question: string;
   userStatements: string[];
   onBack: () => void;
   onReturnToday: () => void;
+};
+
+type ObsidianDraftResponse = {
+  file_name: string;
+  absolute_path: string;
+  message: string;
 };
 
 const aiItems: ReviewItem[] = [
@@ -98,6 +105,7 @@ function initialItems(userStatements: string[]): ReviewItem[] {
 }
 
 export function ReflectionReview({
+  apiBaseUrl,
   question,
   userStatements,
   onBack,
@@ -105,6 +113,9 @@ export function ReflectionReview({
 }: ReflectionReviewProps) {
   const [items, setItems] = useState<ReviewItem[]>(() => initialItems(userStatements));
   const [saved, setSaved] = useState(false);
+  const [draftResult, setDraftResult] = useState<ObsidianDraftResponse | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [savingDraft, setSavingDraft] = useState(false);
   const selectedItems = useMemo(() => items.filter((item) => item.selected), [items]);
   const canSave = selectedItems.some(
     (item) => item.kind === "viewpoint" && item.origin === "user",
@@ -134,6 +145,38 @@ export function ReflectionReview({
     });
   }
 
+  async function saveObsidianDraft() {
+    if (!canSave || savingDraft) return;
+    setSavingDraft(true);
+    setSaveError(null);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/v1/obsidian-drafts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question,
+          user_statements: userStatements,
+          selected_items: selectedItems.map((item) => ({
+            label: item.label,
+            text: item.text,
+            origin: item.origin === "ai" ? "ai" : "user",
+          })),
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`Obsidian draft API returned ${response.status}`);
+      }
+      const payload = (await response.json()) as ObsidianDraftResponse;
+      setDraftResult(payload);
+      setSaved(true);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "保存 Obsidian 草稿失败");
+    } finally {
+      setSavingDraft(false);
+    }
+  }
+
   if (saved) {
     return (
       <main className="reflection-page reflection-saved" id="reflection">
@@ -150,6 +193,13 @@ export function ReflectionReview({
             </div>
           ))}
         </div>
+        {draftResult ? (
+          <div className="obsidian-draft-result" role="status">
+            <strong>{draftResult.message}</strong>
+            <span>{draftResult.file_name}</span>
+            <code>{draftResult.absolute_path}</code>
+          </div>
+        ) : null}
         <button className="primary-button" type="button" onClick={onReturnToday}>
           返回今日
         </button>
@@ -209,10 +259,10 @@ export function ReflectionReview({
       <footer className="reflection-actions">
         <div>
           <strong>{selectedItems.length} 项已选择</strong>
-          <span>未勾选的内容不会保存</span>
+          <span>{saveError ?? "未勾选的内容不会保存，保存后会生成 Obsidian 草稿"}</span>
         </div>
-        <button className="primary-button" type="button" disabled={!canSave} onClick={() => setSaved(true)}>
-          <Save size={17} /> 确认并保存
+        <button className="primary-button" type="button" disabled={!canSave || savingDraft} onClick={saveObsidianDraft}>
+          <Save size={17} /> {savingDraft ? "正在生成草稿" : "保存到 Obsidian 草稿"}
         </button>
       </footer>
     </main>

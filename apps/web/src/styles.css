@@ -2569,6 +2569,36 @@ h1 {
   text-align: left;
 }
 
+.obsidian-draft-result {
+  display: grid;
+  width: min(660px, 100%);
+  gap: 7px;
+  margin: 0 0 24px;
+  padding: 15px 17px;
+  border: 1px solid rgb(40 86 64 / 18%);
+  border-radius: 10px;
+  color: var(--forest);
+  background: rgb(223 233 225 / 64%);
+  text-align: left;
+}
+
+.obsidian-draft-result strong {
+  font-size: 0.82rem;
+}
+
+.obsidian-draft-result span {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.obsidian-draft-result code {
+  overflow-wrap: anywhere;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+}
+
 .saved-summary > div {
   display: grid;
   grid-template-columns: auto 120px minmax(0, 1fr);

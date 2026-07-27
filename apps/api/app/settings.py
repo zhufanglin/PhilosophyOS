@@ -36,6 +36,10 @@ class PhilosophyOSSettings(BaseModel):
     deepseek_base_url: str = Field(default="https://api.deepseek.com", min_length=1)
     deepseek_api_style: OpenAIAPIStyle = "chat_completions"
     ai_provider: AIProviderName = "auto"
+    obsidian_drafts_dir: str = Field(
+        default=r"D:\Obsidian\storage\Stu的哲学思考\PhilosophyOS\草稿",
+        min_length=1,
+    )
 
     @field_validator(
         "openai_api_key",
@@ -71,6 +75,7 @@ class PhilosophyOSSettings(BaseModel):
         "free_base_url",
         "deepseek_model",
         "deepseek_base_url",
+        "obsidian_drafts_dir",
     )
     @classmethod
     def strip_required_strings(cls, value: str) -> str:
@@ -150,6 +155,10 @@ class PhilosophyOSSettings(BaseModel):
             deepseek_base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
             deepseek_api_style=os.getenv("DEEPSEEK_API_STYLE", "chat_completions"),
             ai_provider=os.getenv("PHILOSOPHYOS_AI_PROVIDER", "auto"),
+            obsidian_drafts_dir=os.getenv(
+                "OBSIDIAN_DRAFTS_DIR",
+                r"D:\Obsidian\storage\Stu的哲学思考\PhilosophyOS\草稿",
+            ),
         )
 
 

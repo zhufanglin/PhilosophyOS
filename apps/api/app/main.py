@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from app.routes.dialogue import router as dialogue_router
 from app.routes.knowledge import router as knowledge_router
 from app.routes.model_profiles import router as model_profiles_router
+from app.routes.obsidian import router as obsidian_router
 
 
 class HealthResponse(BaseModel):
@@ -39,6 +40,7 @@ app.add_middleware(
 app.include_router(dialogue_router)
 app.include_router(knowledge_router)
 app.include_router(model_profiles_router)
+app.include_router(obsidian_router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])
