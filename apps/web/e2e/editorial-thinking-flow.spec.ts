@@ -61,6 +61,7 @@ async function mockDialogueTurn(page: Page) {
       requested_mode?: string;
       turn_number?: number;
     };
+    await new Promise((resolve) => setTimeout(resolve, 120));
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -196,6 +197,7 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
 
   await page.locator("#dialogue-answer").fill("即使诚实带来损失，我仍然倾向于坚持诚实，因为信任本身是一种关系基础。");
   await page.locator(".send-button").click();
+  await expect(page.getByRole("status")).toContainText("DeepSeek 正在思考中");
   await expect(page.locator(".message.user")).toContainText("坚持诚实");
   await expect(page.locator(".message.assistant")).toHaveCount(2);
   await expect(page.locator(".message.assistant").last()).toContainText("API 回答");

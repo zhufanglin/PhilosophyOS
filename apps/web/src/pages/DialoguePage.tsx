@@ -63,6 +63,12 @@ const modes = [
   { id: "organize" as const, label: "整理", icon: ListTree },
 ];
 
+const modelProfileLabels: Record<ModelProfile, string> = {
+  free: "免费模型",
+  gpt: "GPT",
+  deepseek: "DeepSeek",
+};
+
 const sources: DialogueSource[] = [
   {
     id: "plato-apology",
@@ -113,6 +119,7 @@ export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: Dia
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sendButtonRef = useRef<HTMLButtonElement>(null);
   const progressTimer = useRef<number | null>(null);
+  const thinkingCopy = `${modelProfileLabels[modelProfile]} 正在思考中`;
 
   useEffect(() => inputRef.current?.focus(), []);
   useEffect(() => () => {
@@ -309,7 +316,11 @@ export function DialoguePage({ apiBaseUrl, question, modelProfile, onBack }: Dia
                 </div>
               </article>
             ))}
-            {thinking ? <div className="thinking-state"><span /><span /><span /> 正在整理这一点</div> : null}
+            {thinking ? (
+              <div className="thinking-state" role="status">
+                <span /><span /><span /> {thinkingCopy}
+              </div>
+            ) : null}
             {failedTurn ? (
               <div className="dialogue-retry-notice" role="status">
                 <div>
