@@ -51,7 +51,7 @@ def test_explicit_deterministic_provider_ignores_key() -> None:
     """A developer can force deterministic mode even when a key is configured."""
 
     settings = PhilosophyOSSettings(
-        openai_api_key=SecretStr("sk-test"),
+        openai_api_key=SecretStr("test-openai-key"),
         ai_provider="deterministic",
     )
 

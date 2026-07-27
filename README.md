@@ -33,6 +33,59 @@ PhilosophyOS 是一个以每日哲学挑战、苏格拉底式对话、可信文�
 - 社交策略：核心单人闭环后加入好友和 2–8 人私密哲学讨论，不建设公开动态广场。
 - 后期扩展：中国哲学使用独立分期与概念体系，作为 Phase 4 加入。
 
+## 本地运行与 AI 配置
+
+PhilosophyOS 的浏览器前端只访问本地 FastAPI。OpenAI API key 只能放在后端环境变量中，不能使用 `VITE_` 前缀，也不能写进前端代码。
+
+### 1. 安装后端依赖
+
+```powershell
+cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+```
+
+### 2. 启动 deterministic mode
+
+不配置 `OPENAI_API_KEY` 时，系统默认使用确定性降级回复，适合本地演示和自动测试。
+
+```powershell
+cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
+$env:PHILOSOPHYOS_AI_PROVIDER='deterministic'
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```
+
+### 3. 启动 OpenAI mode
+
+复制 `.env.example` 作为本机配置参考，然后只在后端 shell 或 `apps/api/.env` 中设置真实 key。
+
+```powershell
+cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
+$env:OPENAI_API_KEY='<只在后端设置的 OpenAI API key>'
+$env:OPENAI_MODEL='gpt-5.6'
+$env:PHILOSOPHYOS_AI_PROVIDER='auto'
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```
+
+### 4. 对话 API smoke test
+
+```powershell
+$body = @{
+  user_message = '即使诚实带来损失，我仍然倾向坚持诚实。'
+  current_mode = 'socratic'
+  requested_mode = 'socratic'
+  topic = '诚实与德性'
+  turn_number = 1
+} | ConvertTo-Json
+
+Invoke-WebRequest -UseBasicParsing `
+  -Uri 'http://127.0.0.1:8000/api/v1/dialogue-turns' `
+  -Method Post `
+  -ContentType 'application/json' `
+  -Body $body
+```
+
+返回 JSON 中的 `provider` 会显示本轮使用了 `deterministic` 还是 `openai`；如果 OpenAI provider 失败，`provider_fallback_reason` 会说明降级原因。
+
 ## 下一步
 
-先完成计划中的 Milestone 1：内容种子与质量基线，再开展 RAG 和 Obsidian 技术验证。
+真实 AI 对话接入完成后，下一阶段可以继续推进 Obsidian 安全沉淀、个人思想档案，或好友哲学讨论功能。

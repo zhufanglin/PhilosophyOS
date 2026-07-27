@@ -119,6 +119,13 @@ Agent 是哲学学习导师和思考整理助手，不是权威裁判、心理�
 - 严格区分用户观点、作者观点、第三方观点和 AI 综合。
 - Explain 与 Organize 模式的问题预算为 0；Socratic、Compare、Reflect 最多只有 1 个主要追问。
 
+Provider 运行规则：
+
+- `PHILOSOPHYOS_AI_PROVIDER=auto` 时，后端存在 `OPENAI_API_KEY` 才启用 OpenAI provider；否则使用 deterministic。
+- `PHILOSOPHYOS_AI_PROVIDER=deterministic` 时，即使本机配置了 key，也强制使用确定性降级回复。
+- OpenAI provider 失败时必须返回 deterministic 回复，并在 `provider_fallback_reason` 中记录降级原因。
+- `OPENAI_API_KEY` 只能存在于后端环境变量或后端 `.env` 中，不能通过 Vite、浏览器、本地存储或前端配置暴露。
+
 ## 10. 好友讨论主持规范
 
 - 每条观点绑定消息作者，不通过语言风格猜测身份。

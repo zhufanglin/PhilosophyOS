@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | in-progress |
+| Status | complete |
 | Created | 2026-07-27 |
 | Ticket | N/A |
 | Branch | TBD |
@@ -159,7 +159,7 @@ sequenceDiagram
 - **Acceptance:** `pnpm build`、`pnpm e2e`、`pytest` 全部通过。
 - **Dependencies:** 2.2, 3.3
 
-### 4.2 [ ] 记录本地 AI 配置与 smoke test
+### 4.2 [x] 记录本地 AI 配置与 smoke test *(completed 2026-07-27)*
 - **Files:** `README.md`, `.env.example`, `docs/agent/behavior-spec.md`
 - **What:** 文档说明 deterministic mode、OpenAI mode、环境变量和一个手动 smoke test 命令。明确 API key 只放后端 `.env`，绝不通过 Vite 暴露。
 - **Acceptance:** README 有可复制命令；`.env.example` 只包含非密钥占位；docs 说明 fallback 行为。
