@@ -42,6 +42,11 @@ type ThoughtArchivePageProps = {
   apiBaseUrl: string;
 };
 
+type ArchiveAggregate = {
+  label: string;
+  count: number;
+};
+
 function formatSnapshotTime(value: string) {
   if (!value) return "时间待确认";
   const date = new Date(value);
@@ -52,6 +57,19 @@ function formatSnapshotTime(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
+}
+
+function collectAggregates(values: string[], limit = 5): ArchiveAggregate[] {
+  const counts = new Map<string, number>();
+  values
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
+
+  return [...counts.entries()]
+    .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0], "zh-CN"))
+    .slice(0, limit)
+    .map(([label, count]) => ({ label, count }));
 }
 
 export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
@@ -96,6 +114,22 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     [items],
   );
   const pendingCount = items.length - completedCount;
+  const completedContents = useMemo(
+    () => items.map((item) => item.snapshot.content).filter((content) => content !== null),
+    [items],
+  );
+  const topicHighlights = useMemo(
+    () => collectAggregates(completedContents.map((content) => content.topic)),
+    [completedContents],
+  );
+  const tensionHighlights = useMemo(
+    () => collectAggregates(completedContents.flatMap((content) => content.tensions)),
+    [completedContents],
+  );
+  const changedCount = useMemo(
+    () => completedContents.filter((content) => content.change_signal.changed).length,
+    [completedContents],
+  );
 
   return (
     <main className="thought-archive-page" id="archive">
@@ -134,6 +168,38 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
           <CircleDot size={22} />
           <h2>还没有思想节点</h2>
           <p>完成一次对话并保存后，这里会出现第一条思想变化记录。</p>
+        </section>
+      ) : null}
+
+      {!loading && !error && items.length > 0 ? (
+        <section className="archive-insights" aria-label="思想档案洞察">
+          <article>
+            <span>反复出现的主题</span>
+            <h2>{topicHighlights[0]?.label ?? "主题仍在形成"}</h2>
+            <div>
+              {topicHighlights.length > 0
+                ? topicHighlights.map((topic) => (
+                    <small key={topic.label}>{topic.label} × {topic.count}</small>
+                  ))
+                : <small>完成更多对话后会自动聚合</small>}
+            </div>
+          </article>
+          <article>
+            <span>思想张力</span>
+            <h2>{tensionHighlights[0]?.label ?? "暂无反复张力"}</h2>
+            <div>
+              {tensionHighlights.length > 0
+                ? tensionHighlights.map((tension) => (
+                    <small key={tension.label}>{tension.label} × {tension.count}</small>
+                  ))
+                : <small>节点里的未解决问题会在这里沉淀</small>}
+            </div>
+          </article>
+          <article>
+            <span>观点变化</span>
+            <h2>{changedCount} 次</h2>
+            <p>已识别的立场移动会在节点详情中保留证据。</p>
+          </article>
         </section>
       ) : null}
 

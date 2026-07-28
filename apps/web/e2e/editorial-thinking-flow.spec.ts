@@ -411,6 +411,10 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
 
   await expect(page.locator(".thought-archive-page")).toBeVisible();
   await expect(page.locator(".archive-hero h1")).toContainText("思想时间线");
+  await expect(page.locator(".archive-insights")).toContainText("反复出现的主题");
+  await expect(page.locator(".archive-insights")).toContainText("诚实与德性");
+  await expect(page.locator(".archive-insights")).toContainText("善意隐瞒与逃避责任之间的界限仍不清楚");
+  await expect(page.locator(".archive-insights")).toContainText("1 次");
   await expect(page.locator(".timeline-card")).toContainText("诚实是在伤害与责任之间保持清醒");
   await expect(page.locator(".timeline-card")).toContainText("什么时候善意隐瞒会变成逃避责任");
   await page.getByRole("button", { name: /展开思想节点/ }).click();
