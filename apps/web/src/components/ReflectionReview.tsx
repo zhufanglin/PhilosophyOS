@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 
 type ReflectionOrigin = "user" | "ai" | "unresolved";
 type ReflectionKind = "viewpoint" | "reason" | "concept" | "question" | "related";
+type SnapshotDecision = "approved" | "edit" | "rejected" | "raw_only";
 
 type ReviewItem = {
   id: string;
@@ -93,6 +94,13 @@ const kindIcons = {
   related: Route,
 };
 
+const decisionCopy: Record<SnapshotDecision, string> = {
+  approved: "已标记：认可这个 AI 总结。",
+  edit: "已标记：稍后修改这个总结。",
+  rejected: "已标记：不同意这个 AI 总结。",
+  raw_only: "已标记：只保留用户原文，不采纳 AI 判断。",
+};
+
 function initialItems(userStatements: string[]): ReviewItem[] {
   const viewpoint = userStatements[0]?.trim();
   const reason = userStatements[1]?.trim();
@@ -131,6 +139,7 @@ export function ReflectionReview({
   const [saved, setSaved] = useState(false);
   const [draftResult, setDraftResult] = useState<ObsidianDraftResponse | null>(null);
   const [snapshotResult, setSnapshotResult] = useState<ReflectionSnapshotResponse | null>(null);
+  const [snapshotDecision, setSnapshotDecision] = useState<SnapshotDecision | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
   const selectedItems = useMemo(() => items.filter((item) => item.selected), [items]);
@@ -162,6 +171,14 @@ export function ReflectionReview({
     });
   }
 
+  function selectedItemsPayload() {
+    return selectedItems.map((item) => ({
+      label: item.label,
+      text: item.text,
+      origin: item.origin === "ai" ? "ai" : "user",
+    }));
+  }
+
   async function createReflectionSnapshot() {
     const response = await fetch(`${apiBaseUrl}/api/v1/reflection-snapshots`, {
       method: "POST",
@@ -169,11 +186,7 @@ export function ReflectionReview({
       body: JSON.stringify({
         question,
         user_statements: userStatements,
-        selected_items: selectedItems.map((item) => ({
-          label: item.label,
-          text: item.text,
-          origin: item.origin === "ai" ? "ai" : "user",
-        })),
+        selected_items: selectedItemsPayload(),
         model_profile: modelProfile,
       }),
     });
@@ -195,11 +208,7 @@ export function ReflectionReview({
         body: JSON.stringify({
           question,
           user_statements: userStatements,
-          selected_items: selectedItems.map((item) => ({
-            label: item.label,
-            text: item.text,
-            origin: item.origin === "ai" ? "ai" : "user",
-          })),
+          selected_items: selectedItemsPayload(),
         }),
       });
       if (!response.ok) {
@@ -254,8 +263,8 @@ export function ReflectionReview({
           <div className={`thought-snapshot-result ${snapshotResult.status}`} role="status">
             <strong>
               {snapshotResult.status === "completed"
-                ? "AI 思想快照已生成"
-                : "原始记录已保存，思想快照待补生成"}
+                ? "AI 思想节点已生成"
+                : "原始记录已保存，思想节点待补生成"}
             </strong>
             {snapshotResult.content ? (
               <>
@@ -265,6 +274,42 @@ export function ReflectionReview({
             ) : (
               <span>{snapshotResult.pending_reason}</span>
             )}
+            {snapshotResult.status === "completed" ? (
+              <div className="snapshot-decision-panel" aria-label="处理 AI 总结">
+                <span>AI 总结需要你的态度：它只是建议，不会自动替你定论。</span>
+                <div>
+                  <button
+                    className={snapshotDecision === "approved" ? "active" : ""}
+                    type="button"
+                    onClick={() => setSnapshotDecision("approved")}
+                  >
+                    认可这个总结
+                  </button>
+                  <button
+                    className={snapshotDecision === "edit" ? "active" : ""}
+                    type="button"
+                    onClick={() => setSnapshotDecision("edit")}
+                  >
+                    我要修改
+                  </button>
+                  <button
+                    className={snapshotDecision === "rejected" ? "active" : ""}
+                    type="button"
+                    onClick={() => setSnapshotDecision("rejected")}
+                  >
+                    我不同意
+                  </button>
+                  <button
+                    className={snapshotDecision === "raw_only" ? "active" : ""}
+                    type="button"
+                    onClick={() => setSnapshotDecision("raw_only")}
+                  >
+                    只保存原文
+                  </button>
+                </div>
+                {snapshotDecision ? <p>{decisionCopy[snapshotDecision]}</p> : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
         <button className="primary-button" type="button" onClick={onReturnToday}>
@@ -326,10 +371,10 @@ export function ReflectionReview({
       <footer className="reflection-actions">
         <div>
           <strong>{selectedItems.length} 项已选择</strong>
-          <span>{saveError ?? "未勾选的内容不会保存，保存后会生成 Obsidian 草稿"}</span>
+          <span>{saveError ?? "未勾选的内容不会保存；保存后会生成 Markdown / Obsidian 草稿与思想节点。"}</span>
         </div>
         <button className="primary-button" type="button" disabled={!canSave || savingDraft} onClick={saveObsidianDraft}>
-          <Save size={17} /> {savingDraft ? "正在生成草稿" : "保存到 Obsidian 草稿"}
+          <Save size={17} /> {savingDraft ? "正在生成草稿" : "保存为思想草稿"}
         </button>
       </footer>
     </main>

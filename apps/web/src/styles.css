@@ -2632,6 +2632,59 @@ h1 {
   line-height: 1.65;
 }
 
+.snapshot-decision-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid rgb(43 64 49 / 12%);
+  border-radius: 12px;
+  background: rgb(255 253 247 / 66%);
+}
+
+.snapshot-decision-panel > span {
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.snapshot-decision-panel > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.snapshot-decision-panel button {
+  padding: 7px 10px;
+  border: 1px solid rgb(43 64 49 / 14%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 62%);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 820;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.snapshot-decision-panel button:hover,
+.snapshot-decision-panel button.active {
+  border-color: rgb(47 107 77 / 28%);
+  background: rgb(47 107 77 / 10%);
+  color: var(--forest);
+  transform: translateY(-1px);
+}
+
+.snapshot-decision-panel p {
+  padding-top: 2px;
+  color: var(--forest);
+  font-weight: 820;
+}
+
 .thought-archive-page {
   display: grid;
   gap: 26px;

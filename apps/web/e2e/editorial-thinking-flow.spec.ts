@@ -393,8 +393,13 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await expect(page.locator(".saved-summary")).not.toContainText("关联建议");
   await expect(page.locator(".obsidian-draft-result")).toContainText("Obsidian 草稿已生成");
   await expect(page.locator(".obsidian-draft-result")).toContainText("2026-07-28-诚实与德性.md");
-  await expect(page.locator(".thought-snapshot-result")).toContainText("AI 思想快照已生成");
+  await expect(page.locator(".thought-snapshot-result")).toContainText("AI 思想节点已生成");
   await expect(page.locator(".thought-snapshot-result")).toContainText("诚实是在伤害与责任之间保持清醒");
+  await expect(page.locator(".snapshot-decision-panel")).toContainText("AI 总结需要你的态度");
+  await page.getByRole("button", { name: "我不同意" }).click();
+  await expect(page.locator(".snapshot-decision-panel")).toContainText("已标记：不同意这个 AI 总结");
+  await page.getByRole("button", { name: "只保存原文" }).click();
+  await expect(page.locator(".snapshot-decision-panel")).toContainText("只保留用户原文");
 
   await page.locator(".reflection-saved .primary-button").click();
   await expect(page.locator(".today-page")).toBeVisible();
