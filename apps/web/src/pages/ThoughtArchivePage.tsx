@@ -1,4 +1,4 @@
-import { Archive, ChevronDown, CircleDot, Clock3, Sparkles } from "lucide-react";
+﻿import { Archive, ChevronDown, CircleDot, Clock3, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type SnapshotStatus = "completed" | "pending";
@@ -49,6 +49,16 @@ type ArchiveAggregate = {
   label: string;
   count: number;
 };
+
+type CompletedSnapshotItem = ReflectionSnapshotListItem & {
+  snapshot: ReflectionSnapshotListItem["snapshot"] & {
+    content: NonNullable<ReflectionSnapshotListItem["snapshot"]["content"]>;
+  };
+};
+
+function hasSnapshotContent(item: ReflectionSnapshotListItem): item is CompletedSnapshotItem {
+  return item.snapshot.content !== null;
+}
 
 function formatSnapshotTime(value: string) {
   if (!value) return "时间待确认";
@@ -127,6 +137,11 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const completedContents = useMemo(
     () => items.map((item) => item.snapshot.content).filter((content) => content !== null),
     [items],
+  );
+  const completedSnapshotItems = useMemo(() => items.filter(hasSnapshotContent), [items]);
+  const evolutionItems = useMemo(
+    () => [...completedSnapshotItems].reverse().slice(-6),
+    [completedSnapshotItems],
   );
   const topicHighlights = useMemo(
     () => collectAggregates(completedContents.map((content) => content.topic)),
@@ -213,6 +228,10 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         </section>
       ) : null}
 
+      {!loading && !error && evolutionItems.length > 0 ? (
+        <ThoughtEvolutionMap items={evolutionItems} />
+      ) : null}
+
       {!loading && !error && items.length > 0 ? (
         <section className="thought-timeline" aria-label="思想节点时间线">
           {items.map((item) => (
@@ -239,6 +258,106 @@ type TimelineCardProps = {
   onToggle: () => void;
 };
 
+function ThoughtEvolutionMap({ items }: { items: CompletedSnapshotItem[] }) {
+  const latest = items.at(-1);
+  const topicTrail = collectAggregates(items.map((item) => item.snapshot.content.topic), 4);
+  const tensionTrail = collectAggregates(
+    items.flatMap((item) => item.snapshot.content.tensions),
+    4,
+  );
+  const decisionTrail = collectAggregates(
+    items
+      .map((item) =>
+        item.snapshot.user_decision ? snapshotDecisionLabels[item.snapshot.user_decision] : "",
+      )
+      .filter(Boolean),
+    4,
+  );
+
+  return (
+    <section className="thought-evolution-map" aria-label={"\u601d\u60f3\u6f14\u5316\u5730\u56fe"}>
+      <header className="evolution-map-header">
+        <div>
+          <p className="section-kicker">EVOLUTION MAP</p>
+          <h2>{"\u601d\u60f3\u6f14\u5316\u5730\u56fe"}</h2>
+        </div>
+        <p>
+          {"\u8fd9\u91cc\u4e0d\u628a\u8282\u70b9\u5f53\u4f5c\u804a\u5929\u8bb0\u5f55\uff0c\u800c\u662f\u628a\u5b83\u4eec\u770b\u6210\u4e00\u7ec4\u601d\u60f3\u8bc1\u636e\uff1a\u4e3b\u9898\u5982\u4f55\u53cd\u590d\u51fa\u73b0\uff0c\u5f20\u529b\u5982\u4f55\u6c89\u6dc0\uff0c\u4ee5\u53ca\u4f60\u662f\u5426\u63a5\u53d7 AI \u5bf9\u81ea\u5df1\u7684\u6982\u62ec\u3002"}
+        </p>
+      </header>
+
+      {latest ? (
+        <article className="evolution-current-axis">
+          <span>{"\u5f53\u524d\u601d\u60f3\u5750\u6807"}</span>
+          <h3>{latest.snapshot.content.topic}</h3>
+          <p>{latest.snapshot.content.user_position}</p>
+        </article>
+      ) : null}
+
+      <div className="evolution-node-lane" aria-label={"\u6700\u8fd1\u601d\u60f3\u8282\u70b9\u8f68\u8ff9"}>
+        {items.map((item, index) => {
+          const content = item.snapshot.content;
+          const decision = item.snapshot.user_decision;
+          return (
+            <article
+              className={`evolution-node ${content.change_signal.changed ? "changed" : "stable"}`}
+              key={item.snapshot.snapshot_id}
+            >
+              <span className="evolution-node-index">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <small>{formatSnapshotTime(item.created_at)}</small>
+                <strong>{content.topic}</strong>
+                <p>{content.title}</p>
+              </div>
+              <footer>
+                <span>
+                  {content.change_signal.changed
+                    ? "\u89c2\u70b9\u6709\u79fb\u52a8"
+                    : "\u89c2\u70b9\u8f83\u7a33\u5b9a"}
+                </span>
+                {decision ? <em>{snapshotDecisionLabels[decision]}</em> : null}
+              </footer>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="evolution-ledger" aria-label={"\u601d\u60f3\u6f14\u5316\u8d26\u672c"}>
+        <article>
+          <span>{"\u4e3b\u9898\u56de\u58f0"}</span>
+          <strong>{topicTrail[0]?.label ?? "\u4e3b\u9898\u4ecd\u5728\u5f62\u6210"}</strong>
+          <div>
+            {topicTrail.map((topic) => (
+              <small key={topic.label}>{topic.label} × {topic.count}</small>
+            ))}
+          </div>
+        </article>
+        <article>
+          <span>{"\u672a\u89e3\u5f20\u529b"}</span>
+          <strong>{tensionTrail[0]?.label ?? "\u6682\u65e0\u53cd\u590d\u5f20\u529b"}</strong>
+          <div>
+            {tensionTrail.length > 0
+              ? tensionTrail.map((tension) => (
+                  <small key={tension.label}>{tension.label} × {tension.count}</small>
+                ))
+              : <small>{"\u540e\u7eed\u8282\u70b9\u4f1a\u6c89\u6dc0\u771f\u6b63\u53cd\u590d\u51fa\u73b0\u7684\u95ee\u9898"}</small>}
+          </div>
+        </article>
+        <article>
+          <span>{"\u6821\u5bf9\u6001\u5ea6"}</span>
+          <strong>{decisionTrail[0]?.label ?? "\u7b49\u5f85\u4f60\u7684\u5224\u65ad"}</strong>
+          <div>
+            {decisionTrail.length > 0
+              ? decisionTrail.map((decision) => (
+                  <small key={decision.label}>{decision.label} × {decision.count}</small>
+                ))
+              : <small>{"\u8ba4\u53ef\u3001\u4fee\u6539\u3001\u4e0d\u540c\u610f\u90fd\u4f1a\u6210\u4e3a\u601d\u60f3\u6863\u6848\u7684\u4e00\u90e8\u5206"}</small>}
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
 function TimelineCard({ item, expanded, onToggle }: TimelineCardProps) {
   const content = item.snapshot.content;
   return (
