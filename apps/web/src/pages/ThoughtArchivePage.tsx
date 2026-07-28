@@ -273,6 +273,7 @@ function ThoughtEvolutionMap({ items }: { items: CompletedSnapshotItem[] }) {
       .filter(Boolean),
     4,
   );
+  const changeEvidence = items.filter((item) => item.snapshot.content.change_signal.changed);
 
   return (
     <section className="thought-evolution-map" aria-label={"\u601d\u60f3\u6f14\u5316\u5730\u56fe"}>
@@ -321,6 +322,37 @@ function ThoughtEvolutionMap({ items }: { items: CompletedSnapshotItem[] }) {
           );
         })}
       </div>
+
+      {changeEvidence.length > 0 ? (
+        <div className="evolution-evidence" aria-label={"\u89c2\u70b9\u53d8\u5316\u8bc1\u636e"}>
+          <header>
+            <span>{"\u53d8\u5316\u8bc1\u636e"}</span>
+            <strong>{"\u7cfb\u7edf\u4e3a\u4ec0\u4e48\u8ba4\u4e3a\u4f60\u53d1\u751f\u4e86\u89c2\u70b9\u79fb\u52a8"}</strong>
+          </header>
+          <div>
+            {changeEvidence.slice(-3).map((item) => {
+              const signal = item.snapshot.content.change_signal;
+              return (
+                <article key={`${item.snapshot.snapshot_id}-evidence`}>
+                  <small>{formatSnapshotTime(item.created_at)}</small>
+                  <h3>{signal.change_type ?? "\u89c2\u70b9\u53d8\u5316"}</h3>
+                  <dl>
+                    <div>
+                      <dt>{"\u4e4b\u524d"}</dt>
+                      <dd>{signal.previous_position ?? "\u6ca1\u6709\u53ef\u6bd4\u5bf9\u7684\u65e9\u671f\u7acb\u573a"}</dd>
+                    </div>
+                    <div>
+                      <dt>{"\u73b0\u5728"}</dt>
+                      <dd>{signal.current_position ?? item.snapshot.content.user_position}</dd>
+                    </div>
+                  </dl>
+                  <p>{item.snapshot.content.core_question}</p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       <div className="evolution-ledger" aria-label={"\u601d\u60f3\u6f14\u5316\u8d26\u672c"}>
         <article>
