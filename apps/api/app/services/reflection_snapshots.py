@@ -13,10 +13,12 @@ from app.agent.providers import ProviderRequest, select_dialogue_provider
 from app.schemas.dialogue import DialogueMode, ModelProfile
 from app.schemas.reflection_snapshots import (
     ReflectionSnapshotContent,
+    ReflectionSnapshotDecisionResponse,
     ReflectionSnapshotListItem,
     ReflectionSnapshotListResponse,
     ReflectionSnapshotRequest,
     ReflectionSnapshotResponse,
+    SnapshotDecision,
     SnapshotStatus,
 )
 from app.settings import PhilosophyOSSettings, settings
@@ -131,6 +133,56 @@ def list_reflection_snapshots(
             break
 
     return ReflectionSnapshotListResponse(items=items)
+
+
+def update_reflection_snapshot_decision(
+    snapshot_id: str,
+    decision: SnapshotDecision,
+    current_settings: PhilosophyOSSettings = settings,
+) -> ReflectionSnapshotDecisionResponse | None:
+    """Persist the user's decision about an AI-generated snapshot summary."""
+
+    snapshot_path = Path(current_settings.thought_snapshots_path).expanduser()
+    if not snapshot_path.exists():
+        return None
+
+    lines = snapshot_path.read_text(encoding="utf-8").splitlines()
+    records: list[dict[str, object] | None] = []
+    matched_at: int | None = None
+    updated_at = datetime.now(UTC).isoformat()
+
+    for line in lines:
+        if not line.strip():
+            records.append(None)
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            records.append(None)
+            continue
+        response = record.get("response")
+        if isinstance(response, dict) and response.get("snapshot_id") == snapshot_id:
+            response["user_decision"] = decision.value
+            response["decision_updated_at"] = updated_at
+            matched_at = len(records)
+        records.append(record)
+
+    if matched_at is None:
+        return None
+
+    rendered_lines: list[str] = []
+    for index, record in enumerate(records):
+        if record is None:
+            rendered_lines.append(lines[index])
+        else:
+            rendered_lines.append(json.dumps(record, ensure_ascii=False))
+
+    snapshot_path.write_text("\n".join(rendered_lines) + "\n", encoding="utf-8")
+    return ReflectionSnapshotDecisionResponse(
+        snapshot_id=snapshot_id,
+        user_decision=decision,
+        decision_updated_at=updated_at,
+    )
 
 
 def create_reflection_snapshot(

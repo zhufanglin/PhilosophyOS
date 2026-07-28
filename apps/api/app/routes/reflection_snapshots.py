@@ -2,14 +2,20 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from app.schemas.reflection_snapshots import (
+    ReflectionSnapshotDecisionRequest,
+    ReflectionSnapshotDecisionResponse,
     ReflectionSnapshotListResponse,
     ReflectionSnapshotRequest,
     ReflectionSnapshotResponse,
 )
-from app.services.reflection_snapshots import create_reflection_snapshot, list_reflection_snapshots
+from app.services.reflection_snapshots import (
+    create_reflection_snapshot,
+    list_reflection_snapshots,
+    update_reflection_snapshot_decision,
+)
 from app.settings import settings
 
 router = APIRouter(prefix="/api/v1", tags=["reflection-snapshots"])
@@ -41,3 +47,21 @@ async def create_reflection_snapshot_endpoint(
     """Create one thought snapshot or a pending record when the model is unavailable."""
 
     return create_reflection_snapshot(request, settings)
+
+
+@router.patch(
+    "/reflection-snapshots/{snapshot_id}/decision",
+    response_model=ReflectionSnapshotDecisionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Store the user's decision about a reflection snapshot",
+)
+async def update_reflection_snapshot_decision_endpoint(
+    snapshot_id: str,
+    request: ReflectionSnapshotDecisionRequest,
+) -> ReflectionSnapshotDecisionResponse:
+    """Persist whether the user approved, edited, rejected, or kept only raw text."""
+
+    response = update_reflection_snapshot_decision(snapshot_id, request.decision, settings)
+    if response is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Snapshot not found")
+    return response

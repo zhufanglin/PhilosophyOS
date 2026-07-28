@@ -90,7 +90,24 @@ async function mockObsidianDraft(page: Page) {
 
 async function mockReflectionSnapshot(page: Page) {
   await page.route("http://127.0.0.1:8000/api/v1/reflection-snapshots**", async (route) => {
-    if (route.request().method() === "GET") {
+    const method = route.request().method();
+
+    if (method === "PATCH") {
+      const snapshotId = route.request().url().match(/reflection-snapshots\/([^/]+)\/decision/)?.[1]
+        ?? "snap_e2e";
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          snapshot_id: snapshotId,
+          user_decision: "raw_only",
+          decision_updated_at: "2026-07-28T10:00:00+00:00",
+        }),
+      });
+      return;
+    }
+
+    if (method === "GET") {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -105,6 +122,8 @@ async function mockReflectionSnapshot(page: Page) {
                 provider: "openai",
                 provider_model: "doubao-seed-2-0-lite-260428",
                 pending_reason: null,
+                user_decision: "rejected",
+                decision_updated_at: "2026-07-28T10:00:00+00:00",
                 content: {
                   topic: "诚实与德性",
                   title: "诚实是在伤害与责任之间保持清醒",
@@ -143,6 +162,8 @@ async function mockReflectionSnapshot(page: Page) {
         provider: "openai",
         provider_model: "doubao-seed-2-0-lite-260428",
         pending_reason: null,
+        user_decision: null,
+        decision_updated_at: null,
         content: {
           topic: "诚实与德性",
           title: "诚实是在伤害与责任之间保持清醒",
@@ -400,6 +421,7 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await expect(page.locator(".snapshot-decision-panel")).toContainText("已标记：不同意这个 AI 总结");
   await page.getByRole("button", { name: "只保存原文" }).click();
   await expect(page.locator(".snapshot-decision-panel")).toContainText("只保留用户原文");
+  await expect(page.locator(".snapshot-decision-panel")).toContainText("已写入思想档案");
 
   await page.locator(".reflection-saved .primary-button").click();
   await expect(page.locator(".today-page")).toBeVisible();
@@ -421,6 +443,7 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".archive-insights")).toContainText("善意隐瞒与逃避责任之间的界限仍不清楚");
   await expect(page.locator(".archive-insights")).toContainText("1 次");
   await expect(page.locator(".timeline-card")).toContainText("诚实是在伤害与责任之间保持清醒");
+  await expect(page.locator(".timeline-card")).toContainText("不同意");
   await expect(page.locator(".timeline-card")).toContainText("什么时候善意隐瞒会变成逃避责任");
   await page.getByRole("button", { name: /展开思想节点/ }).click();
   await expect(page.locator(".timeline-detail-panel")).toBeVisible();
@@ -428,6 +451,7 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".timeline-detail-panel")).toContainText("诚实不是机械地说出全部事实");
   await expect(page.locator(".timeline-detail-panel")).toContainText("康德");
   await expect(page.locator(".timeline-detail-panel")).toContainText("概念细化");
+  await expect(page.locator(".timeline-detail-panel")).toContainText("AI 总结处理态度");
   await page.getByRole("button", { name: /收起思想节点/ }).click();
   await expect(page.locator(".timeline-detail-panel")).toBeHidden();
 

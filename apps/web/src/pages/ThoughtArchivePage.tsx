@@ -2,6 +2,7 @@ import { Archive, ChevronDown, CircleDot, Clock3, Sparkles } from "lucide-react"
 import { useEffect, useMemo, useState } from "react";
 
 type SnapshotStatus = "completed" | "pending";
+type SnapshotDecision = "approved" | "edit" | "rejected" | "raw_only";
 
 type ReflectionSnapshotListItem = {
   created_at: string;
@@ -12,6 +13,8 @@ type ReflectionSnapshotListItem = {
     provider: string;
     provider_model: string | null;
     pending_reason: string | null;
+    user_decision: SnapshotDecision | null;
+    decision_updated_at: string | null;
     content: {
       topic: string;
       title: string;
@@ -71,6 +74,13 @@ function collectAggregates(values: string[], limit = 5): ArchiveAggregate[] {
     .slice(0, limit)
     .map(([label, count]) => ({ label, count }));
 }
+
+const snapshotDecisionLabels: Record<SnapshotDecision, string> = {
+  approved: "\u5df2\u8ba4\u53ef",
+  edit: "\u5f85\u4fee\u6539",
+  rejected: "\u4e0d\u540c\u610f",
+  raw_only: "\u53ea\u4fdd\u7559\u539f\u6587",
+};
 
 export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [items, setItems] = useState<ReflectionSnapshotListItem[]>([]);
@@ -240,6 +250,11 @@ function TimelineCard({ item, expanded, onToggle }: TimelineCardProps) {
         <div className="timeline-meta">
           <span>{formatSnapshotTime(item.created_at)}</span>
           <strong>{item.snapshot.status === "completed" ? "已生成" : "待补生成"}</strong>
+          {item.snapshot.user_decision ? (
+            <em className={`snapshot-decision-badge ${item.snapshot.user_decision}`}>
+              {snapshotDecisionLabels[item.snapshot.user_decision]}
+            </em>
+          ) : null}
         </div>
         <h2>{content?.title ?? item.question}</h2>
         <p>{content?.user_position ?? item.snapshot.pending_reason ?? "原始记录已保存，等待模型补生成。"}</p>
@@ -353,6 +368,18 @@ function TimelineDetail({ item }: { item: ReflectionSnapshotListItem }) {
             : ""}
         </p>
       </section>
+
+      {item.snapshot.user_decision ? (
+        <section>
+          <strong>AI 总结处理态度</strong>
+          <p>
+            {snapshotDecisionLabels[item.snapshot.user_decision]}
+            {item.snapshot.decision_updated_at
+              ? `；${formatSnapshotTime(item.snapshot.decision_updated_at)} 更新`
+              : ""}
+          </p>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -2912,6 +2912,25 @@ h1 {
   background: rgb(47 107 77 / 10%);
 }
 
+.snapshot-decision-badge {
+  padding: 6px 9px;
+  border: 1px solid rgb(47 107 77 / 16%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 58%);
+  color: var(--forest);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+}
+
+.snapshot-decision-badge.rejected,
+.snapshot-decision-badge.raw_only {
+  border-color: rgb(141 99 50 / 18%);
+  background: rgb(149 104 57 / 10%);
+  color: #7a552c;
+}
+
 .timeline-card.pending .timeline-meta strong {
   color: #8d6332;
   background: rgb(149 104 57 / 13%);

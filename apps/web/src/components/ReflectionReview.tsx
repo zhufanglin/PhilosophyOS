@@ -48,12 +48,20 @@ type ReflectionSnapshotResponse = {
   provider: string;
   provider_model: string | null;
   pending_reason: string | null;
+  user_decision?: SnapshotDecision | null;
+  decision_updated_at?: string | null;
   content: {
     title: string;
     topic: string;
     user_position: string;
     next_question: string | null;
   } | null;
+};
+
+type ReflectionSnapshotDecisionResponse = {
+  snapshot_id: string;
+  user_decision: SnapshotDecision;
+  decision_updated_at: string;
 };
 
 const aiItems: ReviewItem[] = [
@@ -140,6 +148,7 @@ export function ReflectionReview({
   const [draftResult, setDraftResult] = useState<ObsidianDraftResponse | null>(null);
   const [snapshotResult, setSnapshotResult] = useState<ReflectionSnapshotResponse | null>(null);
   const [snapshotDecision, setSnapshotDecision] = useState<SnapshotDecision | null>(null);
+  const [snapshotDecisionMessage, setSnapshotDecisionMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
   const selectedItems = useMemo(() => items.filter((item) => item.selected), [items]);
@@ -194,6 +203,42 @@ export function ReflectionReview({
       throw new Error(`Reflection snapshot API returned ${response.status}`);
     }
     return (await response.json()) as ReflectionSnapshotResponse;
+  }
+
+  async function storeSnapshotDecision(decision: SnapshotDecision) {
+    setSnapshotDecision(decision);
+    setSnapshotDecisionMessage(decisionCopy[decision]);
+
+    if (!snapshotResult || snapshotResult.snapshot_id === "pending") {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/v1/reflection-snapshots/${snapshotResult.snapshot_id}/decision`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ decision }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(`Reflection snapshot decision API returned ${response.status}`);
+      }
+      const payload = (await response.json()) as ReflectionSnapshotDecisionResponse;
+      setSnapshotResult((current) =>
+        current
+          ? {
+              ...current,
+              user_decision: payload.user_decision,
+              decision_updated_at: payload.decision_updated_at,
+            }
+          : current,
+      );
+      setSnapshotDecisionMessage(`${decisionCopy[decision]}已写入思想档案。`);
+    } catch {
+      setSnapshotDecisionMessage(`${decisionCopy[decision]}已在本页标记，暂未写入思想档案。`);
+    }
   }
 
   async function saveObsidianDraft() {
@@ -281,33 +326,33 @@ export function ReflectionReview({
                   <button
                     className={snapshotDecision === "approved" ? "active" : ""}
                     type="button"
-                    onClick={() => setSnapshotDecision("approved")}
+                    onClick={() => void storeSnapshotDecision("approved")}
                   >
                     认可这个总结
                   </button>
                   <button
                     className={snapshotDecision === "edit" ? "active" : ""}
                     type="button"
-                    onClick={() => setSnapshotDecision("edit")}
+                    onClick={() => void storeSnapshotDecision("edit")}
                   >
                     我要修改
                   </button>
                   <button
                     className={snapshotDecision === "rejected" ? "active" : ""}
                     type="button"
-                    onClick={() => setSnapshotDecision("rejected")}
+                    onClick={() => void storeSnapshotDecision("rejected")}
                   >
                     我不同意
                   </button>
                   <button
                     className={snapshotDecision === "raw_only" ? "active" : ""}
                     type="button"
-                    onClick={() => setSnapshotDecision("raw_only")}
+                    onClick={() => void storeSnapshotDecision("raw_only")}
                   >
                     只保存原文
                   </button>
                 </div>
-                {snapshotDecision ? <p>{decisionCopy[snapshotDecision]}</p> : null}
+                {snapshotDecisionMessage ? <p>{snapshotDecisionMessage}</p> : null}
               </div>
             ) : null}
           </div>

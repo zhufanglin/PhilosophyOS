@@ -17,6 +17,15 @@ class SnapshotStatus(StrEnum):
     PENDING = "pending"
 
 
+class SnapshotDecision(StrEnum):
+    """User decision about whether to accept the AI-generated summary."""
+
+    APPROVED = "approved"
+    EDIT = "edit"
+    REJECTED = "rejected"
+    RAW_ONLY = "raw_only"
+
+
 class ThoughtChangeSignal(BaseModel):
     """How the user's view appears to have changed."""
 
@@ -72,6 +81,22 @@ class ReflectionSnapshotResponse(BaseModel):
     provider: str = "none"
     provider_model: str | None = None
     pending_reason: str | None = None
+    user_decision: SnapshotDecision | None = None
+    decision_updated_at: str | None = None
+
+
+class ReflectionSnapshotDecisionRequest(BaseModel):
+    """Request to store the user's decision about an AI summary."""
+
+    decision: SnapshotDecision
+
+
+class ReflectionSnapshotDecisionResponse(BaseModel):
+    """Stored user decision metadata."""
+
+    snapshot_id: str
+    user_decision: SnapshotDecision
+    decision_updated_at: str
 
 
 class ReflectionSnapshotListItem(BaseModel):
