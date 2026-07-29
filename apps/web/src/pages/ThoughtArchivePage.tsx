@@ -608,13 +608,37 @@ function ThoughtRelationGraph({
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const dragState = useRef<{ nodeId: string; offsetX: number; offsetY: number } | null>(null);
+  const positionsRef = useRef<Record<string, GraphPosition>>({});
+  const velocityRef = useRef<Record<string, GraphPosition>>({});
+  const springFrameRef = useRef<number | null>(null);
+  const lastDragDeltaRef = useRef({ x: 0, y: 0 });
+
+  const initialPositions = useMemo(() => buildInitialGraphPositions(graph.nodes), [graph.nodes]);
 
   useEffect(() => {
-    setPositions(buildInitialGraphPositions(graph.nodes));
+    setPositions(initialPositions);
+    positionsRef.current = initialPositions;
+    velocityRef.current = {};
     setActiveNodeId(null);
     setDraggingNodeId(null);
     setZoom(1);
-  }, [graph.nodes]);
+    if (springFrameRef.current) {
+      cancelAnimationFrame(springFrameRef.current);
+      springFrameRef.current = null;
+    }
+  }, [initialPositions]);
+
+  useEffect(() => {
+    positionsRef.current = positions;
+  }, [positions]);
+
+  useEffect(() => {
+    return () => {
+      if (springFrameRef.current) {
+        cancelAnimationFrame(springFrameRef.current);
+      }
+    };
+  }, []);
 
   const activeNode = graph.nodes.find((node) => node.id === activeNodeId) ?? null;
   const connectedNodeIds = useMemo(() => {
@@ -660,6 +684,10 @@ function ThoughtRelationGraph({
   }
 
   function beginDrag(nodeId: string, event: PointerEvent<SVGGElement>) {
+    if (springFrameRef.current) {
+      cancelAnimationFrame(springFrameRef.current);
+      springFrameRef.current = null;
+    }
     const position = positionFor(nodeId);
     const point = pointerToGraphPoint(event);
     dragState.current = {
@@ -667,42 +695,126 @@ function ThoughtRelationGraph({
       offsetX: point.x - position.x,
       offsetY: point.y - position.y,
     };
+    velocityRef.current = {};
+    lastDragDeltaRef.current = { x: 0, y: 0 };
     setActiveNodeId(nodeId);
     setDraggingNodeId(nodeId);
     event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function graphPullStrength(nodeId: string, draggedNodeId: string) {
+    if (nodeId === draggedNodeId) return 1;
+    const connected = graph.edges.some(
+      (edge) =>
+        (edge.source === draggedNodeId && edge.target === nodeId) ||
+        (edge.target === draggedNodeId && edge.source === nodeId),
+    );
+    if (connected) return 0.48;
+    const draggedBase = initialPositions[draggedNodeId] ?? { x: 480, y: 235 };
+    const nodeBase = initialPositions[nodeId] ?? { x: 480, y: 235 };
+    const distance = Math.hypot(nodeBase.x - draggedBase.x, nodeBase.y - draggedBase.y);
+    return Math.max(0.08, 0.24 - distance / 2200);
   }
 
   function moveDrag(event: PointerEvent<SVGSVGElement>) {
     const currentDrag = dragState.current;
     if (!currentDrag) return;
     const point = pointerToGraphPoint(event);
-    setPositions((currentPositions) => ({
-      ...currentPositions,
-      [currentDrag.nodeId]: {
-        x: Math.min(920, Math.max(40, point.x - currentDrag.offsetX)),
-        y: Math.min(430, Math.max(40, point.y - currentDrag.offsetY)),
-      },
-    }));
+    const draggedBase = initialPositions[currentDrag.nodeId] ?? positionFor(currentDrag.nodeId);
+    const draggedTarget = {
+      x: Math.min(920, Math.max(40, point.x - currentDrag.offsetX)),
+      y: Math.min(430, Math.max(40, point.y - currentDrag.offsetY)),
+    };
+    const delta = {
+      x: draggedTarget.x - draggedBase.x,
+      y: draggedTarget.y - draggedBase.y,
+    };
+    const previousDelta = lastDragDeltaRef.current;
+    lastDragDeltaRef.current = delta;
+    const nextPositions: Record<string, GraphPosition> = {};
+    const nextVelocities: Record<string, GraphPosition> = {};
+
+    graph.nodes.forEach((node) => {
+      const base = initialPositions[node.id] ?? { x: 480, y: 235 };
+      const strength = graphPullStrength(node.id, currentDrag.nodeId);
+      const sway = node.id === currentDrag.nodeId ? 0 : Math.sin((base.x + base.y + delta.x) / 95) * 4 * strength;
+      nextPositions[node.id] = {
+        x: Math.min(930, Math.max(30, base.x + delta.x * strength + sway)),
+        y: Math.min(440, Math.max(30, base.y + delta.y * strength - sway * 0.5)),
+      };
+      nextVelocities[node.id] = {
+        x: (delta.x - previousDelta.x) * strength * 0.12,
+        y: (delta.y - previousDelta.y) * strength * 0.12,
+      };
+    });
+    velocityRef.current = nextVelocities;
+    positionsRef.current = nextPositions;
+    setPositions(nextPositions);
   }
 
   function endDrag() {
     dragState.current = null;
     setDraggingNodeId(null);
+    startSpringBack();
+  }
+
+  function startSpringBack() {
+    if (springFrameRef.current) {
+      cancelAnimationFrame(springFrameRef.current);
+    }
+    const stiffness = 0.055;
+    const damping = 0.78;
+
+    function tick() {
+      let moving = false;
+      const nextPositions: Record<string, GraphPosition> = {};
+      const nextVelocities: Record<string, GraphPosition> = {};
+
+      graph.nodes.forEach((node) => {
+        const current = positionsRef.current[node.id] ?? initialPositions[node.id] ?? { x: 480, y: 235 };
+        const target = initialPositions[node.id] ?? current;
+        const velocity = velocityRef.current[node.id] ?? { x: 0, y: 0 };
+        const nextVelocity = {
+          x: (velocity.x + (target.x - current.x) * stiffness) * damping,
+          y: (velocity.y + (target.y - current.y) * stiffness) * damping,
+        };
+        const nextPosition = {
+          x: current.x + nextVelocity.x,
+          y: current.y + nextVelocity.y,
+        };
+        const nodeMoving =
+          Math.abs(nextVelocity.x) > 0.08 ||
+          Math.abs(nextVelocity.y) > 0.08 ||
+          Math.hypot(nextPosition.x - target.x, nextPosition.y - target.y) > 0.8;
+
+        if (nodeMoving) moving = true;
+        nextPositions[node.id] = nodeMoving ? nextPosition : target;
+        nextVelocities[node.id] = nodeMoving ? nextVelocity : { x: 0, y: 0 };
+      });
+
+      positionsRef.current = nextPositions;
+      velocityRef.current = nextVelocities;
+      setPositions(nextPositions);
+      if (moving) {
+        springFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        springFrameRef.current = null;
+      }
+    }
+
+    springFrameRef.current = requestAnimationFrame(tick);
   }
 
   function resetLayout() {
-    setPositions(buildInitialGraphPositions(graph.nodes));
+    if (springFrameRef.current) {
+      cancelAnimationFrame(springFrameRef.current);
+      springFrameRef.current = null;
+    }
+    positionsRef.current = initialPositions;
+    velocityRef.current = {};
+    setPositions(initialPositions);
     setActiveNodeId(null);
     setZoom(1);
-  }
-
-  function resetActiveNode() {
-    if (!activeNodeId) return;
-    const initialPositions = buildInitialGraphPositions(graph.nodes);
-    setPositions((currentPositions) => ({
-      ...currentPositions,
-      [activeNodeId]: initialPositions[activeNodeId] ?? currentPositions[activeNodeId],
-    }));
   }
 
   function changeZoom(delta: number) {
@@ -723,14 +835,13 @@ function ThoughtRelationGraph({
         </div>
         <p>
           像 Obsidian 一样，把思想节点、主题、张力、哲学家和标签连成一张可拖动的网络。
-          默认保持低显性，点击节点后只浮出它和相关连接；滚轮或按钮可以缩放图谱。
+          抓住一个节点时，整张网会被柔和牵动；松手后节点带着惯性自动回到思想坐标。
         </p>
         <div className="relation-graph-controls" aria-label="图谱控制">
           <button type="button" onClick={() => changeZoom(-0.12)} aria-label="缩小图谱">－</button>
           <span>{Math.round(zoom * 100)}%</span>
           <button type="button" onClick={() => changeZoom(0.12)} aria-label="放大图谱">＋</button>
-          <button type="button" onClick={resetActiveNode} disabled={!activeNodeId}>复位此点</button>
-          <button type="button" onClick={resetLayout}>重置全部</button>
+          <button type="button" onClick={resetLayout}>重置视图</button>
         </div>
       </header>
 
@@ -788,7 +899,6 @@ function ThoughtRelationGraph({
                     aria-label={`${node.label}，${node.kind} 节点，可拖动`}
                     transform={`translate(${position.x} ${position.y})`}
                     onClick={() => setActiveNodeId(node.id)}
-                    onDoubleClick={resetActiveNode}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
