@@ -475,8 +475,9 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await page.getByRole("button", { name: "放大图谱" }).click();
   await expect(page.locator(".relation-graph-controls")).toContainText("112%");
   await page.getByRole("button", { name: "缩小图谱" }).click();
-  await page.locator(".thought-graph-node").first().click();
-  await expect(page.locator(".relation-graph-detail")).toContainText("关联思想节点");
+  await page.locator(".thought-graph-node").first().hover();
+  await page.waitForTimeout(130);
+  await expect(page.locator(".relation-graph-tooltip")).toBeVisible();
   const graphNodeBox = await page.locator(".thought-graph-node").first().boundingBox();
   if (graphNodeBox) {
     await page.mouse.move(graphNodeBox.x + graphNodeBox.width / 2, graphNodeBox.y + graphNodeBox.height / 2);

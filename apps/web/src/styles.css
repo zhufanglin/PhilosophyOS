@@ -3449,10 +3449,13 @@ h1 {
 }
 
 .relation-graph-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.32fr);
-  gap: 16px;
-  align-items: stretch;
+  display: block;
+}
+
+.relation-graph-stage {
+  position: relative;
+  overflow: visible;
+  border-radius: 18px;
 }
 
 .relation-graph-canvas {
@@ -3470,9 +3473,9 @@ h1 {
 }
 
 .relation-graph-links line {
-  opacity: 0.22;
-  stroke: rgb(43 64 49 / 26%);
-  stroke-width: 0.9;
+  opacity: 0.32;
+  stroke: rgb(43 64 49 / 34%);
+  stroke-width: 1;
   transition: stroke 160ms ease, stroke-width 160ms ease, opacity 160ms ease;
 }
 
@@ -3483,13 +3486,13 @@ h1 {
 }
 
 .relation-graph-links line.dimmed {
-  opacity: 0.04;
+  opacity: 0.07;
 }
 
 .thought-graph-node {
   cursor: grab;
   outline: none;
-  opacity: 0.5;
+  opacity: 0.68;
   transition: opacity 160ms ease;
 }
 
@@ -3499,8 +3502,8 @@ h1 {
 
 .thought-graph-node circle {
   fill: url("#graphNodeGlow");
-  stroke: rgb(43 64 49 / 16%);
-  stroke-width: 0.9;
+  stroke: rgb(43 64 49 / 26%);
+  stroke-width: 1.05;
   filter: none;
   transition:
     fill 160ms ease,
@@ -3513,7 +3516,7 @@ h1 {
 .thought-graph-node text {
   opacity: 0;
   fill: var(--ink-soft);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 820;
   letter-spacing: 0.02em;
   pointer-events: none;
@@ -3549,16 +3552,15 @@ h1 {
 }
 
 .thought-graph-node.dimmed {
-  opacity: 0.12;
+  opacity: 0.18;
 }
 
 .thought-graph-node.connected circle {
   stroke-width: 1.35;
 }
 
-.thought-graph-node.connected text,
 .thought-graph-node:hover text {
-  opacity: 0.72;
+  opacity: 0.66;
 }
 
 .thought-graph-node.active circle,
@@ -3580,61 +3582,111 @@ h1 {
   transform: scale(1.22);
 }
 
-.relation-graph-detail {
-  display: grid;
-  align-content: start;
-  gap: 11px;
-  padding: 18px;
-  border: 1px solid rgb(43 64 49 / 12%);
-  border-radius: 18px;
-  background: rgb(255 253 247 / 68%);
+.relation-graph-tooltip {
+  position: absolute;
+  z-index: 3;
+  width: min(290px, calc(100% - 28px));
+  padding: 13px 14px 12px;
+  border: 1px solid rgb(43 64 49 / 14%);
+  border-radius: 16px;
+  background: rgb(255 253 247 / 86%);
+  box-shadow: 0 18px 34px rgb(43 34 24 / 12%);
+  color: var(--ink-soft);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 15px));
+  animation: relationTooltipIn 170ms ease-out both;
+  backdrop-filter: blur(12px);
 }
 
-.relation-graph-detail > span {
+.relation-graph-tooltip::after {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 1px solid rgb(43 64 49 / 14%);
+  border-bottom: 1px solid rgb(43 64 49 / 14%);
+  background: rgb(255 253 247 / 86%);
+  content: "";
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.relation-graph-tooltip-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.relation-graph-tooltip-heading span,
+.relation-graph-tooltip-links > span {
   color: var(--burgundy);
   font-family: Georgia, serif;
-  font-size: 0.62rem;
+  font-size: 0.61rem;
   font-weight: 850;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.relation-graph-detail h3 {
-  margin: 0;
+.relation-graph-tooltip-heading strong {
   color: var(--ink);
   font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 650;
   line-height: 1.25;
 }
 
-.relation-graph-detail p {
-  margin: 0;
+.relation-graph-tooltip p {
+  display: -webkit-box;
+  margin: 8px 0 0;
+  overflow: hidden;
   color: var(--ink-soft);
-  font-size: 0.82rem;
-  line-height: 1.72;
+  font-size: 0.78rem;
+  line-height: 1.58;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
-.relation-graph-detail div {
+.relation-graph-tooltip-links {
   display: grid;
-  gap: 8px;
-  margin-top: 6px;
-  padding-top: 12px;
+  gap: 5px;
+  margin-top: 10px;
+  padding-top: 9px;
   border-top: 1px solid rgb(43 64 49 / 10%);
 }
 
-.relation-graph-detail strong {
-  color: var(--ink);
-  font-size: 0.76rem;
+.relation-graph-tooltip-links small {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-size: 0.69rem;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.relation-graph-detail small {
-  display: block;
-  padding: 8px 9px;
-  border-radius: 10px;
-  background: rgb(43 64 49 / 7%);
-  color: var(--ink-soft);
+.relation-graph-hint {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  max-width: min(360px, calc(100% - 36px));
+  margin: 0;
+  padding: 8px 11px;
+  border: 1px solid rgb(43 64 49 / 10%);
+  border-radius: 999px;
+  background: rgb(255 253 247 / 68%);
+  color: var(--ink-muted);
   font-size: 0.72rem;
-  line-height: 1.55;
+  pointer-events: none;
+}
+
+@keyframes relationTooltipIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 8px)) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, calc(-100% - 15px)) scale(1);
+  }
 }
 
 .thought-timeline {
@@ -4323,8 +4375,15 @@ h1 {
     min-height: 340px;
   }
 
-  .relation-graph-detail {
-    padding: 15px;
+  .relation-graph-tooltip {
+    width: min(260px, calc(100% - 24px));
+  }
+
+  .relation-graph-hint {
+    right: 12px;
+    bottom: 12px;
+    max-width: calc(100% - 24px);
+    border-radius: 14px;
   }
 
   .explore-page {
