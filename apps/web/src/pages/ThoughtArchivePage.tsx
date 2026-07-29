@@ -1,5 +1,5 @@
 ﻿import { Archive, ChevronDown, CircleDot, Clock3, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from "react";
 
 type SnapshotStatus = "completed" | "pending";
 type SnapshotDecision = "approved" | "edit" | "rejected" | "raw_only";
@@ -604,15 +604,19 @@ function ThoughtRelationGraph({
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [positions, setPositions] = useState<Record<string, GraphPosition>>({});
-  const [activeNodeId, setActiveNodeId] = useState<string | null>(graph.nodes[0]?.id ?? null);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
   const dragState = useRef<{ nodeId: string; offsetX: number; offsetY: number } | null>(null);
 
   useEffect(() => {
     setPositions(buildInitialGraphPositions(graph.nodes));
-    setActiveNodeId(graph.nodes[0]?.id ?? null);
+    setActiveNodeId(null);
+    setDraggingNodeId(null);
+    setZoom(1);
   }, [graph.nodes]);
 
-  const activeNode = graph.nodes.find((node) => node.id === activeNodeId) ?? graph.nodes[0];
+  const activeNode = graph.nodes.find((node) => node.id === activeNodeId) ?? null;
   const connectedNodeIds = useMemo(() => {
     if (!activeNodeId) return new Set<string>();
     const connected = new Set<string>([activeNodeId]);
@@ -643,9 +647,11 @@ function ThoughtRelationGraph({
     const svg = svgRef.current;
     if (!svg) return { x: 0, y: 0 };
     const rect = svg.getBoundingClientRect();
+    const rawX = ((event.clientX - rect.left) / rect.width) * 960;
+    const rawY = ((event.clientY - rect.top) / rect.height) * 470;
     return {
-      x: ((event.clientX - rect.left) / rect.width) * 960,
-      y: ((event.clientY - rect.top) / rect.height) * 470,
+      x: 480 + (rawX - 480) / zoom,
+      y: 235 + (rawY - 235) / zoom,
     };
   }
 
@@ -662,6 +668,7 @@ function ThoughtRelationGraph({
       offsetY: point.y - position.y,
     };
     setActiveNodeId(nodeId);
+    setDraggingNodeId(nodeId);
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
@@ -680,11 +687,31 @@ function ThoughtRelationGraph({
 
   function endDrag() {
     dragState.current = null;
+    setDraggingNodeId(null);
   }
 
   function resetLayout() {
     setPositions(buildInitialGraphPositions(graph.nodes));
-    setActiveNodeId(graph.nodes[0]?.id ?? null);
+    setActiveNodeId(null);
+    setZoom(1);
+  }
+
+  function resetActiveNode() {
+    if (!activeNodeId) return;
+    const initialPositions = buildInitialGraphPositions(graph.nodes);
+    setPositions((currentPositions) => ({
+      ...currentPositions,
+      [activeNodeId]: initialPositions[activeNodeId] ?? currentPositions[activeNodeId],
+    }));
+  }
+
+  function changeZoom(delta: number) {
+    setZoom((currentZoom) => Math.min(1.9, Math.max(0.62, Number((currentZoom + delta).toFixed(2)))));
+  }
+
+  function handleWheel(event: WheelEvent<SVGSVGElement>) {
+    event.preventDefault();
+    changeZoom(event.deltaY > 0 ? -0.08 : 0.08);
   }
 
   return (
@@ -696,11 +723,15 @@ function ThoughtRelationGraph({
         </div>
         <p>
           像 Obsidian 一样，把思想节点、主题、张力、哲学家和标签连成一张可拖动的网络。
-          点击节点会高亮关联，拖动节点可以重新整理你的思想空间。
+          默认保持低显性，点击节点后只浮出它和相关连接；滚轮或按钮可以缩放图谱。
         </p>
-        <button className="secondary-button" type="button" onClick={resetLayout}>
-          重置布局
-        </button>
+        <div className="relation-graph-controls" aria-label="图谱控制">
+          <button type="button" onClick={() => changeZoom(-0.12)} aria-label="缩小图谱">－</button>
+          <span>{Math.round(zoom * 100)}%</span>
+          <button type="button" onClick={() => changeZoom(0.12)} aria-label="放大图谱">＋</button>
+          <button type="button" onClick={resetActiveNode} disabled={!activeNodeId}>复位此点</button>
+          <button type="button" onClick={resetLayout}>重置全部</button>
+        </div>
       </header>
 
       <div className="relation-graph-workspace">
@@ -710,6 +741,7 @@ function ThoughtRelationGraph({
           viewBox="0 0 960 470"
           role="img"
           aria-label="可拖动思想关系图谱"
+          onWheel={handleWheel}
           onPointerMove={moveDrag}
           onPointerUp={endDrag}
           onPointerLeave={endDrag}
@@ -720,51 +752,57 @@ function ThoughtRelationGraph({
               <stop offset="100%" stopColor="#efe6d5" />
             </radialGradient>
           </defs>
-          <g className="relation-graph-links">
-            {graph.edges.map((edge) => {
-              const source = positionFor(edge.source);
-              const target = positionFor(edge.target);
-              const active = activeNodeId === edge.source || activeNodeId === edge.target;
-              return (
-                <line
-                  className={active ? "active" : ""}
-                  key={edge.id}
-                  x1={source.x}
-                  x2={target.x}
-                  y1={source.y}
-                  y2={target.y}
-                />
-              );
-            })}
-          </g>
-          <g className="relation-graph-nodes">
-            {graph.nodes.map((node) => {
-              const position = positionFor(node.id);
-              const active = node.id === activeNodeId;
-              const connected = connectedNodeIds.has(node.id);
-              const radius = Math.min(38, 17 + node.weight * 4);
-              return (
-                <g
-                  className={`thought-graph-node ${node.kind}${active ? " active" : ""}${connected ? " connected" : ""}`}
-                  key={node.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`${node.label}，${node.kind} 节点，可拖动`}
-                  transform={`translate(${position.x} ${position.y})`}
-                  onClick={() => setActiveNodeId(node.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setActiveNodeId(node.id);
-                    }
-                  }}
-                  onPointerDown={(event) => beginDrag(node.id, event)}
-                >
-                  <circle r={radius} />
-                  <text y={radius + 15}>{node.label.length > 12 ? `${node.label.slice(0, 12)}…` : node.label}</text>
-                </g>
-              );
-            })}
+          <g transform={`translate(480 235) scale(${zoom}) translate(-480 -235)`}>
+            <g className="relation-graph-links">
+              {graph.edges.map((edge) => {
+                const source = positionFor(edge.source);
+                const target = positionFor(edge.target);
+                const active = activeNodeId === edge.source || activeNodeId === edge.target;
+                const dimmed = Boolean(activeNodeId) && !active;
+                return (
+                  <line
+                    className={`${active ? "active" : ""}${dimmed ? " dimmed" : ""}`}
+                    key={edge.id}
+                    x1={source.x}
+                    x2={target.x}
+                    y1={source.y}
+                    y2={target.y}
+                  />
+                );
+              })}
+            </g>
+            <g className="relation-graph-nodes">
+              {graph.nodes.map((node) => {
+                const position = positionFor(node.id);
+                const active = node.id === activeNodeId;
+                const connected = connectedNodeIds.has(node.id);
+                const dimmed = Boolean(activeNodeId) && !connected;
+                const dragging = node.id === draggingNodeId;
+                const radius = Math.min(18, 7 + node.weight * 1.7);
+                return (
+                  <g
+                    className={`thought-graph-node ${node.kind}${active ? " active" : ""}${connected ? " connected" : ""}${dimmed ? " dimmed" : ""}${dragging ? " dragging" : ""}`}
+                    key={node.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${node.label}，${node.kind} 节点，可拖动`}
+                    transform={`translate(${position.x} ${position.y})`}
+                    onClick={() => setActiveNodeId(node.id)}
+                    onDoubleClick={resetActiveNode}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setActiveNodeId(node.id);
+                      }
+                    }}
+                    onPointerDown={(event) => beginDrag(node.id, event)}
+                  >
+                    <circle r={radius} />
+                    <text y={radius + 17}>{node.label.length > 10 ? `${node.label.slice(0, 10)}…` : node.label}</text>
+                  </g>
+                );
+              })}
+            </g>
           </g>
         </svg>
 
@@ -785,7 +823,13 @@ function ThoughtRelationGraph({
                 )}
               </div>
             </>
-          ) : null}
+          ) : (
+            <>
+              <span>GRAPH READY</span>
+              <h3>点击一个节点</h3>
+              <p>未选中时图谱会保持轻微、安静；点中后才显示此节点、相关节点和关系线。</p>
+            </>
+          )}
         </aside>
       </div>
     </section>

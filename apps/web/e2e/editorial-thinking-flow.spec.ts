@@ -472,7 +472,12 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".thought-relation-graph")).toContainText("思想关系图谱");
   await expect(page.locator(".relation-graph-canvas")).toBeVisible();
   expect(await page.locator(".thought-graph-node").count()).toBeGreaterThan(2);
+  await expect(page.getByRole("button", { name: "复位此点" })).toBeDisabled();
+  await page.getByRole("button", { name: "放大图谱" }).click();
+  await expect(page.locator(".relation-graph-controls")).toContainText("112%");
+  await page.getByRole("button", { name: "缩小图谱" }).click();
   await page.locator(".thought-graph-node").first().click();
+  await expect(page.getByRole("button", { name: "复位此点" })).toBeEnabled();
   await expect(page.locator(".relation-graph-detail")).toContainText("关联思想节点");
   const graphNodeBox = await page.locator(".thought-graph-node").first().boundingBox();
   if (graphNodeBox) {
@@ -480,7 +485,10 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
     await page.mouse.down();
     await page.mouse.move(graphNodeBox.x + graphNodeBox.width / 2 + 72, graphNodeBox.y + graphNodeBox.height / 2 + 36);
     await page.mouse.up();
+    await page.getByRole("button", { name: "复位此点" }).click();
   }
+  await page.getByRole("button", { name: "重置全部" }).click();
+  await expect(page.locator(".relation-graph-controls")).toContainText("100%");
   await expect(page.locator(".timeline-card")).toContainText("诚实是在伤害与责任之间保持清醒");
   await expect(page.locator(".timeline-card")).toContainText("不同意");
   await expect(page.locator(".timeline-card")).toContainText("什么时候善意隐瞒会变成逃避责任");

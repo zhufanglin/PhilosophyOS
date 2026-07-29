@@ -3373,7 +3373,7 @@ h1 {
 
 .relation-graph-header {
   display: grid;
-  grid-template-columns: minmax(220px, 0.55fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(220px, 0.55fr) minmax(0, 1fr) minmax(220px, auto);
   gap: 18px;
   align-items: end;
   padding-bottom: 16px;
@@ -3395,6 +3395,57 @@ h1 {
   color: var(--ink-soft);
   font-size: 0.88rem;
   line-height: 1.82;
+}
+
+.relation-graph-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.relation-graph-controls button,
+.relation-graph-controls span {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid rgb(43 64 49 / 13%);
+  border-radius: 999px;
+  background: rgb(255 253 247 / 66%);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.relation-graph-controls button {
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.relation-graph-controls button:hover:not(:disabled) {
+  border-color: rgb(40 86 64 / 24%);
+  background: rgb(246 249 243 / 84%);
+  color: var(--forest);
+  transform: translateY(-1px);
+}
+
+.relation-graph-controls button:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+.relation-graph-controls span {
+  min-width: 52px;
+  color: var(--forest);
+  background: rgb(43 64 49 / 7%);
 }
 
 .relation-graph-workspace {
@@ -3419,19 +3470,27 @@ h1 {
 }
 
 .relation-graph-links line {
-  stroke: rgb(43 64 49 / 18%);
-  stroke-width: 1.2;
+  opacity: 0.22;
+  stroke: rgb(43 64 49 / 26%);
+  stroke-width: 0.9;
   transition: stroke 160ms ease, stroke-width 160ms ease, opacity 160ms ease;
 }
 
 .relation-graph-links line.active {
-  stroke: rgb(40 86 64 / 46%);
-  stroke-width: 1.9;
+  opacity: 0.78;
+  stroke: rgb(40 86 64 / 54%);
+  stroke-width: 1.5;
+}
+
+.relation-graph-links line.dimmed {
+  opacity: 0.04;
 }
 
 .thought-graph-node {
   cursor: grab;
   outline: none;
+  opacity: 0.5;
+  transition: opacity 160ms ease;
 }
 
 .thought-graph-node:active {
@@ -3440,60 +3499,85 @@ h1 {
 
 .thought-graph-node circle {
   fill: url("#graphNodeGlow");
-  stroke: rgb(43 64 49 / 22%);
-  stroke-width: 1.2;
-  filter: drop-shadow(0 8px 14px rgb(43 34 24 / 10%));
+  stroke: rgb(43 64 49 / 16%);
+  stroke-width: 0.9;
+  filter: none;
   transition:
     fill 160ms ease,
+    opacity 160ms ease,
     stroke 160ms ease,
     stroke-width 160ms ease,
     transform 160ms ease;
 }
 
 .thought-graph-node text {
+  opacity: 0;
   fill: var(--ink-soft);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 820;
   letter-spacing: 0.02em;
   pointer-events: none;
   text-anchor: middle;
   user-select: none;
+  transition: opacity 160ms ease, fill 160ms ease;
 }
 
 .thought-graph-node.topic circle {
-  stroke: rgb(40 86 64 / 42%);
+  stroke: rgb(40 86 64 / 34%);
 }
 
 .thought-graph-node.snapshot circle {
-  stroke: rgb(54 89 111 / 36%);
+  stroke: rgb(54 89 111 / 28%);
 }
 
 .thought-graph-node.tension circle {
-  stroke: rgb(122 63 67 / 28%);
+  stroke: rgb(122 63 67 / 22%);
 }
 
 .thought-graph-node.philosopher circle {
-  stroke: rgb(149 104 57 / 34%);
+  stroke: rgb(149 104 57 / 26%);
 }
 
 .thought-graph-node.tag circle {
-  stroke: rgb(43 64 49 / 16%);
+  stroke: rgb(43 64 49 / 12%);
+}
+
+.thought-graph-node:hover,
+.thought-graph-node.connected,
+.thought-graph-node.active {
+  opacity: 1;
+}
+
+.thought-graph-node.dimmed {
+  opacity: 0.12;
 }
 
 .thought-graph-node.connected circle {
-  stroke-width: 1.8;
+  stroke-width: 1.35;
+}
+
+.thought-graph-node.connected text,
+.thought-graph-node:hover text {
+  opacity: 0.72;
 }
 
 .thought-graph-node.active circle,
 .thought-graph-node:focus-visible circle {
   fill: rgb(246 249 243 / 96%);
   stroke: var(--forest);
-  stroke-width: 2.4;
-  transform: scale(1.06);
+  stroke-width: 2;
+  filter: drop-shadow(0 7px 12px rgb(43 34 24 / 10%));
+  transform: scale(1.16);
 }
 
 .thought-graph-node.active text {
+  opacity: 1;
   fill: var(--forest);
+}
+
+.thought-graph-node.dragging circle {
+  stroke-width: 2.2;
+  transform: scale(1.22);
 }
 
 .relation-graph-detail {
@@ -3995,8 +4079,8 @@ h1 {
     display: none;
   }
 
-  .relation-graph-header .secondary-button {
-    width: fit-content;
+  .relation-graph-controls {
+    justify-content: flex-start;
   }
 
   .side-nav {
