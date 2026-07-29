@@ -1,5 +1,5 @@
 ﻿import { Archive, ChevronDown, CircleDot, Clock3, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent, type WheelEvent } from "react";
 
 type SnapshotStatus = "completed" | "pending";
 type SnapshotDecision = "approved" | "edit" | "rejected" | "raw_only";
@@ -614,6 +614,7 @@ function ThoughtRelationGraph({
   const [positions, setPositions] = useState<Record<string, GraphPosition>>({});
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [hoverNodeId, setHoverNodeId] = useState<string | null>(null);
+  const [pulseNodeId, setPulseNodeId] = useState<string | null>(null);
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const dragState = useRef<{ nodeId: string; offsetX: number; offsetY: number } | null>(null);
@@ -621,6 +622,7 @@ function ThoughtRelationGraph({
   const velocityRef = useRef<Record<string, GraphPosition>>({});
   const springFrameRef = useRef<number | null>(null);
   const hoverTimerRef = useRef<number | null>(null);
+  const pulseTimerRef = useRef<number | null>(null);
   const lastDragDeltaRef = useRef({ x: 0, y: 0 });
 
   const initialPositions = useMemo(() => buildInitialGraphPositions(graph.nodes), [graph.nodes]);
@@ -631,6 +633,7 @@ function ThoughtRelationGraph({
     velocityRef.current = {};
     setActiveNodeId(null);
     setHoverNodeId(null);
+    setPulseNodeId(null);
     setDraggingNodeId(null);
     setZoom(1);
     if (springFrameRef.current) {
@@ -650,6 +653,9 @@ function ThoughtRelationGraph({
       }
       if (hoverTimerRef.current) {
         window.clearTimeout(hoverTimerRef.current);
+      }
+      if (pulseTimerRef.current) {
+        window.clearTimeout(pulseTimerRef.current);
       }
     };
   }, []);
@@ -724,6 +730,17 @@ function ThoughtRelationGraph({
     setHoverNodeId(nodeId);
     setDraggingNodeId(nodeId);
     event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function activateNode(nodeId: string) {
+    setActiveNodeId(nodeId);
+    setHoverNodeId(nodeId);
+    setPulseNodeId(nodeId);
+    if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
+    pulseTimerRef.current = window.setTimeout(() => {
+      setPulseNodeId(null);
+      pulseTimerRef.current = null;
+    }, 760);
   }
 
   function scheduleNodePreview(nodeId: string) {
@@ -855,6 +872,7 @@ function ThoughtRelationGraph({
     setPositions(initialPositions);
     setActiveNodeId(null);
     setHoverNodeId(null);
+    setPulseNodeId(null);
     setZoom(1);
   }
 
@@ -887,6 +905,12 @@ function ThoughtRelationGraph({
 
       <div className="relation-graph-workspace">
         <div className="relation-graph-stage">
+          <div className="relation-graph-ambient" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
           <svg
             ref={svgRef}
             className="relation-graph-canvas"
@@ -909,55 +933,77 @@ function ThoughtRelationGraph({
             </defs>
             <g transform={`translate(480 235) scale(${zoom}) translate(-480 -235)`}>
               <g className="relation-graph-links">
-                {graph.edges.map((edge) => {
+                {graph.edges.map((edge, edgeIndex) => {
                   const source = positionFor(edge.source);
                   const target = positionFor(edge.target);
                   const active = focusedNodeId === edge.source || focusedNodeId === edge.target;
                   const dimmed = Boolean(focusedNodeId) && !active;
+                  const lineProps = {
+                    x1: source.x,
+                    x2: target.x,
+                    y1: source.y,
+                    y2: target.y,
+                  };
                   return (
-                    <line
-                      className={`${active ? "active" : ""}${dimmed ? " dimmed" : ""}`}
-                      key={edge.id}
-                      x1={source.x}
-                      x2={target.x}
-                      y1={source.y}
-                      y2={target.y}
-                    />
+                    <g key={edge.id} className="relation-graph-link">
+                      <line
+                        className={`${active ? "active" : ""}${dimmed ? " dimmed" : ""}`}
+                        pathLength={1}
+                        style={{ animationDelay: `${edgeIndex * 70}ms` }}
+                        {...lineProps}
+                      />
+                      <line
+                        className={`relation-flow-line${active ? " active" : ""}${dimmed ? " dimmed" : ""}`}
+                        pathLength={1}
+                        style={{ animationDelay: `${edgeIndex * 230}ms` }}
+                        {...lineProps}
+                      />
+                    </g>
                   );
                 })}
               </g>
               <g className="relation-graph-nodes">
-                {graph.nodes.map((node) => {
+                {graph.nodes.map((node, nodeIndex) => {
                   const position = positionFor(node.id);
                   const active = node.id === focusedNodeId;
                   const connected = connectedNodeIds.has(node.id);
                   const dimmed = Boolean(focusedNodeId) && !connected;
                   const dragging = node.id === draggingNodeId;
+                  const pulsing = node.id === pulseNodeId;
                   const radius = Math.min(21, 8.5 + node.weight * 2);
+                  const nodeMotionStyle = {
+                    "--node-enter-delay": `${Math.min(720, 80 + nodeIndex * 45)}ms`,
+                    "--node-float-duration": `${10 + (nodeIndex % 5) * 1.8}s`,
+                    "--node-breathe-duration": `${6.8 + (nodeIndex % 4) * 0.9}s`,
+                    "--node-float-x": `${((nodeIndex % 3) - 1) * 2.6}px`,
+                    "--node-float-y": `${nodeIndex % 2 === 0 ? -3.2 : 2.8}px`,
+                  } as CSSProperties;
                   return (
                     <g
-                      className={`thought-graph-node ${node.kind}${active ? " active" : ""}${connected ? " connected" : ""}${dimmed ? " dimmed" : ""}${dragging ? " dragging" : ""}`}
+                      className={`thought-graph-node ${node.kind}${active ? " active" : ""}${connected ? " connected" : ""}${dimmed ? " dimmed" : ""}${dragging ? " dragging" : ""}${pulsing ? " pulsing" : ""}`}
                       key={node.id}
                       role="button"
                       tabIndex={0}
                       aria-label={`${node.label}，${graphNodeKindLabels[node.kind]}节点，可拖动`}
                       transform={`translate(${position.x} ${position.y})`}
-                      onClick={() => setActiveNodeId(node.id)}
+                      onClick={() => activateNode(node.id)}
                       onFocus={() => setHoverNodeId(node.id)}
                       onBlur={clearNodePreview}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
-                          setActiveNodeId(node.id);
-                          setHoverNodeId(node.id);
+                          activateNode(node.id);
                         }
                       }}
                       onPointerEnter={() => scheduleNodePreview(node.id)}
                       onPointerLeave={clearNodePreview}
                       onPointerDown={(event) => beginDrag(node.id, event)}
                     >
-                      <circle r={radius} />
-                      <text y={radius + 16}>{node.label.length > 8 ? `${node.label.slice(0, 8)}…` : node.label}</text>
+                      <g className="node-body" style={nodeMotionStyle}>
+                        {pulsing ? <circle className="graph-node-ripple" r={radius + 5} /> : null}
+                        <circle className="graph-node-core" r={radius} />
+                        <text y={radius + 16}>{node.label.length > 8 ? `${node.label.slice(0, 8)}…` : node.label}</text>
+                      </g>
                     </g>
                   );
                 })}

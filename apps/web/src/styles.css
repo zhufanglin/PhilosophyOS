@@ -3360,6 +3360,8 @@ h1 {
 }
 
 .thought-relation-graph {
+  position: relative;
+  overflow: hidden;
   display: grid;
   gap: 18px;
   padding: clamp(18px, 3vw, 26px);
@@ -3369,6 +3371,25 @@ h1 {
     radial-gradient(circle at 18% 20%, rgb(54 89 111 / 10%), transparent 32%),
     linear-gradient(135deg, rgb(255 253 247 / 82%), rgb(237 230 216 / 48%)),
     var(--paper);
+  animation: relationGraphWake 640ms ease-out both;
+}
+
+.thought-relation-graph::before {
+  position: absolute;
+  inset: -28%;
+  background:
+    radial-gradient(circle at 30% 40%, rgb(149 104 57 / 8%), transparent 24%),
+    radial-gradient(circle at 68% 36%, rgb(54 89 111 / 7%), transparent 26%),
+    radial-gradient(circle at 52% 78%, rgb(40 86 64 / 6%), transparent 30%);
+  content: "";
+  opacity: 0.72;
+  pointer-events: none;
+  animation: relationNebulaDrift 22s ease-in-out infinite alternate;
+}
+
+.thought-relation-graph > * {
+  position: relative;
+  z-index: 1;
 }
 
 .relation-graph-header {
@@ -3458,6 +3479,52 @@ h1 {
   border-radius: 18px;
 }
 
+.relation-graph-ambient {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  pointer-events: none;
+}
+
+.relation-graph-ambient span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(149 104 57 / 24%);
+  box-shadow: 0 0 18px rgb(149 104 57 / 18%);
+  opacity: 0.32;
+  animation: relationParticleDrift 18s ease-in-out infinite alternate;
+}
+
+.relation-graph-ambient span:nth-child(1) {
+  left: 14%;
+  top: 24%;
+  animation-duration: 19s;
+}
+
+.relation-graph-ambient span:nth-child(2) {
+  left: 72%;
+  top: 18%;
+  animation-duration: 23s;
+  animation-delay: -6s;
+}
+
+.relation-graph-ambient span:nth-child(3) {
+  left: 82%;
+  top: 72%;
+  animation-duration: 21s;
+  animation-delay: -11s;
+}
+
+.relation-graph-ambient span:nth-child(4) {
+  left: 24%;
+  top: 76%;
+  animation-duration: 25s;
+  animation-delay: -14s;
+}
+
 .relation-graph-canvas {
   width: 100%;
   min-height: 420px;
@@ -3470,13 +3537,28 @@ h1 {
   background-size: 28px 28px, 28px 28px, auto;
   cursor: default;
   touch-action: none;
+  animation: relationCanvasGlow 16s ease-in-out infinite alternate;
 }
 
 .relation-graph-links line {
   opacity: 0.32;
   stroke: rgb(43 64 49 / 34%);
   stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: relationLineReveal 780ms ease-out both;
   transition: stroke 160ms ease, stroke-width 160ms ease, opacity 160ms ease;
+}
+
+.relation-flow-line {
+  opacity: 0.2;
+  stroke: rgb(149 104 57 / 42%);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-dasharray: 0.035 0.965;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 5px rgb(149 104 57 / 18%));
+  animation: relationThoughtFlow 7.8s linear infinite;
 }
 
 .relation-graph-links line.active {
@@ -3485,8 +3567,17 @@ h1 {
   stroke-width: 1.5;
 }
 
+.relation-flow-line.active {
+  opacity: 0.44;
+  stroke: rgb(149 104 57 / 56%);
+}
+
 .relation-graph-links line.dimmed {
   opacity: 0.07;
+}
+
+.relation-flow-line.dimmed {
+  opacity: 0.03;
 }
 
 .thought-graph-node {
@@ -3494,6 +3585,26 @@ h1 {
   outline: none;
   opacity: 0.68;
   transition: opacity 160ms ease;
+}
+
+.thought-graph-node .node-body {
+  --node-enter-delay: 80ms;
+  --node-float-duration: 12s;
+  --node-breathe-duration: 7s;
+  --node-float-x: 2px;
+  --node-float-y: -3px;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    graphNodeWake 720ms cubic-bezier(0.2, 0.82, 0.24, 1) both,
+    graphNodeDrift var(--node-float-duration) ease-in-out infinite alternate;
+  animation-delay: var(--node-enter-delay), calc(var(--node-enter-delay) + 720ms);
+}
+
+.thought-graph-node.dragging .node-body,
+.thought-graph-node.active .node-body {
+  animation-play-state: running, paused;
 }
 
 .thought-graph-node:active {
@@ -3513,6 +3624,21 @@ h1 {
     transform 160ms ease;
 }
 
+.thought-graph-node .graph-node-core {
+  animation: graphNodeBreathe var(--node-breathe-duration) ease-in-out infinite alternate;
+}
+
+.thought-graph-node .graph-node-ripple {
+  fill: none;
+  stroke: rgb(149 104 57 / 42%);
+  stroke-width: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: graphNodeRipple 760ms ease-out both;
+}
+
 .thought-graph-node text {
   opacity: 0;
   fill: var(--ink-soft);
@@ -3525,23 +3651,23 @@ h1 {
   transition: opacity 160ms ease, fill 160ms ease;
 }
 
-.thought-graph-node.topic circle {
+.thought-graph-node.topic .graph-node-core {
   stroke: rgb(40 86 64 / 34%);
 }
 
-.thought-graph-node.snapshot circle {
+.thought-graph-node.snapshot .graph-node-core {
   stroke: rgb(54 89 111 / 28%);
 }
 
-.thought-graph-node.tension circle {
+.thought-graph-node.tension .graph-node-core {
   stroke: rgb(122 63 67 / 22%);
 }
 
-.thought-graph-node.philosopher circle {
+.thought-graph-node.philosopher .graph-node-core {
   stroke: rgb(149 104 57 / 26%);
 }
 
-.thought-graph-node.tag circle {
+.thought-graph-node.tag .graph-node-core {
   stroke: rgb(43 64 49 / 12%);
 }
 
@@ -3555,7 +3681,7 @@ h1 {
   opacity: 0.18;
 }
 
-.thought-graph-node.connected circle {
+.thought-graph-node.connected .graph-node-core {
   stroke-width: 1.35;
 }
 
@@ -3563,8 +3689,8 @@ h1 {
   opacity: 0.66;
 }
 
-.thought-graph-node.active circle,
-.thought-graph-node:focus-visible circle {
+.thought-graph-node.active .graph-node-core,
+.thought-graph-node:focus-visible .graph-node-core {
   fill: rgb(246 249 243 / 96%);
   stroke: var(--forest);
   stroke-width: 2;
@@ -3577,7 +3703,7 @@ h1 {
   fill: var(--forest);
 }
 
-.thought-graph-node.dragging circle {
+.thought-graph-node.dragging .graph-node-core {
   stroke-width: 2.2;
   transform: scale(1.22);
 }
@@ -3686,6 +3812,114 @@ h1 {
   to {
     opacity: 1;
     transform: translate(-50%, calc(-100% - 15px)) scale(1);
+  }
+}
+
+@keyframes relationGraphWake {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes relationNebulaDrift {
+  from {
+    transform: translate3d(-1.2%, -0.8%, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(1.4%, 0.9%, 0) scale(1.02);
+  }
+}
+
+@keyframes relationCanvasGlow {
+  from {
+    background-position: 0 0, 0 0, 0 0;
+  }
+
+  to {
+    background-position: 24px 16px, 10px 22px, 0 0;
+  }
+}
+
+@keyframes relationParticleDrift {
+  from {
+    transform: translate3d(0, 0, 0) scale(0.92);
+  }
+
+  to {
+    transform: translate3d(12px, -10px, 0) scale(1.08);
+  }
+}
+
+@keyframes relationLineReveal {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes relationThoughtFlow {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes graphNodeWake {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.82);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes graphNodeDrift {
+  from {
+    transform: translate3d(calc(var(--node-float-x) * -1), calc(var(--node-float-y) * -1), 0) scale(0.992);
+  }
+
+  to {
+    transform: translate3d(var(--node-float-x), var(--node-float-y), 0) scale(1.018);
+  }
+}
+
+@keyframes graphNodeBreathe {
+  from {
+    opacity: 0.96;
+    filter: drop-shadow(0 0 0 rgb(149 104 57 / 0%));
+  }
+
+  to {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgb(149 104 57 / 8%));
+  }
+}
+
+@keyframes graphNodeRipple {
+  from {
+    opacity: 0.52;
+    transform: scale(0.78);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.58);
   }
 }
 
@@ -4959,7 +5193,10 @@ h1 {
   }
 
   .dialogue-progress-flight,
-  .dialogue-outline li.is-pulsing .outline-marker::after {
+  .dialogue-outline li.is-pulsing .outline-marker::after,
+  .relation-graph-ambient,
+  .relation-flow-line,
+  .graph-node-ripple {
     display: none;
     animation: none;
   }
@@ -4970,6 +5207,7 @@ h1 {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
   }
 }

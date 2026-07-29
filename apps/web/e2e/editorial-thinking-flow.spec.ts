@@ -459,6 +459,7 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
 test("thought archive page lists stored reflection snapshots", async ({ page }) => {
   const consoleProblems = collectConsoleProblems(page);
 
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/#today");
   await page.getByRole("link", { name: /思想档案/ }).click();
