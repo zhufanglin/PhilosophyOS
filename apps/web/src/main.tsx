@@ -58,6 +58,27 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 type AppView = "today" | "dialogue" | "explore" | "concept" | "archive";
 
+const settingsArchiveNotes = [
+  {
+    label: "思想快照",
+    value: "对话结束后由 AI 生成阶段性总结，等待你校对后再进入档案。",
+  },
+  {
+    label: "Markdown / Obsidian",
+    value: "保存时生成可读的 Markdown 草稿；没有 Obsidian 也可以作为普通文件使用。",
+  },
+  {
+    label: "用户校对",
+    value: "你可以认可、反对、重写或只保留原文，系统不会把 AI 总结当成最终真理。",
+  },
+];
+
+const settingsPrivacyNotes = [
+  "API Key 只放在后端环境变量中，前端只显示配置状态，不展示密钥。",
+  "发送给模型的是本轮哲学回答与必要上下文，不会自动上传整个本地档案。",
+  "思想档案优先保留在你的本地服务中，后续商业化同步功能需要单独授权。",
+];
+
 const fallbackQuestion: DailyQuestionView = {
   id: "q014",
   domain: "伦理学",
@@ -323,15 +344,42 @@ function App() {
         >
           <header>
             <div>
-              <p className="section-kicker">MODEL ROUTING</p>
-              <h2 id="model-settings-title">模型设置</h2>
-              <p>选择本轮对话使用的模型，并在本地后端安全测试连接。API Key 只保存在后端环境变量中。</p>
+              <p className="section-kicker">SETTINGS / TRUST LEDGER</p>
+              <h2 id="model-settings-title">设置中心</h2>
+              <p>
+                在这里确认模型路由、思想档案保存方式和隐私边界。PhilosophyOS 的设置不是后台杂项，
+                而是让用户知道：谁在思考、内容存在哪里、哪些数据会被发送给模型。
+              </p>
             </div>
-            <button className="icon-button" type="button" onClick={() => setModelPanelOpen(false)} aria-label="关闭模型设置">
+            <button className="icon-button" type="button" onClick={() => setModelPanelOpen(false)} aria-label="关闭设置中心">
               <X size={18} />
             </button>
           </header>
 
+          <section className="settings-ledger" aria-label="设置概览">
+            <article>
+              <span>当前模型</span>
+              <strong>{activeModelStatus?.label ?? "免费模型"}</strong>
+              <p>{modelStatusCopy}</p>
+            </article>
+            <article>
+              <span>档案策略</span>
+              <strong>先校对，再归档</strong>
+              <p>AI 快照默认作为草稿，最终思想节点由用户确认。</p>
+            </article>
+            <article>
+              <span>隐私边界</span>
+              <strong>Key 不进前端</strong>
+              <p>浏览器只负责切换档位和展示状态，不保存 API Key。</p>
+            </article>
+          </section>
+
+          <section className="settings-section" aria-labelledby="settings-model-title">
+            <div className="settings-section-heading">
+              <span>01 / MODEL API</span>
+              <h3 id="settings-model-title">模型与 API</h3>
+              <p>GPT、DeepSeek 由用户在后端填写 Key；免费模型可以作为默认体验入口。</p>
+            </div>
           <div className="model-profile-grid">
             {orderedModelProfiles.map((profile) => {
               const testState = modelProfileTests[profile.profile];
@@ -396,11 +444,41 @@ function App() {
               );
             })}
           </div>
+          </section>
+
+          <section className="settings-section settings-archive-section" aria-labelledby="settings-archive-title">
+            <div className="settings-section-heading">
+              <span>02 / ARCHIVE POLICY</span>
+              <h3 id="settings-archive-title">思想档案与保存</h3>
+              <p>这里强调 PhilosophyOS 与普通聊天的区别：不是保存所有废话，而是保存可追溯、可校对的思想节点。</p>
+            </div>
+            <div className="settings-note-list">
+              {settingsArchiveNotes.map((item) => (
+                <article key={item.label}>
+                  <strong>{item.label}</strong>
+                  <p>{item.value}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="settings-section settings-privacy-section" aria-labelledby="settings-privacy-title">
+            <div className="settings-section-heading">
+              <span>03 / PRIVACY BOUNDARY</span>
+              <h3 id="settings-privacy-title">隐私与数据边界</h3>
+              <p>这块先作为产品级说明入口，后续可以扩展为用户可配置的隐私面板。</p>
+            </div>
+            <ul>
+              {settingsPrivacyNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          </section>
 
           <footer>
-            <span>配置文件</span>
+            <span>后端配置文件</span>
             <strong>apps/api/.env</strong>
-            <p>前端只选择模型档位，不接触、不存储任何 API Key。</p>
+            <p>如果用户更换设备或未来开启云同步，应再次确认 API、档案与分享权限。</p>
           </footer>
         </section>
       </div>
@@ -506,7 +584,7 @@ function App() {
                 type="button"
                 onClick={() => setModelPanelOpen(true)}
                 aria-expanded={modelPanelOpen}
-                aria-label="打开模型设置"
+                aria-label="打开设置中心"
               >
                 <Settings2 size={13} /> 设置
               </button>
