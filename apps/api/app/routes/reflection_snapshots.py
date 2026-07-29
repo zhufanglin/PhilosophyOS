@@ -10,11 +10,14 @@ from app.schemas.reflection_snapshots import (
     ReflectionSnapshotListResponse,
     ReflectionSnapshotRequest,
     ReflectionSnapshotResponse,
+    ReflectionSnapshotReviewRequest,
+    ReflectionSnapshotReviewResponse,
 )
 from app.services.reflection_snapshots import (
     create_reflection_snapshot,
     list_reflection_snapshots,
     update_reflection_snapshot_decision,
+    update_reflection_snapshot_review,
 )
 from app.settings import settings
 
@@ -62,6 +65,29 @@ async def update_reflection_snapshot_decision_endpoint(
     """Persist whether the user approved, edited, rejected, or kept only raw text."""
 
     response = update_reflection_snapshot_decision(snapshot_id, request.decision, settings)
+    if response is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Snapshot not found")
+    return response
+
+
+@router.patch(
+    "/reflection-snapshots/{snapshot_id}/review",
+    response_model=ReflectionSnapshotReviewResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Store the user's review of a reflection snapshot",
+)
+async def update_reflection_snapshot_review_endpoint(
+    snapshot_id: str,
+    request: ReflectionSnapshotReviewRequest,
+) -> ReflectionSnapshotReviewResponse:
+    """Persist the user's later review note and accuracy verdict for a thought node."""
+
+    response = update_reflection_snapshot_review(
+        snapshot_id,
+        request.verdict,
+        request.note,
+        settings,
+    )
     if response is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Snapshot not found")
     return response

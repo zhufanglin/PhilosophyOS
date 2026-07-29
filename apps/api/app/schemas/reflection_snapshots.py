@@ -26,6 +26,23 @@ class SnapshotDecision(StrEnum):
     RAW_ONLY = "raw_only"
 
 
+class SnapshotReviewVerdict(StrEnum):
+    """User review verdict for a stored thought snapshot."""
+
+    ACCURATE = "accurate"
+    INACCURATE = "inaccurate"
+    REWRITE = "rewrite"
+    RAW_ONLY = "raw_only"
+
+
+class ReflectionSnapshotReview(BaseModel):
+    """User review metadata attached to a stored thought snapshot."""
+
+    verdict: SnapshotReviewVerdict
+    note: str | None = Field(default=None, max_length=1000)
+    updated_at: str
+
+
 class ThoughtChangeSignal(BaseModel):
     """How the user's view appears to have changed."""
 
@@ -83,6 +100,7 @@ class ReflectionSnapshotResponse(BaseModel):
     pending_reason: str | None = None
     user_decision: SnapshotDecision | None = None
     decision_updated_at: str | None = None
+    snapshot_review: ReflectionSnapshotReview | None = None
 
 
 class ReflectionSnapshotDecisionRequest(BaseModel):
@@ -97,6 +115,22 @@ class ReflectionSnapshotDecisionResponse(BaseModel):
     snapshot_id: str
     user_decision: SnapshotDecision
     decision_updated_at: str
+
+
+class ReflectionSnapshotReviewRequest(BaseModel):
+    """Request to store the user's review of a thought snapshot."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    verdict: SnapshotReviewVerdict
+    note: str | None = Field(default=None, max_length=1000)
+
+
+class ReflectionSnapshotReviewResponse(BaseModel):
+    """Stored user review metadata."""
+
+    snapshot_id: str
+    snapshot_review: ReflectionSnapshotReview
 
 
 class ReflectionSnapshotListItem(BaseModel):

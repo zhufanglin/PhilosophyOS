@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 
 type SnapshotStatus = "completed" | "pending";
 type SnapshotDecision = "approved" | "edit" | "rejected" | "raw_only";
+type SnapshotReviewVerdict = "accurate" | "inaccurate" | "rewrite" | "raw_only";
 
 type ReflectionSnapshotListItem = {
   created_at: string;
@@ -15,6 +16,11 @@ type ReflectionSnapshotListItem = {
     pending_reason: string | null;
     user_decision: SnapshotDecision | null;
     decision_updated_at: string | null;
+    snapshot_review: {
+      verdict: SnapshotReviewVerdict;
+      note: string | null;
+      updated_at: string;
+    } | null;
     content: {
       topic: string;
       title: string;
@@ -92,6 +98,18 @@ const snapshotDecisionLabels: Record<SnapshotDecision, string> = {
   raw_only: "\u53ea\u4fdd\u7559\u539f\u6587",
 };
 
+const snapshotReviewLabels: Record<SnapshotReviewVerdict, string> = {
+  accurate: "准确",
+  inaccurate: "不准确",
+  rewrite: "需要重写",
+  raw_only: "只保留原文",
+};
+
+type SnapshotReviewResponse = {
+  snapshot_id: string;
+  snapshot_review: NonNullable<ReflectionSnapshotListItem["snapshot"]["snapshot_review"]>;
+};
+
 export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [items, setItems] = useState<ReflectionSnapshotListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,6 +173,16 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     () => completedContents.filter((content) => content.change_signal.changed).length,
     [completedContents],
   );
+
+  function updateSnapshotReview(snapshotId: string, review: SnapshotReviewResponse["snapshot_review"]) {
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.snapshot.snapshot_id === snapshotId
+          ? { ...item, snapshot: { ...item.snapshot, snapshot_review: review } }
+          : item,
+      ),
+    );
+  }
 
   return (
     <main className="thought-archive-page" id="archive">
@@ -236,9 +264,11 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         <section className="thought-timeline" aria-label="思想节点时间线">
           {items.map((item) => (
             <TimelineCard
+              apiBaseUrl={apiBaseUrl}
               expanded={expandedSnapshotId === item.snapshot.snapshot_id}
               item={item}
               key={item.snapshot.snapshot_id}
+              onReviewSaved={updateSnapshotReview}
               onToggle={() =>
                 setExpandedSnapshotId((current) =>
                   current === item.snapshot.snapshot_id ? null : item.snapshot.snapshot_id,
@@ -255,6 +285,11 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
 type TimelineCardProps = {
   item: ReflectionSnapshotListItem;
   expanded: boolean;
+  apiBaseUrl: string;
+  onReviewSaved: (
+    snapshotId: string,
+    review: SnapshotReviewResponse["snapshot_review"],
+  ) => void;
   onToggle: () => void;
 };
 
@@ -390,7 +425,7 @@ function ThoughtEvolutionMap({ items }: { items: CompletedSnapshotItem[] }) {
     </section>
   );
 }
-function TimelineCard({ item, expanded, onToggle }: TimelineCardProps) {
+function TimelineCard({ item, expanded, apiBaseUrl, onReviewSaved, onToggle }: TimelineCardProps) {
   const content = item.snapshot.content;
   return (
     <article className={`timeline-card ${item.snapshot.status} ${expanded ? "expanded" : ""}`}>
@@ -443,14 +478,63 @@ function TimelineCard({ item, expanded, onToggle }: TimelineCardProps) {
           <ChevronDown size={16} />
         </button>
 
-        {expanded ? <TimelineDetail item={item} /> : null}
+        {expanded ? (
+          <TimelineDetail apiBaseUrl={apiBaseUrl} item={item} onReviewSaved={onReviewSaved} />
+        ) : null}
       </div>
     </article>
   );
 }
 
-function TimelineDetail({ item }: { item: ReflectionSnapshotListItem }) {
+function TimelineDetail({
+  item,
+  apiBaseUrl,
+  onReviewSaved,
+}: {
+  item: ReflectionSnapshotListItem;
+  apiBaseUrl: string;
+  onReviewSaved: (
+    snapshotId: string,
+    review: SnapshotReviewResponse["snapshot_review"],
+  ) => void;
+}) {
   const content = item.snapshot.content;
+  const [reviewVerdict, setReviewVerdict] = useState<SnapshotReviewVerdict>(
+    item.snapshot.snapshot_review?.verdict ?? "accurate",
+  );
+  const [reviewNote, setReviewNote] = useState(item.snapshot.snapshot_review?.note ?? "");
+  const [reviewStatus, setReviewStatus] = useState<string | null>(null);
+  const [savingReview, setSavingReview] = useState(false);
+
+  async function saveSnapshotReview() {
+    if (savingReview) return;
+    setSavingReview(true);
+    setReviewStatus(null);
+
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/v1/reflection-snapshots/${item.snapshot.snapshot_id}/review`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            verdict: reviewVerdict,
+            note: reviewNote.trim() || null,
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(`Reflection snapshot review API returned ${response.status}`);
+      }
+      const payload = (await response.json()) as SnapshotReviewResponse;
+      onReviewSaved(item.snapshot.snapshot_id, payload.snapshot_review);
+      setReviewStatus("校对已写入思想档案。");
+    } catch {
+      setReviewStatus("校对暂未写入思想档案，请稍后重试。");
+    } finally {
+      setSavingReview(false);
+    }
+  }
 
   return (
     <div className="timeline-detail-panel">
@@ -531,6 +615,43 @@ function TimelineDetail({ item }: { item: ReflectionSnapshotListItem }) {
           </p>
         </section>
       ) : null}
+
+      <section className="snapshot-review-panel" aria-label="思想节点校对">
+        <div>
+          <strong>思想节点校对</strong>
+          <p>这里记录你对这个节点的最终判断。AI 可以概括你，但不能替你盖章。</p>
+        </div>
+        <div className="snapshot-review-options">
+          {(Object.keys(snapshotReviewLabels) as SnapshotReviewVerdict[]).map((verdict) => (
+            <button
+              className={reviewVerdict === verdict ? "active" : ""}
+              key={verdict}
+              type="button"
+              onClick={() => setReviewVerdict(verdict)}
+            >
+              {snapshotReviewLabels[verdict]}
+            </button>
+          ))}
+        </div>
+        <label>
+          <span>你的批注</span>
+          <textarea
+            rows={3}
+            value={reviewNote}
+            placeholder="例如：这里 AI 把我的意思理解窄了；或者这个总结基本准确，但我还没想清楚责任边界。"
+            onChange={(event) => setReviewNote(event.target.value)}
+          />
+        </label>
+        <footer>
+          <button type="button" disabled={savingReview} onClick={() => void saveSnapshotReview()}>
+            {savingReview ? "正在写入" : "保存校对"}
+          </button>
+          {item.snapshot.snapshot_review ? (
+            <span>{formatSnapshotTime(item.snapshot.snapshot_review.updated_at)} 已校对</span>
+          ) : null}
+          {reviewStatus ? <em>{reviewStatus}</em> : null}
+        </footer>
+      </section>
     </div>
   );
 }

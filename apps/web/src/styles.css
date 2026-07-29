@@ -3376,6 +3376,111 @@ h1 {
   font-weight: 820;
 }
 
+.snapshot-review-panel {
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid rgb(54 89 111 / 14%);
+  border-radius: 14px;
+  background: rgb(255 253 247 / 66%);
+}
+
+.snapshot-review-panel > div:first-child p {
+  margin-top: 4px;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.snapshot-review-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.snapshot-review-options button,
+.snapshot-review-panel footer button {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid rgb(43 64 49 / 14%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 58%);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 850;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.snapshot-review-options button:hover,
+.snapshot-review-options button.active,
+.snapshot-review-panel footer button:hover:not(:disabled) {
+  border-color: rgb(40 86 64 / 24%);
+  background: rgb(47 107 77 / 9%);
+  color: var(--forest);
+  transform: translateY(-1px);
+}
+
+.snapshot-review-panel label {
+  display: grid;
+  gap: 7px;
+}
+
+.snapshot-review-panel label span {
+  color: #84663e;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.snapshot-review-panel textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 11px 12px;
+  border: 1px solid rgb(43 64 49 / 12%);
+  border-radius: 12px;
+  outline: 0;
+  background: rgb(255 255 255 / 54%);
+  color: var(--ink);
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.snapshot-review-panel textarea::placeholder {
+  color: #9a9489;
+}
+
+.snapshot-review-panel footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.snapshot-review-panel footer button {
+  color: #fff;
+  background: var(--forest);
+}
+
+.snapshot-review-panel footer button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.snapshot-review-panel footer span,
+.snapshot-review-panel footer em {
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.snapshot-review-panel footer em {
+  color: var(--forest);
+}
+
 @keyframes detail-reveal {
   from {
     opacity: 0;

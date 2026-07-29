@@ -64,6 +64,7 @@ def test_openapi_exposes_reflection_snapshot_resource() -> None:
 
     assert "/api/v1/reflection-snapshots" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/decision" in app.openapi()["paths"]
+    assert "/api/v1/reflection-snapshots/{snapshot_id}/review" in app.openapi()["paths"]
 
 
 @pytest.mark.anyio
@@ -110,6 +111,11 @@ async def test_reflection_snapshot_list_endpoint_returns_recent_items(
             "pending_reason": None,
             "user_decision": "approved",
             "decision_updated_at": "2026-07-28T09:30:00+00:00",
+            "snapshot_review": {
+                "verdict": "accurate",
+                "note": "This node is mostly correct.",
+                "updated_at": "2026-07-28T09:40:00+00:00",
+            },
         },
     }
     snapshot_path.write_text(
@@ -133,6 +139,7 @@ async def test_reflection_snapshot_list_endpoint_returns_recent_items(
     ]
     assert payload["items"][0]["question"] == "second question"
     assert payload["items"][0]["snapshot"]["user_decision"] == "approved"
+    assert payload["items"][0]["snapshot"]["snapshot_review"]["verdict"] == "accurate"
 
 
 @pytest.mark.anyio
@@ -215,6 +222,90 @@ async def test_reflection_snapshot_decision_endpoint_returns_404_for_missing_sna
         response = await client.patch(
             "/api/v1/reflection-snapshots/unknown/decision",
             json={"decision": "approved"},
+        )
+
+    assert response.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_reflection_snapshot_review_endpoint_persists_user_review(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The user can review and annotate a stored thought snapshot."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    record = {
+        "created_at": "2026-07-28T09:00:00+00:00",
+        "request": {"question": "Do limits destroy freedom?"},
+        "response": {
+            "snapshot_id": "snap_second",
+            "status": "completed",
+            "content": {
+                "topic": "freedom",
+                "title": "Freedom inside limits",
+                "user_position": "Freedom means responsible choice.",
+                "confidence": 0.7,
+                "emotional_tone": "clearer",
+                "core_question": "What limits still preserve freedom?",
+                "key_insights": [],
+                "tensions": [],
+                "related_philosophers": [],
+                "change_signal": {"changed": False},
+                "next_question": None,
+                "tags": ["freedom"],
+            },
+            "provider": "openai",
+            "provider_model": "test-model",
+            "pending_reason": None,
+        },
+    }
+    snapshot_path.write_text(json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")
+    monkeypatch.setattr(
+        snapshot_routes,
+        "settings",
+        PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path)),
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.patch(
+            "/api/v1/reflection-snapshots/snap_second/review",
+            json={"verdict": "rewrite", "note": "The position needs a more careful wording."},
+        )
+        list_response = await client.get("/api/v1/reflection-snapshots?limit=1")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["snapshot_id"] == "snap_second"
+    assert payload["snapshot_review"]["verdict"] == "rewrite"
+    assert payload["snapshot_review"]["note"] == "The position needs a more careful wording."
+    assert payload["snapshot_review"]["updated_at"]
+
+    stored = json.loads(snapshot_path.read_text(encoding="utf-8").strip())
+    assert stored["response"]["snapshot_review"] == payload["snapshot_review"]
+
+    assert list_response.status_code == 200
+    listed = list_response.json()["items"][0]["snapshot"]
+    assert listed["snapshot_review"] == payload["snapshot_review"]
+
+
+@pytest.mark.anyio
+async def test_reflection_snapshot_review_endpoint_returns_404_for_missing_snapshot(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Reviewing a missing snapshot returns a clear not-found response."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    snapshot_path.write_text("", encoding="utf-8")
+    monkeypatch.setattr(
+        snapshot_routes,
+        "settings",
+        PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path)),
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.patch(
+            "/api/v1/reflection-snapshots/unknown/review",
+            json={"verdict": "accurate", "note": None},
         )
 
     assert response.status_code == 404

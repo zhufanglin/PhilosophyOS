@@ -18,7 +18,10 @@ from app.schemas.reflection_snapshots import (
     ReflectionSnapshotListResponse,
     ReflectionSnapshotRequest,
     ReflectionSnapshotResponse,
+    ReflectionSnapshotReview,
+    ReflectionSnapshotReviewResponse,
     SnapshotDecision,
+    SnapshotReviewVerdict,
     SnapshotStatus,
 )
 from app.settings import PhilosophyOSSettings, settings
@@ -182,6 +185,60 @@ def update_reflection_snapshot_decision(
         snapshot_id=snapshot_id,
         user_decision=decision,
         decision_updated_at=updated_at,
+    )
+
+
+def update_reflection_snapshot_review(
+    snapshot_id: str,
+    verdict: SnapshotReviewVerdict,
+    note: str | None,
+    current_settings: PhilosophyOSSettings = settings,
+) -> ReflectionSnapshotReviewResponse | None:
+    """Persist the user's review of a stored thought snapshot."""
+
+    snapshot_path = Path(current_settings.thought_snapshots_path).expanduser()
+    if not snapshot_path.exists():
+        return None
+
+    lines = snapshot_path.read_text(encoding="utf-8").splitlines()
+    records: list[dict[str, object] | None] = []
+    matched_at: int | None = None
+    updated_at = datetime.now(UTC).isoformat()
+    review = ReflectionSnapshotReview(
+        verdict=verdict,
+        note=note.strip() if note and note.strip() else None,
+        updated_at=updated_at,
+    )
+
+    for line in lines:
+        if not line.strip():
+            records.append(None)
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            records.append(None)
+            continue
+        response = record.get("response")
+        if isinstance(response, dict) and response.get("snapshot_id") == snapshot_id:
+            response["snapshot_review"] = review.model_dump(mode="json")
+            matched_at = len(records)
+        records.append(record)
+
+    if matched_at is None:
+        return None
+
+    rendered_lines: list[str] = []
+    for index, record in enumerate(records):
+        if record is None:
+            rendered_lines.append(lines[index])
+        else:
+            rendered_lines.append(json.dumps(record, ensure_ascii=False))
+
+    snapshot_path.write_text("\n".join(rendered_lines) + "\n", encoding="utf-8")
+    return ReflectionSnapshotReviewResponse(
+        snapshot_id=snapshot_id,
+        snapshot_review=review,
     )
 
 

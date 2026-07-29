@@ -93,8 +93,23 @@ async function mockReflectionSnapshot(page: Page) {
     const method = route.request().method();
 
     if (method === "PATCH") {
-      const snapshotId = route.request().url().match(/reflection-snapshots\/([^/]+)\/decision/)?.[1]
+      const snapshotId = route.request().url().match(/reflection-snapshots\/([^/]+)\/(?:decision|review)/)?.[1]
         ?? "snap_e2e";
+      if (route.request().url().endsWith("/review")) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            snapshot_id: snapshotId,
+            snapshot_review: {
+              verdict: "rewrite",
+              note: "这里 AI 把我的立场概括得太窄，需要重写。",
+              updated_at: "2026-07-28T10:10:00+00:00",
+            },
+          }),
+        });
+        return;
+      }
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -124,6 +139,11 @@ async function mockReflectionSnapshot(page: Page) {
                 pending_reason: null,
                 user_decision: "rejected",
                 decision_updated_at: "2026-07-28T10:00:00+00:00",
+                snapshot_review: {
+                  verdict: "inaccurate",
+                  note: "这个总结遗漏了我对责任边界的保留。",
+                  updated_at: "2026-07-28T10:10:00+00:00",
+                },
                 content: {
                   topic: "诚实与德性",
                   title: "诚实是在伤害与责任之间保持清醒",
@@ -164,6 +184,7 @@ async function mockReflectionSnapshot(page: Page) {
         pending_reason: null,
         user_decision: null,
         decision_updated_at: null,
+        snapshot_review: null,
         content: {
           topic: "诚实与德性",
           title: "诚实是在伤害与责任之间保持清醒",
@@ -452,6 +473,12 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".timeline-detail-panel")).toContainText("康德");
   await expect(page.locator(".timeline-detail-panel")).toContainText("概念细化");
   await expect(page.locator(".timeline-detail-panel")).toContainText("AI 总结处理态度");
+  await expect(page.locator(".snapshot-review-panel")).toContainText("思想节点校对");
+  await expect(page.locator(".snapshot-review-panel")).toContainText("不准确");
+  await page.getByRole("button", { name: "需要重写" }).click();
+  await page.locator(".snapshot-review-panel textarea").fill("这里 AI 把我的立场概括得太窄，需要重写。");
+  await page.getByRole("button", { name: "保存校对" }).click();
+  await expect(page.locator(".snapshot-review-panel")).toContainText("校对已写入思想档案");
   await page.getByRole("button", { name: /收起思想节点/ }).click();
   await expect(page.locator(".timeline-detail-panel")).toBeHidden();
 
