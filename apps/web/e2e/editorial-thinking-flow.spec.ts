@@ -359,6 +359,9 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/#today");
   await expect(page.locator(".daily-question h1")).toBeVisible();
+  await expect(page.locator(".today-product-narrative")).toContainText("从一次回答");
+  await expect(page.locator(".today-product-narrative")).toContainText("思想节点");
+  await expect(page.locator(".today-product-narrative")).toContainText("校对思想档案");
   await expectNoHorizontalOverflow(page);
 
   const firstQuestion = await page.locator(".daily-question h1").innerText();

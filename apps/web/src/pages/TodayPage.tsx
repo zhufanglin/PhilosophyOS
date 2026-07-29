@@ -63,6 +63,29 @@ const questions: DailyQuestionView[] = [
   },
 ];
 
+const thinkingWorkflow = [
+  {
+    index: "01",
+    title: "回答今日问题",
+    description: "先留下你的原始判断，不急着追求标准答案。",
+  },
+  {
+    index: "02",
+    title: "进入哲学追问",
+    description: "AI 负责追问、澄清和指出张力，不替你下结论。",
+  },
+  {
+    index: "03",
+    title: "生成思想节点",
+    description: "把阶段性立场、犹豫和下一步问题整理成快照。",
+  },
+  {
+    index: "04",
+    title: "校对思想档案",
+    description: "你可以认可、反对、重写，或只保留原始发言。",
+  },
+];
+
 function formatToday(date: Date) {
   const parts = new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",
@@ -151,6 +174,29 @@ export function TodayPage({ onStart }: TodayPageProps) {
             </button>
           </div>
         </article>
+      </section>
+
+      <section className="today-product-narrative" aria-label="PhilosophyOS 工作流程">
+        <div className="narrative-header">
+          <span>PHILOSOPHYOS / METHOD</span>
+          <h2>从一次回答，到一条可校对的思想节点</h2>
+          <p>
+            PhilosophyOS 不把对话停留在“AI 给答案”。它更像一张思想工作台：你回答，系统追问，
+            然后把真正发生变化的观点沉淀进档案。
+          </p>
+        </div>
+        <ol className="narrative-flow">
+          {thinkingWorkflow.map((step) => (
+            <li className="narrative-step" key={step.index}>
+              <span className="narrative-step-index">{step.index}</span>
+              <strong>{step.title}</strong>
+              <p>{step.description}</p>
+            </li>
+          ))}
+        </ol>
+        <p className="narrative-note">
+          这里记录的不是聊天记录本身，而是你在追问中逐渐形成、修正、确认过的思想证据。
+        </p>
       </section>
 
       <section className="today-footnote" aria-label="最近进度">
