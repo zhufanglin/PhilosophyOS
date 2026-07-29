@@ -469,6 +469,18 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".archive-insights")).toContainText("诚实与德性");
   await expect(page.locator(".archive-insights")).toContainText("善意隐瞒与逃避责任之间的界限仍不清楚");
   await expect(page.locator(".archive-insights")).toContainText("1 次");
+  await expect(page.locator(".thought-relation-graph")).toContainText("思想关系图谱");
+  await expect(page.locator(".relation-graph-canvas")).toBeVisible();
+  expect(await page.locator(".thought-graph-node").count()).toBeGreaterThan(2);
+  await page.locator(".thought-graph-node").first().click();
+  await expect(page.locator(".relation-graph-detail")).toContainText("关联思想节点");
+  const graphNodeBox = await page.locator(".thought-graph-node").first().boundingBox();
+  if (graphNodeBox) {
+    await page.mouse.move(graphNodeBox.x + graphNodeBox.width / 2, graphNodeBox.y + graphNodeBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(graphNodeBox.x + graphNodeBox.width / 2 + 72, graphNodeBox.y + graphNodeBox.height / 2 + 36);
+    await page.mouse.up();
+  }
   await expect(page.locator(".timeline-card")).toContainText("诚实是在伤害与责任之间保持清醒");
   await expect(page.locator(".timeline-card")).toContainText("不同意");
   await expect(page.locator(".timeline-card")).toContainText("什么时候善意隐瞒会变成逃避责任");

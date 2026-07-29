@@ -1,5 +1,5 @@
 ﻿import { Archive, ChevronDown, CircleDot, Clock3, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 
 type SnapshotStatus = "completed" | "pending";
 type SnapshotDecision = "approved" | "edit" | "rejected" | "raw_only";
@@ -62,6 +62,28 @@ type CompletedSnapshotItem = ReflectionSnapshotListItem & {
   };
 };
 
+type GraphNodeKind = "snapshot" | "topic" | "tension" | "philosopher" | "tag";
+
+type ThoughtGraphNode = {
+  id: string;
+  label: string;
+  kind: GraphNodeKind;
+  weight: number;
+  description: string;
+};
+
+type ThoughtGraphEdge = {
+  id: string;
+  source: string;
+  target: string;
+  relation: string;
+};
+
+type GraphPosition = {
+  x: number;
+  y: number;
+};
+
 function hasSnapshotContent(item: ReflectionSnapshotListItem): item is CompletedSnapshotItem {
   return item.snapshot.content !== null;
 }
@@ -89,6 +111,148 @@ function collectAggregates(values: string[], limit = 5): ArchiveAggregate[] {
     .sort((first, second) => second[1] - first[1] || first[0].localeCompare(second[0], "zh-CN"))
     .slice(0, limit)
     .map(([label, count]) => ({ label, count }));
+}
+
+function graphNodeId(kind: GraphNodeKind, value: string) {
+  return `${kind}:${value}`;
+}
+
+function addGraphNode(nodes: Map<string, ThoughtGraphNode>, node: ThoughtGraphNode) {
+  const existing = nodes.get(node.id);
+  if (existing) {
+    nodes.set(node.id, {
+      ...existing,
+      weight: existing.weight + node.weight,
+    });
+    return;
+  }
+  nodes.set(node.id, node);
+}
+
+function buildThoughtGraph(items: CompletedSnapshotItem[]) {
+  const nodes = new Map<string, ThoughtGraphNode>();
+  const edges = new Map<string, ThoughtGraphEdge>();
+
+  items.slice(-8).forEach((item) => {
+    const content = item.snapshot.content;
+    const snapshotId = graphNodeId("snapshot", item.snapshot.snapshot_id);
+    addGraphNode(nodes, {
+      id: snapshotId,
+      label: content.title,
+      kind: "snapshot",
+      weight: 3,
+      description: content.user_position,
+    });
+
+    const topicId = graphNodeId("topic", content.topic);
+    addGraphNode(nodes, {
+      id: topicId,
+      label: content.topic,
+      kind: "topic",
+      weight: 2,
+      description: content.core_question,
+    });
+    edges.set(`${snapshotId}->${topicId}`, {
+      id: `${snapshotId}->${topicId}`,
+      source: snapshotId,
+      target: topicId,
+      relation: "主题",
+    });
+
+    content.tensions.slice(0, 3).forEach((tension) => {
+      const tensionId = graphNodeId("tension", tension);
+      addGraphNode(nodes, {
+        id: tensionId,
+        label: tension,
+        kind: "tension",
+        weight: 1.4,
+        description: `反复拉扯：${content.core_question}`,
+      });
+      edges.set(`${topicId}->${tensionId}`, {
+        id: `${topicId}->${tensionId}`,
+        source: topicId,
+        target: tensionId,
+        relation: "张力",
+      });
+    });
+
+    content.related_philosophers.slice(0, 3).forEach((philosopher) => {
+      const philosopherId = graphNodeId("philosopher", philosopher.name);
+      addGraphNode(nodes, {
+        id: philosopherId,
+        label: philosopher.name,
+        kind: "philosopher",
+        weight: 1.6,
+        description: philosopher.reason,
+      });
+      edges.set(`${topicId}->${philosopherId}`, {
+        id: `${topicId}->${philosopherId}`,
+        source: topicId,
+        target: philosopherId,
+        relation: "哲学家",
+      });
+    });
+
+    content.tags.slice(0, 3).forEach((tag) => {
+      const tagId = graphNodeId("tag", tag);
+      addGraphNode(nodes, {
+        id: tagId,
+        label: tag,
+        kind: "tag",
+        weight: 1,
+        description: `来自思想节点《${content.title}》的标签。`,
+      });
+      edges.set(`${topicId}->${tagId}`, {
+        id: `${topicId}->${tagId}`,
+        source: topicId,
+        target: tagId,
+        relation: "标签",
+      });
+    });
+  });
+
+  const sortedNodes = [...nodes.values()]
+    .sort((first, second) => {
+      const kindOrder: Record<GraphNodeKind, number> = {
+        topic: 0,
+        snapshot: 1,
+        tension: 2,
+        philosopher: 3,
+        tag: 4,
+      };
+      return kindOrder[first.kind] - kindOrder[second.kind] || second.weight - first.weight;
+    })
+    .slice(0, 26);
+  const allowedNodeIds = new Set(sortedNodes.map((node) => node.id));
+  return {
+    nodes: sortedNodes,
+    edges: [...edges.values()].filter(
+      (edge) => allowedNodeIds.has(edge.source) && allowedNodeIds.has(edge.target),
+    ),
+  };
+}
+
+function buildInitialGraphPositions(nodes: ThoughtGraphNode[]): Record<string, GraphPosition> {
+  const positions: Record<string, GraphPosition> = {};
+  const centerX = 480;
+  const centerY = 235;
+  const rings: Record<GraphNodeKind, number> = {
+    topic: 92,
+    snapshot: 166,
+    tension: 244,
+    philosopher: 292,
+    tag: 328,
+  };
+
+  nodes.forEach((node, index) => {
+    const angle = (index / Math.max(nodes.length, 1)) * Math.PI * 2 - Math.PI / 2;
+    const radius = rings[node.kind] + (index % 3) * 12;
+    positions[node.id] = {
+      x: centerX + Math.cos(angle) * radius,
+      y: centerY + Math.sin(angle) * radius * 0.58,
+    };
+  });
+  return positions;
 }
 
 const snapshotDecisionLabels: Record<SnapshotDecision, string> = {
@@ -173,6 +337,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     () => completedContents.filter((content) => content.change_signal.changed).length,
     [completedContents],
   );
+  const graphData = useMemo(() => buildThoughtGraph(completedSnapshotItems), [completedSnapshotItems]);
 
   function updateSnapshotReview(snapshotId: string, review: SnapshotReviewResponse["snapshot_review"]) {
     setItems((currentItems) =>
@@ -258,6 +423,10 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
 
       {!loading && !error && evolutionItems.length > 0 ? (
         <ThoughtEvolutionMap items={evolutionItems} />
+      ) : null}
+
+      {!loading && !error && graphData.nodes.length > 0 ? (
+        <ThoughtRelationGraph items={completedSnapshotItems} graph={graphData} />
       ) : null}
 
       {!loading && !error && items.length > 0 ? (
@@ -425,6 +594,204 @@ function ThoughtEvolutionMap({ items }: { items: CompletedSnapshotItem[] }) {
     </section>
   );
 }
+
+function ThoughtRelationGraph({
+  graph,
+  items,
+}: {
+  graph: ReturnType<typeof buildThoughtGraph>;
+  items: CompletedSnapshotItem[];
+}) {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [positions, setPositions] = useState<Record<string, GraphPosition>>({});
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(graph.nodes[0]?.id ?? null);
+  const dragState = useRef<{ nodeId: string; offsetX: number; offsetY: number } | null>(null);
+
+  useEffect(() => {
+    setPositions(buildInitialGraphPositions(graph.nodes));
+    setActiveNodeId(graph.nodes[0]?.id ?? null);
+  }, [graph.nodes]);
+
+  const activeNode = graph.nodes.find((node) => node.id === activeNodeId) ?? graph.nodes[0];
+  const connectedNodeIds = useMemo(() => {
+    if (!activeNodeId) return new Set<string>();
+    const connected = new Set<string>([activeNodeId]);
+    graph.edges.forEach((edge) => {
+      if (edge.source === activeNodeId) connected.add(edge.target);
+      if (edge.target === activeNodeId) connected.add(edge.source);
+    });
+    return connected;
+  }, [activeNodeId, graph.edges]);
+  const selectedSnapshots = useMemo(() => {
+    if (!activeNode) return [];
+    if (activeNode.kind === "snapshot") {
+      const snapshotId = activeNode.id.replace("snapshot:", "");
+      return items.filter((item) => item.snapshot.snapshot_id === snapshotId);
+    }
+    return items.filter((item) => {
+      const content = item.snapshot.content;
+      if (activeNode.kind === "topic") return content.topic === activeNode.label;
+      if (activeNode.kind === "tension") return content.tensions.includes(activeNode.label);
+      if (activeNode.kind === "philosopher") {
+        return content.related_philosophers.some((philosopher) => philosopher.name === activeNode.label);
+      }
+      return content.tags.includes(activeNode.label);
+    });
+  }, [activeNode, items]);
+
+  function pointerToGraphPoint(event: PointerEvent<SVGSVGElement | SVGGElement>) {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const rect = svg.getBoundingClientRect();
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * 960,
+      y: ((event.clientY - rect.top) / rect.height) * 470,
+    };
+  }
+
+  function positionFor(nodeId: string) {
+    return positions[nodeId] ?? { x: 480, y: 235 };
+  }
+
+  function beginDrag(nodeId: string, event: PointerEvent<SVGGElement>) {
+    const position = positionFor(nodeId);
+    const point = pointerToGraphPoint(event);
+    dragState.current = {
+      nodeId,
+      offsetX: point.x - position.x,
+      offsetY: point.y - position.y,
+    };
+    setActiveNodeId(nodeId);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function moveDrag(event: PointerEvent<SVGSVGElement>) {
+    const currentDrag = dragState.current;
+    if (!currentDrag) return;
+    const point = pointerToGraphPoint(event);
+    setPositions((currentPositions) => ({
+      ...currentPositions,
+      [currentDrag.nodeId]: {
+        x: Math.min(920, Math.max(40, point.x - currentDrag.offsetX)),
+        y: Math.min(430, Math.max(40, point.y - currentDrag.offsetY)),
+      },
+    }));
+  }
+
+  function endDrag() {
+    dragState.current = null;
+  }
+
+  function resetLayout() {
+    setPositions(buildInitialGraphPositions(graph.nodes));
+    setActiveNodeId(graph.nodes[0]?.id ?? null);
+  }
+
+  return (
+    <section className="thought-relation-graph" aria-label="思想关系图谱">
+      <header className="relation-graph-header">
+        <div>
+          <p className="section-kicker">OBSIDIAN GRAPH</p>
+          <h2>思想关系图谱</h2>
+        </div>
+        <p>
+          像 Obsidian 一样，把思想节点、主题、张力、哲学家和标签连成一张可拖动的网络。
+          点击节点会高亮关联，拖动节点可以重新整理你的思想空间。
+        </p>
+        <button className="secondary-button" type="button" onClick={resetLayout}>
+          重置布局
+        </button>
+      </header>
+
+      <div className="relation-graph-workspace">
+        <svg
+          ref={svgRef}
+          className="relation-graph-canvas"
+          viewBox="0 0 960 470"
+          role="img"
+          aria-label="可拖动思想关系图谱"
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerLeave={endDrag}
+        >
+          <defs>
+            <radialGradient id="graphNodeGlow" cx="50%" cy="45%" r="62%">
+              <stop offset="0%" stopColor="#fffdf7" />
+              <stop offset="100%" stopColor="#efe6d5" />
+            </radialGradient>
+          </defs>
+          <g className="relation-graph-links">
+            {graph.edges.map((edge) => {
+              const source = positionFor(edge.source);
+              const target = positionFor(edge.target);
+              const active = activeNodeId === edge.source || activeNodeId === edge.target;
+              return (
+                <line
+                  className={active ? "active" : ""}
+                  key={edge.id}
+                  x1={source.x}
+                  x2={target.x}
+                  y1={source.y}
+                  y2={target.y}
+                />
+              );
+            })}
+          </g>
+          <g className="relation-graph-nodes">
+            {graph.nodes.map((node) => {
+              const position = positionFor(node.id);
+              const active = node.id === activeNodeId;
+              const connected = connectedNodeIds.has(node.id);
+              const radius = Math.min(38, 17 + node.weight * 4);
+              return (
+                <g
+                  className={`thought-graph-node ${node.kind}${active ? " active" : ""}${connected ? " connected" : ""}`}
+                  key={node.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${node.label}，${node.kind} 节点，可拖动`}
+                  transform={`translate(${position.x} ${position.y})`}
+                  onClick={() => setActiveNodeId(node.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setActiveNodeId(node.id);
+                    }
+                  }}
+                  onPointerDown={(event) => beginDrag(node.id, event)}
+                >
+                  <circle r={radius} />
+                  <text y={radius + 15}>{node.label.length > 12 ? `${node.label.slice(0, 12)}…` : node.label}</text>
+                </g>
+              );
+            })}
+          </g>
+        </svg>
+
+        <aside className="relation-graph-detail" aria-live="polite">
+          {activeNode ? (
+            <>
+              <span>{activeNode.kind.toUpperCase()}</span>
+              <h3>{activeNode.label}</h3>
+              <p>{activeNode.description}</p>
+              <div>
+                <strong>关联思想节点</strong>
+                {selectedSnapshots.length > 0 ? (
+                  selectedSnapshots.slice(0, 4).map((item) => (
+                    <small key={item.snapshot.snapshot_id}>{item.snapshot.content.title}</small>
+                  ))
+                ) : (
+                  <small>选择相邻节点查看关联记录。</small>
+                )}
+              </div>
+            </>
+          ) : null}
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 function TimelineCard({ item, expanded, apiBaseUrl, onReviewSaved, onToggle }: TimelineCardProps) {
   const content = item.snapshot.content;
   return (
