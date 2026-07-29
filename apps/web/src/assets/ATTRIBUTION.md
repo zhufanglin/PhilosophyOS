@@ -5,6 +5,7 @@ PhilosophyOS stores these images locally so the daily practice does not depend o
 ## Socrates
 
 - File: `philosophers/socrates-louvre.jpg`
+- Derived file: `philosophers/socrates-cutout.png` (local transparent-background cutout for the digital museum hero)
 - Work: Roman marble copy of a portrait traditionally attributed to Lysippos
 - Photograph: Eric Gaba (Wikimedia Commons user Sting), July 2005
 - Source: https://commons.wikimedia.org/wiki/File:Socrate_du_Louvre.jpg
@@ -23,6 +24,7 @@ PhilosophyOS stores these images locally so the daily practice does not depend o
 ## Jean-Paul Sartre
 
 - File: `philosophers/sartre-1967.jpg`
+- Derived file: `philosophers/sartre-cutout.png` (local transparent-background cutout for the digital museum hero)
 - Work: Jean-Paul Sartre in 1967, distributed by the Israel Government Press Office
 - Source: https://commons.wikimedia.org/wiki/File:Sartre_1967_crop.jpg
 - License: Creative Commons Attribution 3.0

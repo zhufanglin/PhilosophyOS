@@ -8,17 +8,22 @@ import {
 import { useState } from "react";
 
 import kantPortrait from "../assets/philosophers/kant-becker.jpg";
-import sartrePortrait from "../assets/philosophers/sartre-1967.jpg";
-import socratesPortrait from "../assets/philosophers/socrates-louvre.jpg";
+import sartrePortrait from "../assets/philosophers/sartre-cutout.png";
+import socratesPortrait from "../assets/philosophers/socrates-cutout.png";
 
 export type DailyQuestionView = {
   id: string;
   domain: string;
   difficulty: "入门" | "进阶";
   era: string;
+  period?: string;
   prompt: string;
   tension: string;
   philosopher: string;
+  englishName?: string;
+  lifeSpan?: string;
+  quote?: string;
+  tags?: string[];
   source: string;
   portraitUrl: string;
 };
@@ -33,9 +38,14 @@ const questions: DailyQuestionView[] = [
     domain: "伦理学",
     difficulty: "进阶",
     era: "古希腊",
+    period: "古希腊哲学家",
     prompt: "当诚实地生活必然带来损失时，我们仍有理由坚持诚实吗？",
     tension: "德性与结果",
     philosopher: "苏格拉底",
+    englishName: "Socrates",
+    lifeSpan: "约公元前 470 — 公元前 399",
+    quote: "未经审视的人生不值得过。",
+    tags: ["伦理学", "德性", "灵魂照料"],
     source: "审核问题库 · 30 天内未出现",
     portraitUrl: socratesPortrait,
   },
@@ -44,9 +54,14 @@ const questions: DailyQuestionView[] = [
     domain: "政治哲学",
     difficulty: "入门",
     era: "启蒙运动",
+    period: "启蒙时代哲学家",
     prompt: "一项法律获得多数人支持，是否就足以证明它是正当的？",
     tension: "合法性与正当性",
     philosopher: "康德",
+    englishName: "Immanuel Kant",
+    lifeSpan: "1724 — 1804",
+    quote: "有两种东西，我越思考越感到敬畏：头上的星空与心中的道德法则。",
+    tags: ["义务论", "理性", "自由"],
     source: "审核问题库 · 30 天内未出现",
     portraitUrl: kantPortrait,
   },
@@ -55,9 +70,14 @@ const questions: DailyQuestionView[] = [
     domain: "存在主义",
     difficulty: "进阶",
     era: "20 世纪",
+    period: "近现代哲学家",
     prompt: "如果人的选择总受处境限制，我们仍能为自己成为什么样的人负责吗？",
     tension: "处境与自由",
     philosopher: "萨特",
+    englishName: "Jean-Paul Sartre",
+    lifeSpan: "1905 — 1980",
+    quote: "存在先于本质。",
+    tags: ["存在主义", "自由", "责任"],
     source: "审核问题库 · 30 天内未出现",
     portraitUrl: sartrePortrait,
   },
@@ -102,6 +122,7 @@ export function TodayPage({ onStart }: TodayPageProps) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const question = questions[questionIndex];
   const todayLabel = formatToday(new Date());
+  const portraitTags = question.tags ?? [question.domain, question.tension, question.era];
 
   function chooseAnotherQuestion() {
     setQuestionIndex((current) => (current + 1) % questions.length);
@@ -125,22 +146,36 @@ export function TodayPage({ onStart }: TodayPageProps) {
 
       <section className="daily-question" aria-labelledby="daily-question-title">
         <figure className="question-portrait">
-          <div className="portrait-frame">
-            <span className="portrait-fallback" aria-hidden="true">Φ</span>
-            <img
-              key={question.id}
-              src={question.portraitUrl}
-              alt={`${question.philosopher}肖像`}
-              data-philosopher={question.philosopher}
-              onError={(event) => {
-                event.currentTarget.hidden = true;
-              }}
-            />
+          <div className="museum-portrait-stage" data-era={question.era}>
+            <div className="museum-arch-lines" aria-hidden="true" />
+            <div className="museum-manuscript" aria-hidden="true">
+              <span>λόγος</span>
+              <span>virtus · ratio · freedom</span>
+            </div>
+            <div className="portrait-aura" aria-hidden="true" />
+            <div className="portrait-frame">
+              <span className="portrait-fallback" aria-hidden="true">Φ</span>
+              <img
+                key={question.id}
+                src={question.portraitUrl}
+                alt={`${question.philosopher}肖像`}
+                data-philosopher={question.philosopher}
+                onError={(event) => {
+                  event.currentTarget.hidden = true;
+                }}
+              />
+            </div>
           </div>
           <figcaption>
-            <span>PORTRAIT / {question.id.toUpperCase()}</span>
+            <span>{question.englishName ?? question.philosopher}</span>
             <strong>{question.philosopher}</strong>
-            <small>{question.era}</small>
+            <small>{question.period ?? question.era}</small>
+            {question.lifeSpan ? <small>{question.lifeSpan}</small> : null}
+            <div className="portrait-tags" aria-label="核心思想标签">
+              {portraitTags.map((tag) => (
+                <em key={tag}>{tag}</em>
+              ))}
+            </div>
           </figcaption>
         </figure>
 
@@ -155,6 +190,10 @@ export function TodayPage({ onStart }: TodayPageProps) {
             <span>{question.era}</span>
           </div>
           <h1 id="daily-question-title">{question.prompt}</h1>
+          <blockquote className="philosopher-quote">
+            <p>{question.quote ?? "把一个判断想清楚，也是在重新整理自己与世界的关系。"}</p>
+            <cite>— {question.philosopher}</cite>
+          </blockquote>
           <dl className="question-context">
             <div>
               <dt>核心张力</dt>

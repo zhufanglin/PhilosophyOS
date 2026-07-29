@@ -1303,9 +1303,39 @@ h1 {
 /* Daily question */
 
 .today-page {
+  --museum-parchment: #f5f0e6;
+  --museum-ink: #1c1c1c;
+  --museum-forest: #245943;
+  --museum-bronze: #b08d57;
+  position: relative;
   width: min(1240px, 100%);
   margin: 0 auto;
   padding: 38px clamp(28px, 5vw, 68px) 72px;
+  color: var(--museum-ink);
+}
+
+.today-page::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 24% 24%, rgb(176 141 87 / 12%), transparent 28%),
+    radial-gradient(circle at 82% 12%, rgb(36 89 67 / 7%), transparent 26%),
+    linear-gradient(135deg, rgb(245 240 230 / 92%), rgb(239 231 216 / 88%));
+  content: "";
+}
+
+.today-page::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgb(28 28 28 / 2%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(28 28 28 / 1.6%) 1px, transparent 1px);
+  background-size: 42px 42px;
+  content: "";
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  pointer-events: none;
 }
 
 .today-heading {
@@ -1362,45 +1392,153 @@ h1 {
 
 .daily-question {
   display: grid;
-  grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.32fr);
-  gap: clamp(40px, 5vw, 76px);
-  min-height: 510px;
-  padding: 34px 0 38px;
+  grid-template-columns: minmax(340px, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(44px, 6vw, 92px);
+  min-height: 600px;
+  padding: 42px 0 48px;
   border-bottom: 1px solid var(--rule-strong);
   animation: page-section-arrive 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .question-portrait {
+  position: relative;
   min-width: 0;
   margin: 0;
+  align-self: center;
   animation: quiet-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
+.museum-portrait-stage {
+  position: relative;
+  display: grid;
+  min-height: 520px;
+  place-items: center;
+  isolation: isolate;
+  animation: museum-portrait-arrive 760ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
+.museum-portrait-stage::before {
+  position: absolute;
+  inset: 5% 2% 12% 0;
+  z-index: -3;
+  background:
+    radial-gradient(circle at 51% 43%, rgb(36 89 67 / 32%), transparent 36%),
+    radial-gradient(circle at 48% 54%, rgb(176 141 87 / 20%), transparent 42%);
+  border-radius: 50%;
+  content: "";
+  filter: blur(0.2px);
+}
+
+.museum-portrait-stage::after {
+  position: absolute;
+  inset: 12% 3% 4% 8%;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 50% 62%, rgb(176 141 87 / 20%), transparent 38%),
+    linear-gradient(110deg, transparent 0 24%, rgb(176 141 87 / 12%) 36%, transparent 54%),
+    repeating-linear-gradient(0deg, rgb(28 28 28 / 3%) 0 1px, transparent 1px 8px);
+  border-radius: 46% 54% 44% 56%;
+  content: "";
+  mask-image: radial-gradient(circle at 48% 50%, #000 0 62%, transparent 76%);
+}
+
+.museum-arch-lines {
+  position: absolute;
+  inset: 2% auto auto 0;
+  width: 54%;
+  height: 74%;
+  border: 1px solid rgb(176 141 87 / 18%);
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 120px 0 0;
+  opacity: 0.72;
+}
+
+.museum-arch-lines::before,
+.museum-arch-lines::after {
+  position: absolute;
+  content: "";
+}
+
+.museum-arch-lines::before {
+  inset: 24px auto auto 22px;
+  width: 78%;
+  height: 82%;
+  border: 1px solid rgb(176 141 87 / 12%);
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 96px 0 0;
+}
+
+.museum-arch-lines::after {
+  left: 18px;
+  bottom: 18px;
+  width: 36%;
+  height: 1px;
+  background: rgb(176 141 87 / 20%);
+  box-shadow:
+    0 -52px 0 rgb(176 141 87 / 12%),
+    0 -104px 0 rgb(176 141 87 / 10%);
+}
+
+.museum-manuscript {
+  position: absolute;
+  right: 0;
+  bottom: 16%;
+  z-index: -1;
+  display: grid;
+  gap: 8px;
+  color: rgb(176 141 87 / 42%);
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-style: italic;
+  letter-spacing: 0.08em;
+  opacity: 0.72;
+  transform: rotate(-7deg);
+}
+
+.museum-manuscript span:last-child {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+}
+
+.portrait-aura {
+  position: absolute;
+  inset: 13% 8% 18% 14%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(36 89 67 / 45%), rgb(36 89 67 / 13%) 54%, transparent 70%);
+  filter: blur(0.3px);
+  animation: museum-aura-breathe 9s ease-in-out infinite alternate;
 }
 
 .portrait-frame {
   position: relative;
-  height: 480px;
-  overflow: hidden;
-  border: 1px solid #353b36;
-  background: var(--ink);
-  transition: border-color 180ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  width: min(420px, 100%);
+  height: 500px;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  filter: drop-shadow(0 30px 28px rgb(61 48 31 / 22%));
+  transition: filter 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .portrait-frame::after {
   position: absolute;
   z-index: 2;
-  inset: 0;
+  inset: -10% 4% 0;
   pointer-events: none;
   content: "";
-  background: linear-gradient(115deg, transparent 0%, rgb(255 255 255 / 0%) 42%, rgb(255 255 255 / 10%) 50%, rgb(255 255 255 / 0%) 58%, transparent 100%);
-  opacity: 0;
-  transform: translateX(-28%);
-  transition: opacity 180ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(105deg, transparent 0%, rgb(255 255 255 / 0%) 38%, rgb(255 255 255 / 18%) 48%, rgb(255 255 255 / 0%) 58%, transparent 100%);
+  opacity: 0.78;
+  mix-blend-mode: screen;
+  transform: translateX(-78%);
+  animation: museum-light-sweep 3.8s cubic-bezier(0.22, 1, 0.36, 1) 420ms both;
 }
 
 .question-portrait:hover .portrait-frame {
-  border-color: #545d55;
-  box-shadow: 0 18px 44px rgb(38 48 40 / 13%);
-  transform: translateY(-2px);
+  filter: drop-shadow(0 34px 32px rgb(61 48 31 / 26%));
+  transform: translateY(-3px);
 }
 
 .question-portrait:hover .portrait-frame::after {
@@ -1419,14 +1557,20 @@ h1 {
 }
 
 .portrait-frame img {
-  position: relative;
+  position: absolute;
   z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 50% 25%;
-  filter: saturate(0.76) contrast(1.03);
+  object-fit: contain;
+  object-position: 50% 58%;
+  filter: saturate(0.72) contrast(1.05) sepia(0.16);
+  mix-blend-mode: multiply;
+  transform: scale(1.12);
+  mask-image:
+    linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%),
+    linear-gradient(180deg, #000 0 78%, transparent 98%);
+  mask-composite: intersect;
 }
 
 .portrait-frame img[hidden] {
@@ -1434,39 +1578,64 @@ h1 {
 }
 
 .portrait-frame img[data-philosopher="康德"] {
-  object-position: 50% 18%;
+  object-position: 50% 42%;
+  filter: grayscale(0.88) sepia(0.18) contrast(1.02);
+  transform: scale(1.04);
 }
 
 .portrait-frame img[data-philosopher="萨特"] {
-  object-position: 50% 45%;
+  object-position: 50% 58%;
+  filter: grayscale(0.9) sepia(0.2) contrast(1.06);
+  transform: scale(1.08);
 }
 
 .question-portrait figcaption {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 3px 18px;
+  grid-template-columns: 1fr;
+  gap: 4px;
   align-items: baseline;
-  padding-top: 13px;
+  max-width: 420px;
+  margin: -24px auto 0;
+  padding: 0 24px 0;
   color: var(--ink-muted);
 }
 
 .question-portrait figcaption > span:first-child {
-  grid-column: 1 / -1;
-  color: var(--burgundy);
-  font-family: Georgia, serif;
-  font-size: 0.62rem;
-  font-weight: 700;
+  color: var(--museum-bronze);
+  font-family: "Brush Script MT", "Segoe Script", Georgia, serif;
+  font-size: clamp(2rem, 4.6vw, 3.2rem);
+  font-weight: 400;
+  line-height: 0.9;
 }
 
 .question-portrait figcaption strong {
-  color: var(--ink);
+  color: var(--museum-ink);
   font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-size: 1.22rem;
   font-weight: 600;
 }
 
 .question-portrait figcaption small {
-  font-size: 0.72rem;
+  color: #4d514c;
+  font-size: 0.76rem;
+}
+
+.portrait-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.portrait-tags em {
+  padding: 5px 9px;
+  border: 1px solid rgb(36 89 67 / 22%);
+  border-radius: 999px;
+  background: rgb(245 240 230 / 72%);
+  color: #245943;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 700;
 }
 
 .daily-question-copy {
@@ -1474,7 +1643,7 @@ h1 {
   flex-direction: column;
   justify-content: center;
   min-width: 0;
-  padding: 20px 0 12px;
+  padding: 34px 0 12px;
   animation: quiet-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) 140ms both;
 }
 
@@ -1484,7 +1653,7 @@ h1 {
   gap: 20px;
   padding-bottom: 11px;
   border-bottom: 1px solid var(--rule);
-  color: var(--burgundy);
+  color: #7d3839;
   font-family: Georgia, serif;
   font-size: 0.68rem;
   font-weight: 700;
@@ -1527,12 +1696,49 @@ h1 {
 .daily-question-copy h1 {
   max-width: 740px;
   margin: 0;
-  color: var(--ink);
+  color: var(--museum-ink);
   font-family: var(--font-serif);
-  font-size: clamp(35px, 3.15vw, 50px);
+  font-size: clamp(42px, 4.6vw, 68px);
   font-weight: 600;
-  line-height: 1.42;
-  letter-spacing: 0;
+  line-height: 1.34;
+  letter-spacing: -0.045em;
+}
+
+.philosopher-quote {
+  position: relative;
+  max-width: 640px;
+  margin: 28px 0 0;
+  padding: 21px 0 2px 46px;
+  border-top: 1px solid rgb(28 28 28 / 10%);
+  color: var(--ink-soft);
+}
+
+.philosopher-quote::before {
+  position: absolute;
+  left: 0;
+  top: 11px;
+  color: rgb(28 28 28 / 12%);
+  content: "“";
+  font-family: Georgia, serif;
+  font-size: 5rem;
+  line-height: 1;
+}
+
+.philosopher-quote p {
+  margin: 0;
+  color: rgb(28 28 28 / 68%);
+  font-family: var(--font-serif);
+  font-size: clamp(1rem, 1.35vw, 1.22rem);
+  line-height: 1.78;
+}
+
+.philosopher-quote cite {
+  display: block;
+  margin-top: 8px;
+  color: #6d4f26;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 650;
 }
 
 .question-context {
@@ -2197,6 +2403,48 @@ h1 {
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes museum-portrait-arrive {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes museum-light-sweep {
+  from {
+    opacity: 0;
+    transform: translateX(-84%);
+  }
+
+  38% {
+    opacity: 0.78;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(64%);
+  }
+}
+
+@keyframes museum-aura-breathe {
+  from {
+    opacity: 0.72;
+    transform: scale(0.985);
+  }
+
+  to {
+    opacity: 0.9;
+    transform: scale(1.025);
   }
 }
 
@@ -4329,19 +4577,23 @@ h1 {
   }
 
   .daily-question {
-    grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+    grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
     gap: 34px;
-    min-height: 430px;
+    min-height: 500px;
     padding-top: 28px;
     padding-bottom: 30px;
   }
 
+  .museum-portrait-stage {
+    min-height: 450px;
+  }
+
   .portrait-frame {
-    height: 400px;
+    height: 430px;
   }
 
   .daily-question-copy h1 {
-    font-size: clamp(32px, 3.1vw, 40px);
+    font-size: clamp(34px, 3.7vw, 48px);
   }
 }
 
@@ -4731,29 +4983,43 @@ h1 {
 
   .daily-question {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 18px;
     min-height: 0;
-    padding: 14px 0 20px;
+    padding: 18px 0 24px;
+  }
+
+  .museum-portrait-stage {
+    min-height: 360px;
+  }
+
+  .museum-arch-lines {
+    left: 8%;
+    width: 38%;
+    height: 70%;
   }
 
   .portrait-frame {
-    height: 132px;
+    width: min(340px, 82vw);
+    height: 330px;
+    margin: 0 auto;
   }
 
   .portrait-frame img {
-    object-position: 50% 30%;
+    object-position: 50% 58%;
   }
 
   .portrait-frame img[data-philosopher="康德"] {
-    object-position: 50% 20%;
-  }
-
-  .portrait-frame img[data-philosopher="萨特"] {
     object-position: 50% 42%;
   }
 
+  .portrait-frame img[data-philosopher="萨特"] {
+    object-position: 50% 58%;
+  }
+
   .question-portrait figcaption {
-    padding-top: 7px;
+    max-width: 340px;
+    margin-top: -18px;
+    padding: 0 12px;
   }
 
   .daily-question-copy {
@@ -4769,8 +5035,17 @@ h1 {
   }
 
   .daily-question-copy h1 {
-    font-size: 27px;
-    line-height: 1.44;
+    font-size: 32px;
+    line-height: 1.36;
+  }
+
+  .philosopher-quote {
+    margin-top: 18px;
+    padding-left: 34px;
+  }
+
+  .philosopher-quote::before {
+    font-size: 3.8rem;
   }
 
   .question-context {
@@ -5119,24 +5394,39 @@ h1 {
   }
 
   .question-portrait {
-    display: grid;
-    grid-template-columns: 92px minmax(0, 1fr);
-    gap: 12px;
-    align-items: end;
+    display: block;
+  }
+
+  .museum-portrait-stage {
+    min-height: 245px;
+  }
+
+  .museum-manuscript {
+    right: 4%;
+    bottom: 20%;
+    font-size: 0.86rem;
+  }
+
+  .portrait-aura {
+    inset: 13% 17% 18%;
   }
 
   .portrait-frame {
-    height: 92px;
+    width: min(250px, 78vw);
+    height: 238px;
   }
 
   .question-portrait figcaption {
     grid-template-columns: 1fr;
     gap: 2px;
-    padding-top: 0;
+    max-width: 280px;
+    margin-top: -12px;
+    padding: 0 10px;
   }
 
   .question-portrait figcaption > span:first-child {
     grid-column: auto;
+    font-size: 1.75rem;
   }
 
   .question-portrait figcaption strong {
@@ -5144,7 +5434,7 @@ h1 {
   }
 
   .daily-question-copy h1 {
-    font-size: 23.5px;
+    font-size: 25.5px;
     line-height: 1.36;
   }
 
