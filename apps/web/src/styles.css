@@ -1549,15 +1549,18 @@ h1 {
 .portrait-fallback {
   position: absolute;
   inset: 0;
+  z-index: -1;
   display: grid;
   place-items: center;
   color: var(--gold);
   font-family: Georgia, serif;
   font-size: 5rem;
+  opacity: 0.18;
 }
 
 .portrait-frame img {
   position: absolute;
+  inset: 0;
   z-index: 1;
   display: block;
   width: 100%;
@@ -1567,10 +1570,6 @@ h1 {
   filter: saturate(0.72) contrast(1.05) sepia(0.16);
   mix-blend-mode: multiply;
   transform: scale(1.12);
-  mask-image:
-    linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%),
-    linear-gradient(180deg, #000 0 78%, transparent 98%);
-  mask-composite: intersect;
 }
 
 .portrait-frame img[hidden] {
@@ -1581,6 +1580,10 @@ h1 {
   object-position: 50% 42%;
   filter: grayscale(0.88) sepia(0.18) contrast(1.02);
   transform: scale(1.04);
+  mask-image:
+    linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%),
+    linear-gradient(180deg, #000 0 82%, transparent 98%);
+  mask-composite: intersect;
 }
 
 .portrait-frame img[data-philosopher="萨特"] {
@@ -1595,13 +1598,13 @@ h1 {
   gap: 4px;
   align-items: baseline;
   max-width: 420px;
-  margin: -24px auto 0;
+  margin: 6px auto 0;
   padding: 0 24px 0;
   color: var(--ink-muted);
 }
 
 .question-portrait figcaption > span:first-child {
-  color: var(--museum-bronze);
+  color: #8a6635;
   font-family: "Brush Script MT", "Segoe Script", Georgia, serif;
   font-size: clamp(2rem, 4.6vw, 3.2rem);
   font-weight: 400;
@@ -1698,9 +1701,9 @@ h1 {
   margin: 0;
   color: var(--museum-ink);
   font-family: var(--font-serif);
-  font-size: clamp(42px, 4.6vw, 68px);
+  font-size: clamp(38px, 4.05vw, 58px);
   font-weight: 600;
-  line-height: 1.34;
+  line-height: 1.38;
   letter-spacing: -0.045em;
 }
 
