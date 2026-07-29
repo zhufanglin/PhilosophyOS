@@ -29,5 +29,6 @@ Thumbs.db
 
 # Local application data
 data/local/
+apps/api/data/local/
 reports/local/
 *.log
