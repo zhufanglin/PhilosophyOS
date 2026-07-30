@@ -24,7 +24,7 @@ PhilosophyOS stores these images locally so the daily practice does not depend o
 ## Jean-Paul Sartre
 
 - File: `philosophers/sartre-1967.jpg`
-- Derived file: `philosophers/sartre-cutout.png` (local transparent-background cutout for the digital museum hero)
+- Derived files: `philosophers/sartre-cutout.png`, `philosophers/sartre-cutout-v2.png` (local transparent-background cutouts for the digital museum hero)
 - Work: Jean-Paul Sartre in 1967, distributed by the Israel Government Press Office
 - Source: https://commons.wikimedia.org/wiki/File:Sartre_1967_crop.jpg
 - License: Creative Commons Attribution 3.0

@@ -8,7 +8,7 @@ import {
 import { useState } from "react";
 
 import kantPortrait from "../assets/philosophers/kant-becker.jpg";
-import sartrePortrait from "../assets/philosophers/sartre-cutout.png";
+import sartrePortrait from "../assets/philosophers/sartre-cutout-v2.png";
 import socratesPortrait from "../assets/philosophers/socrates-cutout.png";
 
 export type DailyQuestionView = {
