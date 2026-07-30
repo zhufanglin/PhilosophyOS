@@ -131,12 +131,17 @@ export function DialoguePage({
   const [thinkingProfile, setThinkingProfile] = useState<ModelProfile | null>(null);
   const [progressFlight, setProgressFlight] = useState<ProgressFlight | null>(null);
   const [pulseStepId, setPulseStepId] = useState<string | null>(null);
+  const [activeContext, setActiveContext] = useState(question.tension);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sendButtonRef = useRef<HTMLButtonElement>(null);
   const progressTimer = useRef<number | null>(null);
   const thinkingCopy = `${modelProfileLabels[thinkingProfile ?? modelProfile]} 正在思考中`;
 
   useEffect(() => inputRef.current?.focus(), []);
+
+  useEffect(() => {
+    setActiveContext(question.tension);
+  }, [question.id, question.tension]);
   useEffect(() => () => {
     if (progressTimer.current !== null) window.clearTimeout(progressTimer.current);
   }, []);
@@ -290,8 +295,8 @@ export function DialoguePage({
   }
 
   return (
-    <main className="dialogue-page" id="dialogue">
-      <header className="dialogue-header">
+    <main className="dialogue-page" id="dialogue" data-od-id="reasoning-workspace">
+      <header className="dialogue-header" data-od-id="reasoning-header">
         <div className="dialogue-header-toolbar">
           <button className="icon-button" type="button" onClick={onBack} aria-label="返回今日" title="返回今日">
             <ArrowLeft size={20} />
@@ -335,7 +340,7 @@ export function DialoguePage({
 
       <div className="dialogue-workspace">
         <DialogueOutline steps={outline} pulseStepId={pulseStepId} />
-        <section className="conversation" aria-label="哲学对话">
+        <section className="conversation" aria-label="哲学对话" data-od-id="reasoning-conversation">
           <div className="message-list" aria-live="polite">
             {messages.map((message) => (
               <article className={`message ${message.role}`} key={message.id}>
@@ -381,7 +386,7 @@ export function DialoguePage({
             {finished ? <div className="dialogue-complete">本轮对话已整理，下一步将确认哪些内容属于你的观点。</div> : null}
           </div>
 
-          <form className="dialogue-composer" onSubmit={submitAnswer}>
+          <form className="dialogue-composer" onSubmit={submitAnswer} data-od-id="thought-launcher">
             <label htmlFor="dialogue-answer">你的回答</label>
             <textarea
               id="dialogue-answer"
@@ -400,6 +405,49 @@ export function DialoguePage({
             </div>
           </form>
         </section>
+        <aside className="dialogue-context" aria-label="当前推演上下文" data-od-id="reasoning-track">
+          <div className="context-panel-heading">
+            <div>
+              <span className="context-panel-kicker">推演轨道</span>
+              <h2>推演现场</h2>
+            </div>
+            <span className={`context-live${thinking ? " thinking" : ""}`}><i />{thinking ? "推演中" : "已连接"}</span>
+          </div>
+
+          <div className="dialogue-context-status">
+            <span className="status-orbit" aria-hidden="true"><i /></span>
+            <div>
+              <strong>{thinking ? thinkingCopy : "等待下一次判断"}</strong>
+              <p>{thinking ? "正在检视当前论证与相关概念的关系。" : "你的回答会进入这条推理链，而不是被当作普通聊天记录。"}</p>
+            </div>
+          </div>
+
+          <div className="context-chain" aria-label="当前推理链">
+            {[question.tension, question.domain, question.philosopher].map((item, index) => (
+              <button
+                className={`context-chain-item${activeContext === item ? " selected" : ""}`}
+                type="button"
+                key={item}
+                aria-pressed={activeContext === item}
+                onClick={() => setActiveContext(item)}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{item}</strong>
+                <small>{index === 0 ? "当前命题" : index === 1 ? "正在展开" : "待检验"}</small>
+              </button>
+            ))}
+          </div>
+
+          <div className="dialogue-context-note">
+            <span>当前焦点</span>
+            <strong>{activeContext}</strong>
+            <p>点击路径节点切换上下文，右侧内容会跟随当前论证焦点变化。</p>
+          </div>
+
+          <button className="context-source-button" type="button" onClick={() => setSourcesOpen(true)}>
+            <BookOpen size={15} /> 查看相关来源 <span>{sources.length}</span>
+          </button>
+        </aside>
       </div>
 
       {progressFlight ? (

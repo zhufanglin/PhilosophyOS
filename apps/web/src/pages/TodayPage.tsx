@@ -120,17 +120,37 @@ function formatToday(date: Date) {
 
 export function TodayPage({ onStart }: TodayPageProps) {
   const [questionIndex, setQuestionIndex] = useState(0);
+  const [activeConceptIndex, setActiveConceptIndex] = useState(0);
   const question = questions[questionIndex];
   const todayLabel = formatToday(new Date());
   const portraitTags = question.tags ?? [question.domain, question.tension, question.era];
+  const conceptDetails = [
+    {
+      label: question.tags?.[0] ?? question.domain,
+      description: `从“${question.prompt}”进入，先确认你对这个概念的直觉定义。`,
+      relation: "核心概念",
+    },
+    {
+      label: question.tension,
+      description: `当前命题的关键张力是“${question.tension}”，适合用反例检验判断边界。`,
+      relation: "对立张力",
+    },
+    {
+      label: question.philosopher,
+      description: `以${question.philosopher}作为追问入口，把观点放回具体哲学语境中。`,
+      relation: "继续追问",
+    },
+  ];
+  const activeConcept = conceptDetails[activeConceptIndex] ?? conceptDetails[0];
 
   function chooseAnotherQuestion() {
     setQuestionIndex((current) => (current + 1) % questions.length);
+    setActiveConceptIndex(0);
   }
 
   return (
-    <main className="today-page" id="today">
-      <header className="today-heading">
+    <main className="today-page" id="today" data-od-id="today-workspace">
+      <header className="today-heading" data-od-id="today-heading">
         <div>
           <p className="section-kicker">{todayLabel}</p>
           <p className="today-heading-title">今日思考</p>
@@ -144,7 +164,7 @@ export function TodayPage({ onStart }: TodayPageProps) {
         </div>
       </header>
 
-      <section className="daily-question" aria-labelledby="daily-question-title">
+      <section className="daily-question" aria-labelledby="daily-question-title" data-od-id="focus-proposition">
         <figure className="question-portrait">
           <div className="museum-portrait-stage" data-era={question.era}>
             <div className="museum-arch-lines" aria-hidden="true" />
@@ -181,7 +201,7 @@ export function TodayPage({ onStart }: TodayPageProps) {
 
         <article className="daily-question-copy">
           <div className="question-series">
-            <span>DAILY QUESTION</span>
+            <span>今日命题</span>
             <span>{question.id.toUpperCase()}</span>
           </div>
           <div className="question-tags" aria-label="问题分类">
@@ -189,7 +209,7 @@ export function TodayPage({ onStart }: TodayPageProps) {
             <span>{question.difficulty}</span>
             <span>{question.era}</span>
           </div>
-          <h1 id="daily-question-title">{question.prompt}</h1>
+          <h1 id="daily-question-title" data-od-id="focus-proposition-title">{question.prompt}</h1>
           <blockquote className="philosopher-quote">
             <p>{question.quote ?? "把一个判断想清楚，也是在重新整理自己与世界的关系。"}</p>
             <cite>— {question.philosopher}</cite>
@@ -205,7 +225,7 @@ export function TodayPage({ onStart }: TodayPageProps) {
             </div>
           </dl>
           <div className="daily-actions">
-            <button className="primary-button start-button" type="button" onClick={() => onStart(question)}>
+            <button className="primary-button start-button" type="button" onClick={() => onStart(question)} data-od-id="start-thinking">
               开始思考 <ArrowRight size={18} />
             </button>
             <button className="secondary-button" type="button" onClick={chooseAnotherQuestion}>
@@ -213,11 +233,63 @@ export function TodayPage({ onStart }: TodayPageProps) {
             </button>
           </div>
         </article>
+
+        <aside className="thinking-context-panel" aria-label="思想上下文" data-od-id="concept-track">
+          <div className="context-panel-heading">
+            <div>
+              <span className="context-panel-kicker">关联现场</span>
+              <h2>命题周围</h2>
+            </div>
+            <span className="context-live"><i />活跃</span>
+          </div>
+
+          <div className="concept-network" aria-label="相关概念">
+            <span className="network-line network-line-one" aria-hidden="true" />
+            <span className="network-line network-line-two" aria-hidden="true" />
+            <span className="network-line network-line-three" aria-hidden="true" />
+            {conceptDetails.map((concept, index) => (
+              <button
+                className={`concept-node concept-node-${index + 1}${activeConceptIndex === index ? " selected" : ""}`}
+                type="button"
+                key={concept.label}
+                aria-pressed={activeConceptIndex === index}
+                onClick={() => setActiveConceptIndex(index)}
+              >
+                <span>{concept.label}</span>
+                <small>{index === 0 ? "起点" : index === 1 ? "张力" : "追问"}</small>
+              </button>
+            ))}
+          </div>
+
+          <div className="context-detail">
+            <span>{activeConcept.relation}</span>
+            <strong>{activeConcept.label}</strong>
+            <p>{activeConcept.description}</p>
+            <button type="button" onClick={() => onStart(question)}>
+              从这个概念开始追问 <ArrowRight size={15} />
+            </button>
+          </div>
+
+          <div className="context-ledger">
+            <div>
+              <span>推理路径</span>
+              <strong>3 条</strong>
+            </div>
+            <div>
+              <span>可用来源</span>
+              <strong>2 项</strong>
+            </div>
+            <div>
+              <span>状态</span>
+              <strong>待展开</strong>
+            </div>
+          </div>
+        </aside>
       </section>
 
       <section className="today-product-narrative" aria-label="PhilosophyOS 工作流程">
         <div className="narrative-header">
-          <span>PHILOSOPHYOS / METHOD</span>
+          <span>思想沉淀方法</span>
           <h2>从一次回答，到一条可校对的思想节点</h2>
           <p>
             PhilosophyOS 不把对话停留在“AI 给答案”。它更像一张思想工作台：你回答，系统追问，
@@ -241,7 +313,7 @@ export function TodayPage({ onStart }: TodayPageProps) {
       <section className="today-footnote" aria-label="最近进度">
         <div className="continue-index">
           <BookOpenCheck size={18} />
-          <span>CONTINUE / 01</span>
+          <span>继续 / 01</span>
         </div>
         <div>
           <span>上一次思考</span>

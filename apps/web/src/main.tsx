@@ -1,4 +1,4 @@
-import { Archive, BookMarked, Compass, MessageSquare, Settings2, UserRound, Users, X } from "lucide-react";
+import { Archive, BookMarked, Compass, MessageSquare, Search, Settings2, UserRound, Users, X } from "lucide-react";
 import { StrictMode, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -10,6 +10,7 @@ import { DailyQuestionView, TodayPage } from "./pages/TodayPage";
 import { ThoughtArchivePage } from "./pages/ThoughtArchivePage";
 import socratesPortrait from "./assets/philosophers/socrates-louvre.jpg";
 import "./styles.css";
+import "./editorial.css";
 
 type HealthResponse = {
   status: string;
@@ -506,13 +507,13 @@ function App() {
       className={`app-frame${thoughtTransition?.phase === "reveal" ? " thought-arriving" : ""}`}
       style={arrivalStyle}
     >
-      <aside className="side-nav">
+      <aside className="side-nav" data-od-id="workspace-navigation">
         <div>
           <a className="brand" href="#today" aria-label="PhilosophyOS 今日页">
             <span>Φ</span>
             <span className="brand-copy">
               <strong>PhilosophyOS</strong>
-              <small>WESTERN PHILOSOPHY</small>
+              <small>西方哲学工作区</small>
             </span>
           </a>
           <nav aria-label="主导航">
@@ -527,18 +528,29 @@ function App() {
           </nav>
         </div>
         <div className="edition-mark">
-          <span>EDITION 01</span>
+          <span>思想期号 01</span>
           <p>西方哲学 · MVP</p>
         </div>
       </aside>
 
       <div className="content-frame">
-        <header className="top-bar">
+        <header className="top-bar" data-od-id="workspace-toolbar">
+          <div className="top-bar-leading">
+            <div className="workspace-context">
+              <span>思想空间 / 西方哲学</span>
+              <strong>命题轨道 01</strong>
+            </div>
+            <label className="workspace-search">
+              <Search size={15} aria-hidden="true" />
+              <input type="search" placeholder="搜索思想、命题或引用" aria-label="搜索思想、命题或引用" />
+              <kbd>⌘ K</kbd>
+            </label>
+          </div>
           <div className="mobile-brand">
             <span>Φ</span>
             <span className="brand-copy">
               <strong>PhilosophyOS</strong>
-              <small>WESTERN PHILOSOPHY</small>
+              <small>西方哲学工作区</small>
             </span>
           </div>
           <div className="top-bar-actions">
