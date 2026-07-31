@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from datetime import date
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.schemas.reflection_snapshots import (
@@ -9,6 +12,7 @@ from app.schemas.reflection_snapshots import (
     ReflectionSnapshotCorrectionResponse,
     ReflectionSnapshotDecisionRequest,
     ReflectionSnapshotDecisionResponse,
+    ReflectionSnapshotListItem,
     ReflectionSnapshotListResponse,
     ReflectionSnapshotRequest,
     ReflectionSnapshotResponse,
@@ -36,10 +40,63 @@ router = APIRouter(prefix="/api/v1", tags=["reflection-snapshots"])
 )
 async def list_reflection_snapshots_endpoint(
     limit: int = Query(default=30, ge=1, le=100),
+    search: str | None = Query(default=None, max_length=120),
+    topic: str | None = Query(default=None, max_length=120),
+    philosopher: str | None = Query(default=None, max_length=80),
+    from_date: Annotated[date | None, Query()] = None,
+    to_date: Annotated[date | None, Query()] = None,
 ) -> ReflectionSnapshotListResponse:
-    """Return recent local thought snapshot records for timeline display."""
+    """Return local thought snapshots matching the archive filters."""
 
-    return list_reflection_snapshots(settings, limit=limit)
+    if from_date and to_date and from_date > to_date:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="from_date must not be later than to_date",
+        )
+
+    response = list_reflection_snapshots(settings, limit=100)
+    search_term = (search or "").strip().casefold()
+    topic_term = (topic or "").strip().casefold()
+    philosopher_term = (philosopher or "").strip().casefold()
+
+    def matches(snapshot_item: ReflectionSnapshotListItem) -> bool:
+        created_on = date.fromisoformat(snapshot_item.created_at[:10])
+        if from_date and created_on < from_date:
+            return False
+        if to_date and created_on > to_date:
+            return False
+
+        content = snapshot_item.snapshot.content
+        if content is None:
+            if topic_term or philosopher_term:
+                return False
+            searchable = snapshot_item.question.casefold()
+            return not search_term or search_term in searchable
+
+        philosopher_names = [entry.name for entry in content.related_philosophers]
+        if topic_term and topic_term not in content.topic.casefold():
+            return False
+        if philosopher_term and not any(
+            philosopher_term in name.casefold() for name in philosopher_names
+        ):
+            return False
+        searchable = " ".join(
+            [
+                snapshot_item.question,
+                content.title,
+                content.topic,
+                content.user_position,
+                content.core_question,
+                *content.tensions,
+                *content.tags,
+                *philosopher_names,
+            ]
+        ).casefold()
+        return not search_term or search_term in searchable
+
+    return ReflectionSnapshotListResponse(
+        items=[item for item in response.items if matches(item)][:limit]
+    )
 
 
 @router.post(

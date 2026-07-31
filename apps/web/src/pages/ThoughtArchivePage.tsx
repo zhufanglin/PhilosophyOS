@@ -4,7 +4,7 @@ import ForceGraph2D, {
   type LinkObject,
   type NodeObject,
 } from "react-force-graph-2d";
-import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, Search, X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -465,6 +465,11 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [expandedSnapshotId, setExpandedSnapshotId] = useState<string | null>(null);
   const [focusedGraphSnapshotId, setFocusedGraphSnapshotId] = useState<string | null>(null);
   const [highlightedSnapshotIds, setHighlightedSnapshotIds] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [topicFilter, setTopicFilter] = useState("");
+  const [philosopherFilter, setPhilosopherFilter] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const timelineCardRefs = useRef<Record<string, HTMLElement | null>>({});
   const highlightTimerRef = useRef<number | null>(null);
 
@@ -475,7 +480,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${apiBaseUrl}/api/v1/reflection-snapshots?limit=30`, {
+        const response = await fetch(`${apiBaseUrl}/api/v1/reflection-snapshots?limit=100`, {
           signal: controller.signal,
         });
         if (!response.ok) {
@@ -507,16 +512,39 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     };
   }, []);
 
+  const topicOptions = useMemo(
+    () => [...new Set(items.flatMap((item) => item.snapshot.content?.topic ?? []))].sort((a, b) => a.localeCompare(b, "zh-CN")),
+    [items],
+  );
+  const philosopherOptions = useMemo(
+    () => [...new Set(items.flatMap((item) => item.snapshot.content?.related_philosophers.map((entry) => entry.name) ?? []))].sort((a, b) => a.localeCompare(b, "zh-CN")),
+    [items],
+  );
+  const filteredItems = useMemo(() => {
+    const query = searchTerm.trim().toLocaleLowerCase("zh-CN");
+    return items.filter((item) => {
+      const content = item.snapshot.content;
+      const createdDate = item.created_at.slice(0, 10);
+      if (fromDate && createdDate < fromDate) return false;
+      if (toDate && createdDate > toDate) return false;
+      if (topicFilter && content?.topic !== topicFilter) return false;
+      if (philosopherFilter && !content?.related_philosophers.some((entry) => entry.name === philosopherFilter)) return false;
+      if (!query) return true;
+      return [item.question, content?.title, content?.topic, content?.user_position, content?.core_question, ...(content?.tensions ?? []), ...(content?.tags ?? []), ...(content?.related_philosophers.map((entry) => entry.name) ?? [])]
+        .filter(Boolean).join(" " ).toLocaleLowerCase("zh-CN").includes(query);
+    });
+  }, [fromDate, items, philosopherFilter, searchTerm, toDate, topicFilter]);
+  const hasFilters = Boolean(searchTerm || topicFilter || philosopherFilter || fromDate || toDate);
   const completedCount = useMemo(
-    () => items.filter((item) => item.snapshot.status === "completed").length,
-    [items],
+    () => filteredItems.filter((item) => item.snapshot.status === "completed").length,
+    [filteredItems],
   );
-  const pendingCount = items.length - completedCount;
+  const pendingCount = filteredItems.length - completedCount;
   const completedContents = useMemo(
-    () => items.map((item) => item.snapshot.content).filter((content) => content !== null),
-    [items],
+    () => filteredItems.map((item) => item.snapshot.content).filter((content) => content !== null),
+    [filteredItems],
   );
-  const completedSnapshotItems = useMemo(() => items.filter(hasSnapshotContent), [items]);
+  const completedSnapshotItems = useMemo(() => filteredItems.filter(hasSnapshotContent), [filteredItems]);
   const evolutionItems = useMemo(
     () => [...completedSnapshotItems].reverse().slice(-6),
     [completedSnapshotItems],
@@ -534,6 +562,14 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     [completedContents],
   );
   const graphData = useMemo(() => buildThoughtGraph(completedSnapshotItems), [completedSnapshotItems]);
+
+  function clearFilters() {
+    setSearchTerm("");
+    setTopicFilter("");
+    setPhilosopherFilter("");
+    setFromDate("");
+    setToDate("");
+  }
 
   function updateSnapshotReview(snapshotId: string, review: SnapshotReviewResponse["snapshot_review"]) {
     setItems((currentItems) =>
@@ -604,11 +640,25 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
           以及你的哲学思考正在往哪里移动。
         </p>
         <div className="archive-stats" aria-label="思想档案统计">
-          <span><Archive size={16} /> {items.length} 条记录</span>
+          <span><Archive size={16} /> {filteredItems.length} / {items.length} 条记录</span>
           <span><Sparkles size={16} /> {completedCount} 条已生成</span>
           <span><Clock3 size={16} /> {pendingCount} 条待补生成</span>
         </div>
       </header>
+
+      {!loading && !error && items.length > 0 ? (
+        <section className="archive-filter-ledger" aria-label="搜索和筛选思想档案">
+          <label className="archive-search-field">
+            <span>搜索档案</span>
+            <div><Search size={16} /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="主题、立场、张力、哲学家或标签" /></div>
+          </label>
+          <label><span>主题</span><select value={topicFilter} onChange={(event) => setTopicFilter(event.target.value)}><option value="">全部主题</option>{topicOptions.map((topic) => <option key={topic} value={topic}>{topic}</option>)}</select></label>
+          <label><span>哲学家</span><select value={philosopherFilter} onChange={(event) => setPhilosopherFilter(event.target.value)}><option value="">全部哲学家</option>{philosopherOptions.map((name) => <option key={name} value={name}>{name}</option>)}</select></label>
+          <label><span>开始日期</span><input type="date" value={fromDate} max={toDate || undefined} onChange={(event) => setFromDate(event.target.value)} /></label>
+          <label><span>结束日期</span><input type="date" value={toDate} min={fromDate || undefined} onChange={(event) => setToDate(event.target.value)} /></label>
+          {hasFilters ? <button type="button" onClick={clearFilters}><X size={15} />清除筛选</button> : null}
+        </section>
+      ) : null}
 
       {loading ? (
         <section className="archive-empty" role="status">
@@ -634,7 +684,16 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         </section>
       ) : null}
 
-      {!loading && !error && items.length > 0 ? (
+      {!loading && !error && items.length > 0 && filteredItems.length === 0 ? (
+        <section className="archive-empty archive-filter-empty">
+          <Search size={22} />
+          <h2>没有找到符合条件的思想</h2>
+          <p>换一个关键词，或者恢复全部档案后再沿时间线寻找。</p>
+          <button type="button" onClick={clearFilters}>恢复全部档案</button>
+        </section>
+      ) : null}
+
+      {!loading && !error && filteredItems.length > 0 ? (
         <section className="archive-insights" aria-label="思想档案洞察">
           <article>
             <span>反复出现的主题</span>
@@ -679,9 +738,9 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         />
       ) : null}
 
-      {!loading && !error && items.length > 0 ? (
+      {!loading && !error && filteredItems.length > 0 ? (
         <section className="thought-timeline" aria-label="思想节点时间线">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <TimelineCard
               apiBaseUrl={apiBaseUrl}
               expanded={expandedSnapshotId === item.snapshot.snapshot_id}
@@ -1771,17 +1830,13 @@ function TimelineDetail({
       </section>
 
       {content?.change_signal.changed ? (
-        <section>
+        <section className="thought-change-comparison">
           <strong>观点变化</strong>
-          <p>
-            {content.change_signal.previous_position
-              ? `从“${content.change_signal.previous_position}”`
-              : "这次出现了新的立场变化"}
-            {content.change_signal.current_position
-              ? ` 转向“${content.change_signal.current_position}”。`
-              : "。"}
-            {content.change_signal.change_type ? ` 类型：${content.change_signal.change_type}。` : ""}
-          </p>
+          <div className="thought-change-columns">
+            <div><span>此前</span><p>{content.change_signal.previous_position ?? item.snapshot.revisions.at(-1)?.previous_user_position ?? "此前没有形成明确立场"}</p></div>
+            <div><span>现在</span><p>{content.change_signal.current_position ?? content.user_position}</p></div>
+          </div>
+          <small>证据来源：{item.snapshot.revisions.length > 0 ? `用户修正记录（${item.snapshot.revisions.length} 次）` : "本次对话原话与 AI 思想快照"}{content.change_signal.change_type ? ` · ${content.change_signal.change_type}` : ""}</small>
         </section>
       ) : null}
 

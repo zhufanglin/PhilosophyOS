@@ -307,6 +307,27 @@ async def test_reflection_snapshot_list_endpoint_returns_recent_items(
     assert payload["items"][0]["snapshot"]["user_decision"] == "approved"
     assert payload["items"][0]["snapshot"]["snapshot_review"]["verdict"] == "accurate"
 
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        filtered = await client.get(
+            "/api/v1/reflection-snapshots",
+            params={"topic": "freedom", "search": "responsible", "from_date": "2026-07-28"},
+        )
+        empty = await client.get(
+            "/api/v1/reflection-snapshots", params={"topic": "missing-topic"}
+        )
+        invalid_range = await client.get(
+            "/api/v1/reflection-snapshots",
+            params={"from_date": "2026-08-01", "to_date": "2026-07-01"},
+        )
+
+    assert filtered.status_code == 200
+    assert [item["snapshot"]["snapshot_id"] for item in filtered.json()["items"]] == [
+        "snap_second"
+    ]
+    assert empty.status_code == 200
+    assert empty.json()["items"] == []
+    assert invalid_range.status_code == 422
+
 
 @pytest.mark.anyio
 async def test_reflection_snapshot_decision_endpoint_persists_user_decision(

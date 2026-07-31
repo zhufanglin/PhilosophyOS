@@ -35,7 +35,7 @@ flowchart LR
 
 1. **本地思想记忆闭环** - 没有 Obsidian 也能保存、恢复和修正长期思考。
 2. **普通用户模型配置** - 用户直接在页面配置免费模型、GPT 或 DeepSeek。
-3. **可管理的思想档案** - 用户能查找、整理、导出和删除自己的数据。
+3. **思想档案与哲学家图鉴** - 用户能查找、整理、导出自己的思想，并通过哲学家图鉴探索思想传统。
 4. **可交付的本地 Beta** - 一键启动、核心流程自动测试、移除无效入口。
 
 ---
@@ -123,8 +123,9 @@ flowchart LR
 | 筛选 | 日期、模型、确认状态、主题 |
 | 导出 | JSON 与 Markdown |
 | 数据控制 | 本地备份、导入、单条删除、全部清除 |
+| 哲学家图鉴 | 跨时代与传统的人物检索、筛选、思想关系和档案入口 |
 
-### 3.1 [ ] 增加档案搜索、筛选和变化对比
+### 3.1 [x] 增加档案搜索、筛选和变化对比 *(completed 2026-07-31)*
 - **Files:** `apps/api/app/routes/reflection_snapshots.py`, `apps/web/src/pages/ThoughtArchivePage.tsx`, `apps/web/src/styles.css`
 - **What:** 增加组合搜索和筛选；从时间线或图谱进入同一详情；对发生变化的立场显示前后内容与证据来源。
 - **Acceptance:** 演示数据可按主题、哲学家和日期筛选；图谱节点能定位对应档案；筛选为空时有清晰恢复操作。
@@ -135,6 +136,12 @@ flowchart LR
 - **What:** 提供本地数据导出、备份、导入和删除接口及页面操作；导入前验证格式，破坏性操作要求二次确认。
 - **Acceptance:** 导出后可在空数据库恢复；损坏文件不会覆盖现有数据；删除后列表和图谱同步更新。
 - **Dependencies:** 1.1, 3.1
+
+### 3.3 [ ] 建立可扩充的哲学家图鉴
+- **Files:** `apps/web/src/data/philosophers.ts`, `apps/web/src/pages/PhilosopherAtlasPage.tsx`, `apps/web/src/main.tsx`, `apps/web/src/styles.css`, `apps/web/public/philosophers/`, `apps/web/src/pages/ThoughtArchivePage.tsx`
+- **What:** 首批收录不少于 60 位有广泛影响力的哲学家，覆盖古希腊与古罗马、中世纪、近代、德国古典、现象学、存在主义、分析哲学、政治哲学及中国、印度等主要传统；提供姓名检索、时代/地区/流派筛选、核心思想、代表著作、人物关系和可靠来源字段。图鉴人物可进入相关每日命题与思想档案，数据与肖像资源采用可持续扩充的独立结构。
+- **Acceptance:** 用户能按姓名、时代、地区和流派找到人物；每位人物至少具有中英文名、年代、传统、核心思想、代表著作和来源；无肖像时有一致的博物馆式占位展示；图鉴与思想档案中的哲学家筛选双向联通；桌面与 390px 手机视口无溢出。
+- **Dependencies:** 3.1
 
 ---
 
@@ -160,7 +167,7 @@ flowchart LR
 - **Files:** `apps/api/tests/`, `apps/web/`, `output/playwright/`
 - **What:** 覆盖每日命题、三轮对话、生成或重试快照、用户修正、档案搜索、图谱定位和数据导出；同时覆盖模型不可用和后端断连。
 - **Acceptance:** API 测试、前端构建和核心 E2E 全部通过；桌面与 390px 手机视口无阻塞性问题。
-- **Dependencies:** 1.3, 2.2, 3.2, 4.1
+- **Dependencies:** 1.3, 2.2, 3.2, 3.3, 4.1
 
 ### 4.3 [ ] 收紧 Beta 导航与发布说明
 - **Files:** `apps/web/src/main.tsx`, `apps/web/src/styles.css`, `README.md`, `docs/product/mvp-scope.md`
