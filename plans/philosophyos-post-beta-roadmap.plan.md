@@ -51,7 +51,7 @@
 - **Acceptance:** 档案页顶部显示张力分布；点击张力能筛选对应节点；每个张力保留至少一个来源节点；移动端无横向溢出。
 - **Dependencies:** 1.1
 
-### 1.3 [ ] 历史追问回到今日页
+### 1.3 [x] 历史追问回到今日页 *(completed 2026-08-01)*
 - **Files:** `apps/api/app/routes/reflection_snapshots.py`, `apps/web/src/pages/TodayPage.tsx`, `apps/web/src/pages/ThoughtArchivePage.tsx`, `apps/api/tests/`, `apps/web/e2e/`
 - **What:** 从思想节点里的 `next_question` 和开放问题生成今日页“继续上次未完成追问”的入口。
 - **Acceptance:** 今日页能展示一个历史遗留追问；用户可一键进入对话；进入后不重复创建原思想节点；E2E 覆盖从档案到今日再到对话。

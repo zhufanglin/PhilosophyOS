@@ -5,7 +5,7 @@ import {
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import kantPortrait from "../assets/philosophers/kant-becker.jpg";
 import sartrePortrait from "../assets/philosophers/sartre-cutout-v2.png";
@@ -26,11 +26,27 @@ export type DailyQuestionView = {
   tags?: string[];
   source: string;
   portraitUrl: string;
+  sourceSnapshotId?: string;
+  sourceSnapshotTitle?: string;
+  originalQuestion?: string;
+  isHistoricalFollowup?: boolean;
 };
 
 type TodayPageProps = {
+  apiBaseUrl: string;
   onStart: (question: DailyQuestionView) => void;
 };
+
+type ReflectionNextQuestionItem = {
+  snapshot_id: string;
+  created_at: string;
+  topic: string;
+  title: string;
+  question: string;
+  next_question: string;
+  tension: string | null;
+  philosopher_names: string[];
+} | null;
 
 const questions: DailyQuestionView[] = [
   {
@@ -118,9 +134,35 @@ function formatToday(date: Date) {
   return `${value("year")} 年 ${value("month")} 月 ${value("day")} 日 · ${value("weekday")}`;
 }
 
-export function TodayPage({ onStart }: TodayPageProps) {
+function followupToQuestion(item: NonNullable<ReflectionNextQuestionItem>): DailyQuestionView {
+  const philosopher = item.philosopher_names[0] ?? "PhilosophyOS";
+  return {
+    id: `archive-${item.snapshot_id}`,
+    domain: item.topic,
+    difficulty: "进阶",
+    era: "思想档案",
+    period: "历史追问",
+    prompt: item.next_question,
+    tension: item.tension ?? "未完成追问",
+    philosopher,
+    englishName: philosopher,
+    quote: "未完成的问题，会在下一次诚实思考中继续生长。",
+    tags: [item.topic, item.tension ?? "继续追问"].filter((tag): tag is string => Boolean(tag)),
+    source: "思想档案 · 历史追问",
+    portraitUrl: socratesPortrait,
+    sourceSnapshotId: item.snapshot_id,
+    sourceSnapshotTitle: item.title,
+    originalQuestion: item.question,
+    isHistoricalFollowup: true,
+  };
+}
+
+export function TodayPage({ apiBaseUrl, onStart }: TodayPageProps) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [activeConceptIndex, setActiveConceptIndex] = useState(0);
+  const [followupQuestion, setFollowupQuestion] = useState<DailyQuestionView | null>(null);
+  const [followupLoading, setFollowupLoading] = useState(true);
+  const [followupRequestKey, setFollowupRequestKey] = useState(() => window.location.hash);
   const question = questions[questionIndex];
   const todayLabel = formatToday(new Date());
   const portraitTags = question.tags ?? [question.domain, question.tension, question.era];
@@ -148,6 +190,42 @@ export function TodayPage({ onStart }: TodayPageProps) {
     setActiveConceptIndex(0);
   }
 
+  useEffect(() => {
+    function updateFollowupRequestKey() {
+      const hashView = window.location.hash.slice(1).split("?")[0];
+      if (hashView === "today") setFollowupRequestKey(window.location.hash);
+    }
+    window.addEventListener("hashchange", updateFollowupRequestKey);
+    return () => window.removeEventListener("hashchange", updateFollowupRequestKey);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams(followupRequestKey.split("?")[1] ?? "");
+    const snapshotId = params.get("continue");
+    const query = snapshotId ? `?snapshot_id=${encodeURIComponent(snapshotId)}` : "";
+
+    async function loadFollowupQuestion() {
+      setFollowupLoading(true);
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/reflection-archive/next-question${query}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as ReflectionNextQuestionItem;
+        setFollowupQuestion(payload ? followupToQuestion(payload) : null);
+      } catch (requestError) {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") return;
+        setFollowupQuestion(null);
+      } finally {
+        if (!controller.signal.aborted) setFollowupLoading(false);
+      }
+    }
+
+    void loadFollowupQuestion();
+    return () => controller.abort();
+  }, [apiBaseUrl, followupRequestKey]);
+
   return (
     <main className="today-page" id="today" data-od-id="today-workspace">
       <header className="today-heading" data-od-id="today-heading">
@@ -163,6 +241,33 @@ export function TodayPage({ onStart }: TodayPageProps) {
           </div>
         </div>
       </header>
+
+      {followupQuestion || followupLoading ? (
+        <section className="historical-followup-card" aria-label="继续上次未完成追问">
+          <div className="continue-index">
+            <BookOpenCheck size={18} />
+            <span>继续 / 历史追问</span>
+          </div>
+          {followupLoading ? (
+            <div>
+              <span>正在翻找未完成的问题</span>
+              <strong>思想档案检索中</strong>
+              <p>如果最近节点保存了下一步问题，它会出现在这里。</p>
+            </div>
+          ) : followupQuestion ? (
+            <>
+              <div>
+                <span>{followupQuestion.domain} · {followupQuestion.sourceSnapshotTitle}</span>
+                <strong>{followupQuestion.prompt}</strong>
+                <p>来源：{followupQuestion.originalQuestion}</p>
+              </div>
+              <button className="secondary-button" type="button" onClick={() => onStart(followupQuestion)}>
+                继续这个问题 <ArrowRight size={16} />
+              </button>
+            </>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="daily-question" aria-labelledby="daily-question-title" data-od-id="focus-proposition">
         <figure className="question-portrait">

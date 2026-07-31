@@ -215,6 +215,19 @@ class ReflectionPhilosopherInfluenceResponse(BaseModel):
     items: list[ReflectionPhilosopherInfluence]
 
 
+class ReflectionNextQuestionItem(BaseModel):
+    """A recoverable open question preserved by a completed thought snapshot."""
+
+    snapshot_id: str
+    created_at: str
+    topic: str
+    title: str
+    question: str
+    next_question: str
+    tension: str | None = None
+    philosopher_names: list[str] = Field(default_factory=list)
+
+
 class ReflectionArchiveRecord(BaseModel):
     """One lossless archive record including its immutable source request."""
 

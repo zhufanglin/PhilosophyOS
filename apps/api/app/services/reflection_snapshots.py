@@ -17,6 +17,7 @@ from app.schemas.reflection_snapshots import (
     ReflectionArchiveImportResponse,
     ReflectionArchivePackage,
     ReflectionArchiveRecord,
+    ReflectionNextQuestionItem,
     ReflectionPhilosopherInfluence,
     ReflectionPhilosopherInfluenceEvidence,
     ReflectionPhilosopherInfluenceResponse,
@@ -420,6 +421,43 @@ def list_tension_insights(
     insights.sort(key=lambda item: str(item["latest_created_at"]), reverse=True)
     insights.sort(key=lambda item: int(item["count"]), reverse=True)
     return insights[:limit]
+
+
+def get_next_reflection_question(
+    current_settings: PhilosophyOSSettings = settings,
+    *,
+    snapshot_id: str | None = None,
+) -> ReflectionNextQuestionItem | None:
+    """Return one recoverable next question from completed reflection snapshots."""
+
+    records = sorted(
+        snapshot_repository(current_settings).list_all(),
+        key=lambda record: record.created_at,
+        reverse=True,
+    )
+    for record in records:
+        try:
+            response = ReflectionSnapshotResponse.model_validate(record.response_payload)
+        except (TypeError, ValueError):
+            continue
+        if snapshot_id and response.snapshot_id != snapshot_id:
+            continue
+        content = response.content
+        next_question = content.next_question.strip() if content and content.next_question else ""
+        if response.status != SnapshotStatus.COMPLETED or content is None or not next_question:
+            continue
+        return ReflectionNextQuestionItem(
+            snapshot_id=response.snapshot_id,
+            created_at=record.created_at,
+            topic=content.topic,
+            title=content.title,
+            question=record.question,
+            next_question=next_question,
+            tension=content.tensions[0] if content.tensions else None,
+            philosopher_names=[item.name for item in content.related_philosophers],
+        )
+
+    return None
 
 
 def update_reflection_snapshot_decision(

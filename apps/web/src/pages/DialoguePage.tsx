@@ -126,6 +126,9 @@ const sources: DialogueSource[] = [
 const activeDialogueStorageKey = "philosophyos-active-dialogue-id";
 
 function openingMessage(question: DailyQuestionView) {
+  if (question.isHistoricalFollowup) {
+    return `我们接着上次留下的问题继续：“${question.prompt}”。先不用重复原来的思想节点，只说你现在对这个问题的第一反应变了吗？为什么？`;
+  }
   return `先给出你的直觉判断。面对“${question.tension}”，你目前更倾向哪一方？为什么？`;
 }
 

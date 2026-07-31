@@ -430,6 +430,7 @@ function App() {
     .filter((profile): profile is ModelProfileStatus => Boolean(profile));
 
   function startDialogue(question: DailyQuestionView) {
+    window.localStorage.removeItem("philosophyos-active-dialogue-id");
     setActiveQuestion(question);
     navigate("dialogue");
   }
@@ -801,7 +802,7 @@ function App() {
             <button className="profile-button" type="button" aria-label="个人账户" title="个人账户"><UserRound size={18} /></button>
           </div>
         </header>
-        {view === "today" ? <TodayPage onStart={startDialogue} /> : null}
+        {view === "today" ? <TodayPage apiBaseUrl={apiBaseUrl} onStart={startDialogue} /> : null}
         {view === "archive" ? <ThoughtArchivePage apiBaseUrl={apiBaseUrl} /> : null}
         {view === "philosophers" ? <PhilosopherAtlasPage /> : null}
         {view === "dialogue" ? (

@@ -12,6 +12,7 @@ from app.schemas.reflection_snapshots import (
     ReflectionArchiveDeleteResponse,
     ReflectionArchiveImportResponse,
     ReflectionArchivePackage,
+    ReflectionNextQuestionItem,
     ReflectionPhilosopherInfluenceResponse,
     ReflectionSnapshotCorrectionRequest,
     ReflectionSnapshotCorrectionResponse,
@@ -30,6 +31,7 @@ from app.services.reflection_snapshots import (
     delete_all_reflection_snapshots,
     delete_reflection_snapshot,
     export_reflection_archive,
+    get_next_reflection_question,
     import_reflection_archive,
     list_reflection_snapshots,
     list_philosopher_influences as aggregate_philosopher_influences,
@@ -200,6 +202,20 @@ async def list_philosopher_influences_endpoint(
     """Return philosophers ranked by repeated appearance in completed snapshots."""
 
     return aggregate_philosopher_influences(settings, limit=limit)
+
+
+@router.get(
+    "/reflection-archive/next-question",
+    response_model=ReflectionNextQuestionItem | None,
+    status_code=status.HTTP_200_OK,
+    summary="Return one unfinished follow-up question from the archive",
+)
+async def get_next_reflection_question_endpoint(
+    snapshot_id: str | None = Query(default=None, max_length=120),
+) -> ReflectionNextQuestionItem | None:
+    """Return the requested or latest recoverable follow-up question."""
+
+    return get_next_reflection_question(settings, snapshot_id=snapshot_id)
 
 
 @router.post(

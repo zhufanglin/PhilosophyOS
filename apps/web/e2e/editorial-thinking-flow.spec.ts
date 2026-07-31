@@ -257,6 +257,24 @@ async function mockPhilosopherInfluences(page: Page) {
   });
 }
 
+async function mockNextReflectionQuestion(page: Page) {
+  await page.route(`${apiBaseUrl}/api/v1/reflection-archive/next-question**`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        snapshot_id: "snap_timeline_e2e",
+        created_at: "2026-07-28T09:00:00+00:00",
+        topic: "诚实与德性",
+        title: "诚实是在伤害与责任之间保持清醒",
+        question: "诚实是否总是值得坚持？",
+        next_question: "什么时候善意隐瞒会变成逃避责任？",
+        tension: "善意隐瞒与逃避责任之间的界限仍不清楚。",
+        philosopher_names: ["康德"],
+      }),
+    });
+  });
+}
+
 async function mockDialogueSessions(page: Page) {
   await page.route(`${apiBaseUrl}/api/v1/dialogue-sessions**`, async (route) => {
     await route.fulfill({
@@ -422,6 +440,7 @@ test.beforeEach(async ({ page }) => {
   await mockReflectionSnapshot(page);
   await mockArchiveExports(page);
   await mockPhilosopherInfluences(page);
+  await mockNextReflectionQuestion(page);
   await mockDialogueSessions(page);
   await mockDialogueTurn(page);
 });
@@ -593,6 +612,16 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".timeline-card")).toContainText("诚实是在伤害与责任之间保持清醒");
   await expect(page.locator(".timeline-card")).toContainText("不同意");
   await expect(page.locator(".timeline-card")).toContainText("什么时候善意隐瞒会变成逃避责任");
+  await page.getByRole("link", { name: "回到今日继续" }).click();
+  await expect(page.locator(".today-page")).toBeVisible();
+  await expect(page.locator(".historical-followup-card")).toContainText("什么时候善意隐瞒会变成逃避责任");
+  await page.getByRole("button", { name: /继续这个问题/ }).click();
+  await expect(page.locator(".dialogue-page")).toBeVisible();
+  await expect(page.locator(".dialogue-question-title h1")).toContainText("什么时候善意隐瞒会变成逃避责任");
+  await expect(page.locator(".message.assistant").first()).toContainText("不用重复原来的思想节点");
+  await page.getByRole("button", { name: "返回今日" }).click();
+  await page.getByRole("link", { name: /思想档案/ }).click();
+  await page.getByRole("button", { name: /展开思想节点/ }).click();
   await expect(page.locator(".timeline-detail-panel")).toContainText("核心问题");
   await expect(page.locator(".timeline-detail-panel")).toContainText("诚实不是机械地说出全部事实");
   await expect(page.locator(".timeline-detail-panel")).toContainText("康德");

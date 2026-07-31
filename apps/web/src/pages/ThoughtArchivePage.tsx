@@ -1958,7 +1958,12 @@ function TimelineCard({
               </div>
             ) : null}
             {content.next_question ? (
-              <div className="timeline-next-question">下一步：{content.next_question}</div>
+              <div className="timeline-next-question">
+                <span>下一步：{content.next_question}</span>
+                <a href={`#today?continue=${encodeURIComponent(item.snapshot.snapshot_id)}`}>
+                  回到今日继续
+                </a>
+              </div>
             ) : null}
           </>
         ) : null}

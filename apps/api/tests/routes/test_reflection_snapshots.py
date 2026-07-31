@@ -228,6 +228,7 @@ def test_openapi_exposes_reflection_snapshot_resource() -> None:
 
     assert "/api/v1/reflection-snapshots" in app.openapi()["paths"]
     assert "/api/v1/reflection-archive/philosopher-influences" in app.openapi()["paths"]
+    assert "/api/v1/reflection-archive/next-question" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/retry" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/content" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/decision" in app.openapi()["paths"]
@@ -520,6 +521,91 @@ def test_tension_insight_service_aggregates_recurring_evidence_nodes(
     assert set(insights[0]["topics"]) == {"诚实与德性", "自由与责任"}
     assert insights[0]["evidence"][0]["snapshot_id"] == "snap_second_tension"
     assert insights[0]["evidence"][0]["next_question"] == "限制是否必然取消自由？"
+
+
+@pytest.mark.anyio
+async def test_next_question_endpoint_returns_latest_or_requested_followup(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The archive can surface unfinished follow-up questions back to today."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    test_settings = PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path))
+    monkeypatch.setattr(snapshot_routes, "settings", test_settings)
+    repository = ReflectionSnapshotRepository(create_snapshot_engine(snapshot_path))
+
+    def add_snapshot(
+        snapshot_id: str,
+        created_at: str,
+        topic: str,
+        title: str,
+        next_question: str | None,
+    ) -> None:
+        repository.add(
+            created_at=created_at,
+            request_payload={"question": f"{topic} 的原始问题"},
+            response_payload={
+                "snapshot_id": snapshot_id,
+                "status": "completed",
+                "content": {
+                    "topic": topic,
+                    "title": title,
+                    "user_position": "我保留一个继续追问的入口。",
+                    "confidence": 0.7,
+                    "core_question": f"{topic} 的核心问题",
+                    "key_insights": [],
+                    "tensions": ["未完成的判断边界"],
+                    "related_philosophers": [{"name": "康德", "reason": "仍需检验义务边界。"}],
+                    "change_signal": {"changed": False},
+                    "next_question": next_question,
+                    "tags": [],
+                },
+                "provider": "openai",
+                "provider_model": "test-model",
+                "pending_reason": None,
+            },
+        )
+
+    add_snapshot(
+        "snap_old_followup",
+        "2026-07-28T09:00:00+00:00",
+        "诚实与德性",
+        "诚实的旧问题",
+        "什么时候善意隐瞒会变成逃避责任？",
+    )
+    add_snapshot(
+        "snap_recent_followup",
+        "2026-07-30T09:00:00+00:00",
+        "自由与责任",
+        "自由的最新问题",
+        "限制是否必然取消自由？",
+    )
+    add_snapshot(
+        "snap_without_followup",
+        "2026-07-31T09:00:00+00:00",
+        "没有追问",
+        "完成的节点",
+        None,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        latest = await client.get("/api/v1/reflection-archive/next-question")
+        requested = await client.get(
+            "/api/v1/reflection-archive/next-question",
+            params={"snapshot_id": "snap_old_followup"},
+        )
+        missing = await client.get(
+            "/api/v1/reflection-archive/next-question",
+            params={"snapshot_id": "snap_without_followup"},
+        )
+
+    assert latest.status_code == 200
+    assert latest.json()["snapshot_id"] == "snap_recent_followup"
+    assert latest.json()["next_question"] == "限制是否必然取消自由？"
+    assert latest.json()["philosopher_names"] == ["康德"]
+    assert requested.json()["snapshot_id"] == "snap_old_followup"
+    assert requested.json()["next_question"] == "什么时候善意隐瞒会变成逃避责任？"
+    assert missing.json() is None
 
 
 @pytest.mark.anyio
