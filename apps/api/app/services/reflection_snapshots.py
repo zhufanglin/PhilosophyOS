@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from pathlib import Path
 from uuid import uuid4
 
 from pydantic import ValidationError
@@ -25,6 +24,8 @@ from app.schemas.reflection_snapshots import (
     SnapshotStatus,
 )
 from app.settings import PhilosophyOSSettings, settings
+from app.storage.database import create_snapshot_engine
+from app.storage.reflection_repository import ReflectionSnapshotRepository
 
 
 def build_snapshot_prompt(request: ReflectionSnapshotRequest) -> str:
@@ -84,22 +85,30 @@ def parse_snapshot_content(raw_text: str) -> ReflectionSnapshotContent:
     return ReflectionSnapshotContent.model_validate(payload)
 
 
-def append_snapshot_record(
+def snapshot_repository(
+    current_settings: PhilosophyOSSettings,
+) -> ReflectionSnapshotRepository:
+    """Open the local store and idempotently import legacy JSONL records."""
+
+    repository = ReflectionSnapshotRepository(
+        create_snapshot_engine(current_settings.thought_snapshots_path)
+    )
+    repository.import_jsonl(current_settings.thought_snapshots_path)
+    return repository
+
+
+def persist_snapshot_record(
     response: ReflectionSnapshotResponse,
     request: ReflectionSnapshotRequest,
     current_settings: PhilosophyOSSettings,
 ) -> None:
-    """Append one snapshot event to the local JSONL store."""
+    """Persist one snapshot event in the local SQLite store."""
 
-    snapshot_path = Path(current_settings.thought_snapshots_path).expanduser()
-    snapshot_path.parent.mkdir(parents=True, exist_ok=True)
-    record = {
-        "created_at": datetime.now(UTC).isoformat(),
-        "request": request.model_dump(mode="json"),
-        "response": response.model_dump(mode="json"),
-    }
-    with snapshot_path.open("a", encoding="utf-8") as file:
-        file.write(json.dumps(record, ensure_ascii=False) + "\n")
+    snapshot_repository(current_settings).add(
+        created_at=datetime.now(UTC).isoformat(),
+        request_payload=request.model_dump(mode="json"),
+        response_payload=response.model_dump(mode="json"),
+    )
 
 
 def list_reflection_snapshots(
@@ -107,33 +116,22 @@ def list_reflection_snapshots(
     *,
     limit: int = 30,
 ) -> ReflectionSnapshotListResponse:
-    """Return the most recent snapshot events from the local JSONL store."""
-
-    snapshot_path = Path(current_settings.thought_snapshots_path).expanduser()
-    if not snapshot_path.exists():
-        return ReflectionSnapshotListResponse(items=[])
+    """Return the most recent snapshot events from the local SQLite store."""
 
     items: list[ReflectionSnapshotListItem] = []
-    lines = snapshot_path.read_text(encoding="utf-8").splitlines()
-    for line in reversed(lines):
-        if not line.strip():
-            continue
+    records = snapshot_repository(current_settings).list_recent(limit=limit)
+    for record in records:
         try:
-            record = json.loads(line)
-            response = ReflectionSnapshotResponse.model_validate(record["response"])
-            question = str(record.get("request", {}).get("question", "未命名问题"))
-            created_at = str(record.get("created_at", ""))
+            response = ReflectionSnapshotResponse.model_validate(record.response_payload)
             items.append(
                 ReflectionSnapshotListItem(
-                    created_at=created_at,
-                    question=question,
+                    created_at=record.created_at,
+                    question=record.question,
                     snapshot=response,
                 )
             )
-        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+        except (TypeError, ValueError):
             continue
-        if len(items) >= limit:
-            break
 
     return ReflectionSnapshotListResponse(items=items)
 
@@ -145,42 +143,19 @@ def update_reflection_snapshot_decision(
 ) -> ReflectionSnapshotDecisionResponse | None:
     """Persist the user's decision about an AI-generated snapshot summary."""
 
-    snapshot_path = Path(current_settings.thought_snapshots_path).expanduser()
-    if not snapshot_path.exists():
-        return None
-
-    lines = snapshot_path.read_text(encoding="utf-8").splitlines()
-    records: list[dict[str, object] | None] = []
-    matched_at: int | None = None
     updated_at = datetime.now(UTC).isoformat()
 
-    for line in lines:
-        if not line.strip():
-            records.append(None)
-            continue
-        try:
-            record = json.loads(line)
-        except json.JSONDecodeError:
-            records.append(None)
-            continue
-        response = record.get("response")
-        if isinstance(response, dict) and response.get("snapshot_id") == snapshot_id:
-            response["user_decision"] = decision.value
-            response["decision_updated_at"] = updated_at
-            matched_at = len(records)
-        records.append(record)
+    def apply_decision(response: dict[str, object]) -> dict[str, object]:
+        response["user_decision"] = decision.value
+        response["decision_updated_at"] = updated_at
+        return response
 
-    if matched_at is None:
+    updated = snapshot_repository(current_settings).update_response(
+        snapshot_id,
+        apply_decision,
+    )
+    if updated is None:
         return None
-
-    rendered_lines: list[str] = []
-    for index, record in enumerate(records):
-        if record is None:
-            rendered_lines.append(lines[index])
-        else:
-            rendered_lines.append(json.dumps(record, ensure_ascii=False))
-
-    snapshot_path.write_text("\n".join(rendered_lines) + "\n", encoding="utf-8")
     return ReflectionSnapshotDecisionResponse(
         snapshot_id=snapshot_id,
         user_decision=decision,
@@ -196,13 +171,6 @@ def update_reflection_snapshot_review(
 ) -> ReflectionSnapshotReviewResponse | None:
     """Persist the user's review of a stored thought snapshot."""
 
-    snapshot_path = Path(current_settings.thought_snapshots_path).expanduser()
-    if not snapshot_path.exists():
-        return None
-
-    lines = snapshot_path.read_text(encoding="utf-8").splitlines()
-    records: list[dict[str, object] | None] = []
-    matched_at: int | None = None
     updated_at = datetime.now(UTC).isoformat()
     review = ReflectionSnapshotReview(
         verdict=verdict,
@@ -210,32 +178,16 @@ def update_reflection_snapshot_review(
         updated_at=updated_at,
     )
 
-    for line in lines:
-        if not line.strip():
-            records.append(None)
-            continue
-        try:
-            record = json.loads(line)
-        except json.JSONDecodeError:
-            records.append(None)
-            continue
-        response = record.get("response")
-        if isinstance(response, dict) and response.get("snapshot_id") == snapshot_id:
-            response["snapshot_review"] = review.model_dump(mode="json")
-            matched_at = len(records)
-        records.append(record)
+    def apply_review(response: dict[str, object]) -> dict[str, object]:
+        response["snapshot_review"] = review.model_dump(mode="json")
+        return response
 
-    if matched_at is None:
+    updated = snapshot_repository(current_settings).update_response(
+        snapshot_id,
+        apply_review,
+    )
+    if updated is None:
         return None
-
-    rendered_lines: list[str] = []
-    for index, record in enumerate(records):
-        if record is None:
-            rendered_lines.append(lines[index])
-        else:
-            rendered_lines.append(json.dumps(record, ensure_ascii=False))
-
-    snapshot_path.write_text("\n".join(rendered_lines) + "\n", encoding="utf-8")
     return ReflectionSnapshotReviewResponse(
         snapshot_id=snapshot_id,
         snapshot_review=review,
@@ -262,7 +214,7 @@ def create_reflection_snapshot(
             provider="none",
             pending_reason="当前模型没有可用 API key，已先保存原始记录，稍后可补生成思想快照。",
         )
-        append_snapshot_record(response, request, current_settings)
+        persist_snapshot_record(response, request, current_settings)
         return response
 
     provider = select_dialogue_provider(selected_settings)
@@ -285,7 +237,7 @@ def create_reflection_snapshot(
             provider="none",
             pending_reason=f"{type(error).__name__}: {error}",
         )
-        append_snapshot_record(response, request, current_settings)
+        persist_snapshot_record(response, request, current_settings)
         return response
 
     response = ReflectionSnapshotResponse(
@@ -295,5 +247,5 @@ def create_reflection_snapshot(
         provider=provider_response.provider,
         provider_model=provider_response.model,
     )
-    append_snapshot_record(response, request, current_settings)
+    persist_snapshot_record(response, request, current_settings)
     return response

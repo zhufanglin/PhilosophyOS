@@ -52,11 +52,13 @@ async def test_reflection_snapshot_endpoint_persists_pending_without_api_key(
     assert payload["content"] is None
     assert "API key" in payload["pending_reason"]
 
-    records = snapshot_path.read_text(encoding="utf-8").strip().splitlines()
-    assert len(records) == 1
-    stored = json.loads(records[0])
-    assert stored["request"]["question"] == "自由是否意味着没有限制？"
-    assert stored["response"]["snapshot_id"] == payload["snapshot_id"]
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        list_response = await client.get("/api/v1/reflection-snapshots?limit=1")
+
+    assert not snapshot_path.exists()
+    stored = list_response.json()["items"][0]
+    assert stored["question"] == "自由是否意味着没有限制？"
+    assert stored["snapshot"]["snapshot_id"] == payload["snapshot_id"]
 
 
 def test_openapi_exposes_reflection_snapshot_resource() -> None:
@@ -194,9 +196,8 @@ async def test_reflection_snapshot_decision_endpoint_persists_user_decision(
     assert payload["user_decision"] == "rejected"
     assert payload["decision_updated_at"]
 
-    stored = json.loads(snapshot_path.read_text(encoding="utf-8").strip())
-    assert stored["response"]["user_decision"] == "rejected"
-    assert stored["response"]["decision_updated_at"] == payload["decision_updated_at"]
+    legacy = json.loads(snapshot_path.read_text(encoding="utf-8").strip())
+    assert "user_decision" not in legacy["response"]
 
     assert list_response.status_code == 200
     listed = list_response.json()["items"][0]["snapshot"]
@@ -280,8 +281,8 @@ async def test_reflection_snapshot_review_endpoint_persists_user_review(
     assert payload["snapshot_review"]["note"] == "The position needs a more careful wording."
     assert payload["snapshot_review"]["updated_at"]
 
-    stored = json.loads(snapshot_path.read_text(encoding="utf-8").strip())
-    assert stored["response"]["snapshot_review"] == payload["snapshot_review"]
+    legacy = json.loads(snapshot_path.read_text(encoding="utf-8").strip())
+    assert "snapshot_review" not in legacy["response"]
 
     assert list_response.status_code == 200
     listed = list_response.json()["items"][0]["snapshot"]

@@ -33,6 +33,7 @@ EXPECTED_TABLES = {
     "dialogue_messages",
     "philosophy_entities",
     "question_interactions",
+    "reflection_snapshots",
     "relations",
     "source_chunks",
     "sources",

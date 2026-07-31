@@ -10,9 +10,11 @@ from sqlalchemy import engine_from_config, pool
 from app.models.knowledge import Base
 from app.models.memory import AttributedClaim, DialogueMessage
 from app.models.questions import DailyQuestion, QuestionInteraction
+from app.models.reflection import ReflectionSnapshotRecord
 
 _MEMORY_MODELS = (AttributedClaim, DialogueMessage)
 _QUESTION_MODELS = (DailyQuestion, QuestionInteraction)
+_REFLECTION_MODELS = (ReflectionSnapshotRecord,)
 
 config = context.config
 
