@@ -1106,7 +1106,10 @@ function ThoughtRelationGraph({
               <p>{focusedNode.description}</p>
               {selectedSnapshots.length > 0 ? (
                 <div className="relation-graph-tooltip-links">
-                  <span>{selectedSnapshots.length} 个关联思想</span>
+                  <span>
+                    {selectedSnapshots.length} 个关联思想
+                    {selectedSnapshots[0] ? ` · 最近 ${formatSnapshotTime(selectedSnapshots[0].created_at)}` : ""}
+                  </span>
                   {selectedSnapshots.slice(0, 2).map((item) => (
                     <small key={item.snapshot.snapshot_id}>{item.snapshot.content.title}</small>
                   ))}
@@ -1194,6 +1197,33 @@ function TimelineCard({
   );
 }
 
+function buildRelationExplanation(content: NonNullable<ReflectionSnapshotListItem["snapshot"]["content"]>) {
+  const philosophers = content.related_philosophers.slice(0, 2);
+  const tensions = content.tensions.slice(0, 2);
+  const tags = content.tags.slice(0, 3);
+  const philosopherNames = philosophers.map((philosopher) => philosopher.name).join("、");
+  const tensionText = tensions.join(" / ");
+  const tagText = tags.join("、");
+
+  return {
+    summary:
+      `这条思想被归入“${content.topic}”，因为它围绕“${content.core_question}”展开；` +
+      (tensionText ? `其中最明显的张力是 ${tensionText}。` : "目前还没有形成稳定的张力线索。"),
+    anchors: [
+      { label: "主题", value: content.topic },
+      { label: "哲学家", value: philosopherNames || "等待后续对话建立参照" },
+      { label: "张力", value: tensionText || "暂无明显张力" },
+      { label: "标签", value: tagText || "暂无标签" },
+    ],
+    philosopherNote:
+      philosophers.length > 0
+        ? philosophers
+            .map((philosopher) => `${philosopher.name}：${philosopher.reason}`)
+            .join("；")
+        : null,
+  };
+}
+
 function TimelineDetail({
   item,
   apiBaseUrl,
@@ -1207,6 +1237,7 @@ function TimelineDetail({
   ) => void;
 }) {
   const content = item.snapshot.content;
+  const relationExplanation = content ? buildRelationExplanation(content) : null;
   const [reviewVerdict, setReviewVerdict] = useState<SnapshotReviewVerdict>(
     item.snapshot.snapshot_review?.verdict ?? "accurate",
   );
@@ -1246,6 +1277,25 @@ function TimelineDetail({
 
   return (
     <div className="timeline-detail-panel">
+      {relationExplanation ? (
+        <section className="timeline-relation-note" aria-label="图谱关系解释">
+          <div className="relation-note-heading">
+            <span>关系解释</span>
+            <strong>这条思想为什么会出现在图谱这里</strong>
+          </div>
+          <p>{relationExplanation.summary}</p>
+          {relationExplanation.philosopherNote ? <em>{relationExplanation.philosopherNote}</em> : null}
+          <div className="relation-note-anchors">
+            {relationExplanation.anchors.map((anchor) => (
+              <span key={anchor.label}>
+                <b>{anchor.label}</b>
+                {anchor.value}
+              </span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section>
         <strong>核心问题</strong>
         <p>{content?.core_question ?? item.question}</p>
