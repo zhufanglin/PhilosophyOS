@@ -207,9 +207,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
+    let cancelled = false;
+    let retryTimer: number | undefined;
 
     async function loadSystemStatus() {
+      const controller = new AbortController();
       try {
         const [healthResponse, profilesResponse] = await Promise.all([
           fetch(`${apiBaseUrl}/health`, { signal: controller.signal }),
@@ -221,7 +223,11 @@ function App() {
         if (!profilesResponse.ok) {
           throw new Error(`模型配置返回 ${profilesResponse.status}`);
         }
+        if (cancelled) {
+          return;
+        }
         setHealth((await healthResponse.json()) as HealthResponse);
+        setError(null);
         const profilesPayload = (await profilesResponse.json()) as ModelProfilesResponse;
         setModelProfiles(profilesPayload.profiles);
         setModelProfile(profilesPayload.selected_profile);
@@ -253,19 +259,43 @@ function App() {
           if (!response.ok) {
             throw new Error(`API 返回 ${response.status}`);
           }
+          if (cancelled) {
+            return;
+          }
           setHealth((await response.json()) as HealthResponse);
           setError("模型配置状态暂时不可用");
         } catch (healthError) {
           if (healthError instanceof DOMException && healthError.name === "AbortError") {
             return;
           }
-          setError(healthError instanceof Error ? healthError.message : "无法连接 API");
+          if (cancelled) {
+            return;
+          }
+          setHealth(null);
+          setError(
+            !window.navigator.onLine
+              ? "网络连接异常，请检查网络后重试"
+              : healthError instanceof TypeError
+              ? "后端未启动，请运行 scripts\\start-dev.cmd"
+              : healthError instanceof Error
+                ? `后端响应异常：${healthError.message}`
+                : "网络连接异常，请稍后重试",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          retryTimer = window.setTimeout(() => void loadSystemStatus(), 10_000);
         }
       }
     }
 
     void loadSystemStatus();
-    return () => controller.abort();
+    return () => {
+      cancelled = true;
+      if (retryTimer !== undefined) {
+        window.clearTimeout(retryTimer);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -312,6 +342,9 @@ function App() {
     window.location.hash = nextView;
     setView(nextView);
   }
+
+  const selectedProfile = modelProfiles.find((profile) => profile.profile === modelProfile);
+  const modelNeedsConfiguration = Boolean(health && selectedProfile && !selectedProfile.configured);
 
   async function saveModelProfile(profile: ModelProfile, selected: boolean) {
     const draft = modelProfileDrafts[profile];
@@ -787,8 +820,8 @@ function App() {
           <div className="top-bar-actions">
             <div className="api-status" aria-live="polite">
               <span className={health ? "status-dot online" : "status-dot"} />
-              <strong>{health ? "知识服务在线" : error ? "知识服务离线" : "正在连接"}</strong>
-              <span className="api-version">{health ? `v${health.version}` : error ?? apiBaseUrl}</span>
+              <strong>{modelNeedsConfiguration ? "模型尚未配置" : health ? "知识服务在线" : error ? "知识服务离线" : "正在连接"}</strong>
+              <span className="api-version">{modelNeedsConfiguration ? "打开设置填写 API" : health ? `v${health.version}` : error ?? apiBaseUrl}</span>
             </div>
             <div className="model-switcher" aria-label="选择大模型">
               <span>模型</span>

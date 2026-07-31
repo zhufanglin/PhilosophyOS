@@ -31,4 +31,5 @@ Thumbs.db
 data/local/
 apps/api/data/local/
 reports/local/
+.runtime/
 *.log
