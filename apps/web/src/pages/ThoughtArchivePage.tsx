@@ -467,7 +467,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [highlightedSnapshotIds, setHighlightedSnapshotIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [topicFilter, setTopicFilter] = useState("");
-  const [philosopherFilter, setPhilosopherFilter] = useState("");
+  const [philosopherFilter, setPhilosopherFilter] = useState(() => new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("philosopher") ?? "");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [archiveActionStatus, setArchiveActionStatus] = useState<string | null>(null);
@@ -1935,10 +1935,10 @@ function TimelineDetail({
           <strong>相关哲学家</strong>
           <div className="timeline-philosophers">
             {content.related_philosophers.map((philosopher) => (
-              <span key={`${philosopher.name}-${philosopher.reason}`}>
+              <a href={`#philosophers?search=${encodeURIComponent(philosopher.name)}`} key={`${philosopher.name}-${philosopher.reason}`}>
                 <b>{philosopher.name}</b>
                 {philosopher.reason}
-              </span>
+              </a>
             ))}
           </div>
         </section>

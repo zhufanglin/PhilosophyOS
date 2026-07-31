@@ -1,4 +1,4 @@
-import { Archive, BookMarked, Compass, MessageSquare, Search, Settings2, UserRound, Users, X } from "lucide-react";
+import { Archive, BookMarked, Compass, Landmark, MessageSquare, Search, Settings2, UserRound, Users, X } from "lucide-react";
 import { StrictMode, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -8,6 +8,7 @@ import { ConceptPage, type ConceptTransitionRequest } from "./pages/ConceptPage"
 import { DialoguePage, type ModelProfile } from "./pages/DialoguePage";
 import { DailyQuestionView, TodayPage } from "./pages/TodayPage";
 import { ThoughtArchivePage } from "./pages/ThoughtArchivePage";
+import { PhilosopherAtlasPage } from "./pages/PhilosopherAtlasPage";
 import socratesPortrait from "./assets/philosophers/socrates-louvre.jpg";
 import "./styles.css";
 import "./editorial.css";
@@ -109,9 +110,9 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8001";
 
-type AppView = "today" | "dialogue" | "explore" | "concept" | "archive" | "friends" | "notes";
+type AppView = "today" | "dialogue" | "explore" | "concept" | "archive" | "philosophers" | "friends" | "notes";
 
-const appViews: AppView[] = ["today", "dialogue", "explore", "concept", "archive", "friends", "notes"];
+const appViews: AppView[] = ["today", "dialogue", "explore", "concept", "archive", "philosophers", "friends", "notes"];
 
 type ComingSoonModule = {
   id: "friends" | "notes";
@@ -190,7 +191,7 @@ function App() {
   const [modelProfileSaveMessages, setModelProfileSaveMessages] = useState<Partial<Record<ModelProfile, string>>>({});
   const [modelPanelOpen, setModelPanelOpen] = useState(false);
   const [view, setView] = useState<AppView>(() => {
-    const hash = window.location.hash.slice(1);
+    const hash = window.location.hash.slice(1).split("?")[0];
     return appViews.includes(hash as AppView) ? hash as AppView : "today";
   });
   const [activeQuestion, setActiveQuestion] = useState(fallbackQuestion);
@@ -300,7 +301,7 @@ function App() {
 
   useEffect(() => {
     function syncViewFromHash() {
-      const hash = window.location.hash.slice(1);
+      const hash = window.location.hash.slice(1).split("?")[0];
       setView(appViews.includes(hash as AppView) ? hash as AppView : "today");
     }
     window.addEventListener("hashchange", syncViewFromHash);
@@ -752,6 +753,7 @@ function App() {
             <a className={view === "explore" ? "active" : ""} href="#explore" aria-current={view === "explore" ? "page" : undefined}><Compass size={17} /> 探索</a>
             <small className="nav-section-label archive-label">个人馆藏</small>
             <a className={view === "archive" ? "active" : ""} href="#archive" aria-current={view === "archive" ? "page" : undefined}><Archive size={17} /> 思想档案</a>
+            <a className={view === "philosophers" ? "active" : ""} href="#philosophers" aria-current={view === "philosophers" ? "page" : undefined}><Landmark size={17} /> 西方哲学家</a>
             <a className={view === "friends" ? "active" : ""} href="#friends" aria-current={view === "friends" ? "page" : undefined}><Users size={17} /> 好友</a>
             <a className={view === "notes" ? "active" : ""} href="#notes" aria-current={view === "notes" ? "page" : undefined}><BookMarked size={17} /> 笔记工作台</a>
           </nav>
@@ -844,6 +846,7 @@ function App() {
         </header>
         {view === "today" ? <TodayPage onStart={startDialogue} /> : null}
         {view === "archive" ? <ThoughtArchivePage apiBaseUrl={apiBaseUrl} /> : null}
+        {view === "philosophers" ? <PhilosopherAtlasPage /> : null}
         {view === "dialogue" ? (
           <DialoguePage
             apiBaseUrl={apiBaseUrl}
@@ -863,6 +866,7 @@ function App() {
         <a className={view === "dialogue" ? "active" : ""} href="#dialogue"><MessageSquare size={19} /><span>对话</span></a>
         <a className={view === "explore" ? "active" : ""} href="#explore"><Compass size={19} /><span>探索</span></a>
         <a className={view === "archive" ? "active" : ""} href="#archive"><Archive size={19} /><span>档案</span></a>
+        <a className={view === "philosophers" ? "active" : ""} href="#philosophers"><Landmark size={19} /><span>图鉴</span></a>
         <a className={view === "friends" ? "active" : ""} href="#friends"><Users size={19} /><span>好友</span></a>
         <a className={view === "notes" ? "active" : ""} href="#notes"><BookMarked size={19} /><span>笔记</span></a>
       </nav>

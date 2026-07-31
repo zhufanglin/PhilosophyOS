@@ -3411,6 +3411,62 @@ h1 {
 .timeline-delete-button { margin: 10px 0 0 12px; border: 0; background: transparent; color: #81776b; font: inherit; font-size: 12px; cursor: pointer; }
 .timeline-delete-button:hover { color: #843a31; }
 
+.philosopher-atlas-page { width: min(1320px, calc(100% - 48px)); margin: 0 auto; padding: 50px 0 110px; }
+.atlas-hero { position: relative; padding: 26px 0 30px; border-bottom: 1px solid rgba(69,57,42,.2); }
+.atlas-hero::after { content: "Φ"; position: absolute; right: 2%; top: -26px; color: rgba(176,141,87,.1); font-size: 140px; font-family: Georgia,serif; }
+.atlas-hero h1 { position: relative; margin: 8px 0 10px; color: #25211c; font-family: Georgia,"Noto Serif SC",serif; font-size: clamp(38px,5vw,66px); font-weight: 500; }
+.atlas-hero > p:not(.section-kicker) { max-width: 720px; margin: 0; color: #665d52; line-height: 1.75; }
+.atlas-hero > div { display:flex; flex-wrap:wrap; gap:18px; margin-top:20px; color:#245943; font-size:13px; }
+.atlas-hero > div span { display:flex; align-items:center; gap:6px; }
+.atlas-filter-rail { display:grid; grid-template-columns:minmax(260px,1.5fr) repeat(3,minmax(130px,1fr)) auto; gap:12px; align-items:end; padding:20px 0 22px; }
+.atlas-filter-rail label { display:grid; gap:6px; min-width:0; }
+.atlas-filter-rail label>span { color:#70675b; font-size:11px; letter-spacing:.08em; }
+.atlas-filter-rail input,.atlas-filter-rail select { width:100%; min-height:40px; border:0; border-bottom:1px solid rgba(62,52,40,.3); background:transparent; color:#29251f; font:inherit; outline:none; }
+.atlas-filter-rail input:focus,.atlas-filter-rail select:focus { border-color:#245943; }
+.atlas-search div { display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(62,52,40,.3); }
+.atlas-search div input { border:0; }
+.atlas-filter-rail button,.atlas-empty button { display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:0 14px; border:1px solid rgba(36,89,67,.3); background:transparent; color:#245943; cursor:pointer; }
+.atlas-workspace { display:grid; grid-template-columns:minmax(250px,.72fr) minmax(620px,2fr); min-height:650px; border-top:1px solid rgba(62,52,40,.18); border-bottom:1px solid rgba(62,52,40,.18); }
+.atlas-index { min-width:0; border-right:1px solid rgba(62,52,40,.18); }
+.atlas-index>header { display:flex; justify-content:space-between; padding:15px 18px; color:#756b5f; font-size:12px; letter-spacing:.08em; border-bottom:1px solid rgba(62,52,40,.14); }
+.atlas-index>div { max-height:650px; overflow:auto; scrollbar-width:thin; }
+.atlas-index button { display:grid; grid-template-columns:28px minmax(110px,1fr) auto; gap:9px; align-items:center; width:100%; min-height:64px; padding:10px 14px; border:0; border-bottom:1px solid rgba(62,52,40,.1); background:transparent; color:#302b25; text-align:left; cursor:pointer; }
+.atlas-index button:hover { background:rgba(176,141,87,.07); }
+.atlas-index button.active { background:rgba(36,89,67,.08); box-shadow:inset 3px 0 #245943; }
+.atlas-index button small { color:#9b8e7d; font-size:10px; }
+.atlas-index button span { display:grid; gap:3px; min-width:0; }
+.atlas-index button strong { font-size:14px; font-weight:600; }
+.atlas-index button em { overflow:hidden; color:#81766a; font-size:10px; font-style:normal; text-overflow:ellipsis; white-space:nowrap; }
+.atlas-index button i { color:#8b7d6b; font-size:10px; font-style:normal; white-space:nowrap; }
+.atlas-exhibit { display:grid; grid-template-columns:minmax(260px,.82fr) minmax(340px,1.18fr); min-width:0; background:rgba(245,240,230,.32); }
+.atlas-portrait-stage { position:relative; display:flex; align-items:flex-end; justify-content:center; min-height:610px; overflow:hidden; background:radial-gradient(circle at 50% 42%,rgba(176,141,87,.18),transparent 48%); }
+.atlas-portrait-stage img { width:min(94%,420px); max-height:570px; object-fit:contain; filter:drop-shadow(0 18px 18px rgba(38,31,23,.18)); }
+.atlas-name-seal { display:grid; place-items:center; align-content:center; width:210px; aspect-ratio:1; margin:auto; border:1px solid rgba(176,141,87,.42); border-radius:50%; color:#6e5b40; background:rgba(255,253,247,.34); }
+.atlas-name-seal span { font-family:Georgia,serif; font-size:30px; }
+.atlas-name-seal strong { margin:8px 0; font-family:"Noto Serif SC",serif; font-size:42px; font-weight:500; }
+.atlas-name-seal small { font-size:9px; letter-spacing:.18em; }
+.atlas-era-mark { position:absolute; left:18px; bottom:18px; display:grid; gap:3px; padding-left:12px; border-left:2px solid #b08d57; color:#3b352d; font-size:12px; }
+.atlas-era-mark span { color:#817467; }
+.atlas-exhibit-copy { align-self:center; padding:46px clamp(28px,4vw,64px); }
+.atlas-exhibit-copy h2 { margin:8px 0 0; color:#25211c; font-family:Georgia,"Noto Serif SC",serif; font-size:46px; font-weight:500; }
+.atlas-exhibit-copy h3 { margin:2px 0 20px; color:#8a7c6c; font-size:15px; font-weight:400; }
+.atlas-summary { margin:0 0 24px; color:#4f473e; font-size:16px; line-height:1.8; }
+.atlas-exhibit-copy dl { margin:0; border-top:1px solid rgba(62,52,40,.16); }
+.atlas-exhibit-copy dl>div { display:grid; grid-template-columns:86px 1fr; gap:15px; padding:13px 0; border-bottom:1px solid rgba(62,52,40,.12); }
+.atlas-exhibit-copy dt { color:#776c5e; font-size:12px; }
+.atlas-exhibit-copy dd { display:flex; flex-wrap:wrap; gap:7px; margin:0; }
+.atlas-exhibit-copy dd span { color:#2c4f40; font-size:13px; }
+.atlas-exhibit-copy dd span:not(:last-child)::after { content:" ·"; color:#b08d57; }
+.atlas-relations { margin-top:22px; }
+.atlas-relations>span { color:#776c5e; font-size:11px; letter-spacing:.1em; }
+.atlas-relations>div { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.atlas-relations button { display:inline-flex; align-items:center; gap:5px; border:0; border-bottom:1px solid rgba(36,89,67,.3); background:transparent; color:#245943; padding:5px 0; cursor:pointer; }
+.atlas-exhibit-copy footer { display:flex; flex-wrap:wrap; gap:12px 20px; margin-top:28px; }
+.atlas-exhibit-copy footer a { display:inline-flex; align-items:center; gap:6px; color:#6f6559; font-size:12px; text-decoration:none; }
+.atlas-exhibit-copy footer .atlas-archive-link { min-height:40px; padding:0 14px; background:#245943; color:#f7f2e8; }
+.atlas-empty { padding:70px 20px; text-align:center; border-top:1px solid rgba(62,52,40,.18); }
+.atlas-empty h2 { font-family:Georgia,"Noto Serif SC",serif; font-weight:500; }
+
 .archive-filter-ledger label { display: grid; gap: 7px; min-width: 0; }
 .archive-filter-ledger label > span { color: #685f52; font-size: 12px; letter-spacing: .08em; }
 .archive-filter-ledger input, .archive-filter-ledger select { width: 100%; min-height: 40px; border: 0; border-bottom: 1px solid rgba(61, 52, 41, .28); background: transparent; color: #24211d; font: inherit; outline: none; }
@@ -3427,11 +3483,29 @@ h1 {
 @media (max-width: 980px) {
   .archive-filter-ledger, .archive-preservation-desk { grid-template-columns: 1fr 1fr; }
   .archive-preservation-actions { justify-content: flex-start; }
+  .atlas-filter-rail { grid-template-columns:1fr 1fr; }
+  .atlas-workspace { grid-template-columns:220px 1fr; }
+  .atlas-exhibit { grid-template-columns:1fr; }
+  .atlas-portrait-stage { min-height:340px; }
+  .atlas-portrait-stage img { max-height:330px; }
 }
 
 @media (max-width: 560px) {
   .archive-filter-ledger, .archive-preservation-desk, .thought-change-columns { grid-template-columns: 1fr; }
   .archive-preservation-actions a, .archive-preservation-actions button { flex: 1 1 calc(50% - 9px); }
+  .philosopher-atlas-page { width:calc(100% - 28px); padding-top:28px; }
+  .atlas-hero h1 { font-size:38px; }
+  .atlas-filter-rail { grid-template-columns:1fr; }
+  .atlas-workspace { display:block; }
+  .atlas-index { border-right:0; border-bottom:1px solid rgba(62,52,40,.18); }
+  .atlas-index>div { display:flex; max-height:none; overflow-x:auto; }
+  .atlas-index button { flex:0 0 185px; grid-template-columns:22px 1fr; }
+  .atlas-index button i { display:none; }
+  .atlas-index button.active { box-shadow:inset 0 -3px #245943; }
+  .atlas-portrait-stage { min-height:300px; }
+  .atlas-exhibit-copy { padding:30px 20px 36px; }
+  .atlas-exhibit-copy h2 { font-size:38px; }
+  .atlas-exhibit-copy dl>div { grid-template-columns:1fr; gap:7px; }
 }
 
 .archive-insights {
@@ -4423,6 +4497,7 @@ h1 {
 }
 
 .timeline-philosophers span,
+.timeline-philosophers a,
 .timeline-tags span {
   display: inline-flex;
   gap: 6px;
@@ -4434,6 +4509,9 @@ h1 {
   font-size: 0.78rem;
   line-height: 1.55;
 }
+
+.timeline-philosophers a { color: inherit; text-decoration: none; }
+.timeline-philosophers a:hover b { color: #245943; }
 
 .timeline-philosophers b {
   color: var(--forest);
