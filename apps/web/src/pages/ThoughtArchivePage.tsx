@@ -1,5 +1,17 @@
 ﻿import { Archive, ChevronDown, CircleDot, Clock3, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent, type WheelEvent } from "react";
+import ForceGraph2D, {
+  type ForceGraphMethods,
+  type LinkObject,
+  type NodeObject,
+} from "react-force-graph-2d";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type SnapshotStatus = "completed" | "pending";
 type SnapshotDecision = "approved" | "edit" | "rejected" | "raw_only";
@@ -84,6 +96,26 @@ type GraphPosition = {
   y: number;
 };
 
+type ForceThoughtNode = ThoughtGraphNode &
+  Partial<GraphPosition> & {
+    vx?: number;
+    vy?: number;
+    fx?: number;
+    fy?: number;
+  };
+
+type ForceThoughtLink = Omit<ThoughtGraphEdge, "source" | "target"> & {
+  source: string | ForceThoughtNode;
+  target: string | ForceThoughtNode;
+};
+
+type GraphLabelBox = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 const graphNodeKindLabels: Record<GraphNodeKind, string> = {
   snapshot: "思想节点",
   topic: "主题",
@@ -141,9 +173,23 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
   const nodes = new Map<string, ThoughtGraphNode>();
   const edges = new Map<string, ThoughtGraphEdge>();
 
+  function addGraphEdge(source: string, target: string, relation: string) {
+    if (source === target) return;
+    const id = `${source}->${target}:${relation}`;
+    edges.set(id, {
+      id,
+      source,
+      target,
+      relation,
+    });
+  }
+
   items.slice(-8).forEach((item) => {
     const content = item.snapshot.content;
     const snapshotId = graphNodeId("snapshot", item.snapshot.snapshot_id);
+    const tensionIds: string[] = [];
+    const philosopherIds: string[] = [];
+    const tagIds: string[] = [];
     addGraphNode(nodes, {
       id: snapshotId,
       label: content.title,
@@ -160,15 +206,11 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
       weight: 2,
       description: content.core_question,
     });
-    edges.set(`${snapshotId}->${topicId}`, {
-      id: `${snapshotId}->${topicId}`,
-      source: snapshotId,
-      target: topicId,
-      relation: "主题",
-    });
+    addGraphEdge(snapshotId, topicId, "主题");
 
     content.tensions.slice(0, 3).forEach((tension) => {
       const tensionId = graphNodeId("tension", tension);
+      tensionIds.push(tensionId);
       addGraphNode(nodes, {
         id: tensionId,
         label: tension,
@@ -176,16 +218,12 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
         weight: 1.4,
         description: `反复拉扯：${content.core_question}`,
       });
-      edges.set(`${topicId}->${tensionId}`, {
-        id: `${topicId}->${tensionId}`,
-        source: topicId,
-        target: tensionId,
-        relation: "张力",
-      });
+      addGraphEdge(topicId, tensionId, "张力");
     });
 
     content.related_philosophers.slice(0, 3).forEach((philosopher) => {
       const philosopherId = graphNodeId("philosopher", philosopher.name);
+      philosopherIds.push(philosopherId);
       addGraphNode(nodes, {
         id: philosopherId,
         label: philosopher.name,
@@ -193,16 +231,12 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
         weight: 1.6,
         description: philosopher.reason,
       });
-      edges.set(`${topicId}->${philosopherId}`, {
-        id: `${topicId}->${philosopherId}`,
-        source: topicId,
-        target: philosopherId,
-        relation: "哲学家",
-      });
+      addGraphEdge(topicId, philosopherId, "哲学家");
     });
 
     content.tags.slice(0, 3).forEach((tag) => {
       const tagId = graphNodeId("tag", tag);
+      tagIds.push(tagId);
       addGraphNode(nodes, {
         id: tagId,
         label: tag,
@@ -210,12 +244,21 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
         weight: 1,
         description: `来自思想节点《${content.title}》的标签。`,
       });
-      edges.set(`${topicId}->${tagId}`, {
-        id: `${topicId}->${tagId}`,
-        source: topicId,
-        target: tagId,
-        relation: "标签",
-      });
+      addGraphEdge(topicId, tagId, "标签");
+    });
+
+    const childNodeIds = [...tensionIds, ...philosopherIds, ...tagIds];
+    childNodeIds.forEach((nodeId, index) => {
+      const nextNodeId = childNodeIds[index + 1];
+      if (nextNodeId) addGraphEdge(nodeId, nextNodeId, "共现");
+    });
+    tensionIds.forEach((tensionId, index) => {
+      const philosopherId = philosopherIds[index % Math.max(philosopherIds.length, 1)];
+      if (philosopherId) addGraphEdge(tensionId, philosopherId, "张力参照");
+    });
+    tagIds.forEach((tagId, index) => {
+      const tensionId = tensionIds[index % Math.max(tensionIds.length, 1)];
+      if (tensionId) addGraphEdge(tagId, tensionId, "标签线索");
     });
   });
 
@@ -240,27 +283,145 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
   };
 }
 
-function buildInitialGraphPositions(nodes: ThoughtGraphNode[]): Record<string, GraphPosition> {
-  const positions: Record<string, GraphPosition> = {};
-  const centerX = 480;
-  const centerY = 235;
-  const rings: Record<GraphNodeKind, number> = {
-    topic: 92,
-    snapshot: 166,
-    tension: 244,
-    philosopher: 292,
-    tag: 328,
-  };
+function graphSeed(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) % 9973;
+  }
+  return hash / 9973;
+}
 
-  nodes.forEach((node, index) => {
-    const angle = (index / Math.max(nodes.length, 1)) * Math.PI * 2 - Math.PI / 2;
-    const radius = rings[node.kind] + (index % 3) * 12;
-    positions[node.id] = {
-      x: centerX + Math.cos(angle) * radius,
-      y: centerY + Math.sin(angle) * radius * 0.58,
+function buildGraphClusters(nodes: ThoughtGraphNode[], edges: ThoughtGraphEdge[] = []) {
+  const adjacency = new Map<string, Set<string>>();
+  nodes.forEach((node) => adjacency.set(node.id, new Set()));
+  edges.forEach((edge) => {
+    adjacency.get(edge.source)?.add(edge.target);
+    adjacency.get(edge.target)?.add(edge.source);
+  });
+
+  const visited = new Set<string>();
+  const clusters: ThoughtGraphNode[][] = [];
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+
+  nodes.forEach((node) => {
+    if (visited.has(node.id)) return;
+    const queue = [node.id];
+    const cluster: ThoughtGraphNode[] = [];
+    visited.add(node.id);
+
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      const currentNode = currentId ? nodeById.get(currentId) : null;
+      if (!currentId || !currentNode) continue;
+      cluster.push(currentNode);
+      adjacency.get(currentId)?.forEach((nextId) => {
+        if (visited.has(nextId)) return;
+        visited.add(nextId);
+        queue.push(nextId);
+      });
+    }
+
+    clusters.push(cluster);
+  });
+
+  return clusters.sort(
+    (first, second) =>
+      second.length - first.length ||
+      second.reduce((total, node) => total + node.weight, 0) -
+        first.reduce((total, node) => total + node.weight, 0),
+  );
+}
+
+function buildClusterCenters(clusterCount: number): GraphPosition[] {
+  if (clusterCount <= 1) return [{ x: 480, y: 235 }];
+  if (clusterCount === 2) {
+    return [
+      { x: 335, y: 235 },
+      { x: 625, y: 235 },
+    ];
+  }
+  if (clusterCount === 3) {
+    return [
+      { x: 480, y: 145 },
+      { x: 330, y: 310 },
+      { x: 650, y: 306 },
+    ];
+  }
+
+  return Array.from({ length: clusterCount }, (_, index) => {
+    const angle = (index / clusterCount) * Math.PI * 2 - Math.PI / 2;
+    const radiusX = 255;
+    const radiusY = 142;
+    return {
+      x: 480 + Math.cos(angle) * radiusX,
+      y: 235 + Math.sin(angle) * radiusY,
     };
   });
+}
+
+function buildInitialGraphPositions(
+  nodes: ThoughtGraphNode[],
+  edges: ThoughtGraphEdge[] = [],
+): Record<string, GraphPosition> {
+  const positions: Record<string, GraphPosition> = {};
+  const clusters = buildGraphClusters(nodes, edges);
+  const centers = buildClusterCenters(clusters.length);
+  const kindRadius: Record<GraphNodeKind, number> = {
+    topic: 8,
+    snapshot: 46,
+    tension: 74,
+    philosopher: 88,
+    tag: 104,
+  };
+
+  clusters.forEach((cluster, clusterIndex) => {
+    const center = centers[clusterIndex] ?? { x: 480, y: 235 };
+    const clusterScale = Math.min(1.22, Math.max(0.78, 0.68 + cluster.length / 18));
+    const sortedCluster = [...cluster].sort((first, second) => {
+      const kindOrder: Record<GraphNodeKind, number> = {
+        topic: 0,
+        snapshot: 1,
+        tension: 2,
+        philosopher: 3,
+        tag: 4,
+      };
+      return kindOrder[first.kind] - kindOrder[second.kind] || second.weight - first.weight;
+    });
+
+    sortedCluster.forEach((node, nodeIndex) => {
+      const seed = graphSeed(`${node.id}:${clusterIndex}`);
+      const angle =
+        (nodeIndex / Math.max(sortedCluster.length, 1)) * Math.PI * 2 +
+        seed * 0.95 +
+        clusterIndex * 0.42;
+      const baseRadius = kindRadius[node.kind] * clusterScale;
+      const organicOffset = (seed - 0.5) * 24;
+      const radius = Math.max(5, baseRadius + organicOffset);
+      positions[node.id] = {
+        x: Math.min(918, Math.max(42, center.x + Math.cos(angle) * radius)),
+        y: Math.min(428, Math.max(42, center.y + Math.sin(angle) * radius * 0.72)),
+      };
+    });
+  });
+
   return positions;
+}
+
+function graphLabelFor(node: ThoughtGraphNode) {
+  const characters = Array.from(node.label);
+  return characters.length > 10
+    ? `${characters.slice(0, 9).join("")}…`
+    : node.label;
+}
+
+function splitGraphLabel(label: string, maxCharacters = 12) {
+  const characters = Array.from(label);
+  if (characters.length <= maxCharacters) return [label];
+  const lines: string[] = [];
+  for (let index = 0; index < characters.length; index += maxCharacters) {
+    lines.push(characters.slice(index, index + maxCharacters).join(""));
+  }
+  return lines;
 }
 
 const snapshotDecisionLabels: Record<SnapshotDecision, string> = {
@@ -482,7 +643,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       ) : null}
 
       {!loading && !error && graphData.nodes.length > 0 ? (
-        <ThoughtRelationGraph
+        <ForceThoughtRelationGraph
           focusedSnapshotId={focusedGraphSnapshotId}
           graph={graphData}
           items={completedSnapshotItems}
@@ -658,7 +819,15 @@ function ThoughtEvolutionMap({ items }: { items: CompletedSnapshotItem[] }) {
   );
 }
 
-function ThoughtRelationGraph({
+function graphEndpointId(endpoint: unknown) {
+  if (typeof endpoint === "string" || typeof endpoint === "number") return String(endpoint);
+  if (endpoint && typeof endpoint === "object" && "id" in endpoint) {
+    return String((endpoint as { id?: string | number }).id ?? "");
+  }
+  return "";
+}
+
+function ForceThoughtRelationGraph({
   focusedSnapshotId,
   graph,
   items,
@@ -669,435 +838,613 @@ function ThoughtRelationGraph({
   items: CompletedSnapshotItem[];
   onNavigateSnapshots: (snapshotIds: string[]) => void;
 }) {
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const [positions, setPositions] = useState<Record<string, GraphPosition>>({});
+  type GraphApi = ForceGraphMethods<
+    NodeObject<ForceThoughtNode>,
+    LinkObject<ForceThoughtNode, ForceThoughtLink>
+  >;
+
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const graphViewportRef = useRef<HTMLDivElement | null>(null);
+  const forceGraphRef = useRef<GraphApi | undefined>(undefined);
+  const labelBoxesRef = useRef<GraphLabelBox[]>([]);
+  const hoverTimerRef = useRef<number | null>(null);
+  const pulseTimerRef = useRef<number | null>(null);
+  const fitTimerRef = useRef<number | null>(null);
+  const zoomFrameRef = useRef<number | null>(null);
+  const initialFitDoneRef = useRef(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [hoverNodeId, setHoverNodeId] = useState<string | null>(null);
   const [pulseNodeId, setPulseNodeId] = useState<string | null>(null);
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
+  const [tooltipPoint, setTooltipPoint] = useState<GraphPosition | null>(null);
+  const [graphPlaced, setGraphPlaced] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const dragState = useRef<{ nodeId: string; offsetX: number; offsetY: number } | null>(null);
-  const positionsRef = useRef<Record<string, GraphPosition>>({});
-  const velocityRef = useRef<Record<string, GraphPosition>>({});
-  const springFrameRef = useRef<number | null>(null);
-  const hoverTimerRef = useRef<number | null>(null);
-  const pulseTimerRef = useRef<number | null>(null);
-  const dragMovedRef = useRef(false);
-  const lastDragDeltaRef = useRef({ x: 0, y: 0 });
+  const [graphSize, setGraphSize] = useState({ width: 960, height: 470 });
+  const [graphPageIndex, setGraphPageIndex] = useState(0);
 
-  const initialPositions = useMemo(() => buildInitialGraphPositions(graph.nodes), [graph.nodes]);
+  const graphPages = useMemo(() => {
+    return buildGraphClusters(graph.nodes, graph.edges).map((nodes) => {
+      const nodeIds = new Set(nodes.map((node) => node.id));
+      return {
+        nodes,
+        edges: graph.edges.filter(
+          (edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target),
+        ),
+      };
+    });
+  }, [graph.nodes, graph.edges]);
+  const visibleGraph = graphPages[graphPageIndex] ?? { nodes: [], edges: [] };
 
-  useEffect(() => {
-    setPositions(initialPositions);
-    positionsRef.current = initialPositions;
-    velocityRef.current = {};
-    setActiveNodeId(null);
-    setHoverNodeId(null);
-    setPulseNodeId(null);
-    setDraggingNodeId(null);
-    setZoom(1);
-    if (springFrameRef.current) {
-      cancelAnimationFrame(springFrameRef.current);
-      springFrameRef.current = null;
-    }
-  }, [initialPositions]);
-
-  useEffect(() => {
-    positionsRef.current = positions;
-  }, [positions]);
-
-  useEffect(() => {
-    return () => {
-      if (springFrameRef.current) {
-        cancelAnimationFrame(springFrameRef.current);
-      }
-      if (hoverTimerRef.current) {
-        window.clearTimeout(hoverTimerRef.current);
-      }
-      if (pulseTimerRef.current) {
-        window.clearTimeout(pulseTimerRef.current);
-      }
-    };
-  }, []);
+  const initialPositions = useMemo(
+    () => buildInitialGraphPositions(visibleGraph.nodes, visibleGraph.edges),
+    [visibleGraph.nodes, visibleGraph.edges],
+  );
+  const graphData = useMemo(() => {
+    const nodes: ForceThoughtNode[] = visibleGraph.nodes.map((node) => {
+        const position = initialPositions[node.id] ?? { x: 480, y: 235 };
+        return {
+          ...node,
+          x: position.x - 480,
+          y: position.y - 235,
+        };
+      });
+    const links: ForceThoughtLink[] = visibleGraph.edges.map((edge) => ({ ...edge }));
+    return { nodes, links };
+  }, [visibleGraph.nodes, visibleGraph.edges, initialPositions]);
 
   const externalFocusedNodeId = focusedSnapshotId ? `snapshot:${focusedSnapshotId}` : null;
   const focusedNodeId = hoverNodeId ?? activeNodeId ?? externalFocusedNodeId;
-  const focusedNode = graph.nodes.find((node) => node.id === focusedNodeId) ?? null;
+  const focusedNode = visibleGraph.nodes.find((node) => node.id === focusedNodeId) ?? null;
   const connectedNodeIds = useMemo(() => {
     if (!focusedNodeId) return new Set<string>();
     const connected = new Set<string>([focusedNodeId]);
-    graph.edges.forEach((edge) => {
+    visibleGraph.edges.forEach((edge) => {
       if (edge.source === focusedNodeId) connected.add(edge.target);
       if (edge.target === focusedNodeId) connected.add(edge.source);
     });
     return connected;
-  }, [focusedNodeId, graph.edges]);
-  const selectedSnapshots = useMemo(() => {
-    if (!focusedNode) return [];
-    return snapshotsForNode(focusedNode.id);
-  }, [focusedNode, items]);
+  }, [focusedNodeId, visibleGraph.edges]);
 
-  const focusedPosition = focusedNodeId ? positionFor(focusedNodeId) : null;
-  const tooltipPosition = focusedPosition
-    ? {
-        x: 480 + (focusedPosition.x - 480) * zoom,
-        y: 235 + (focusedPosition.y - 235) * zoom,
+  const snapshotsForNode = useCallback(
+    (nodeId: string) => {
+      const node = graph.nodes.find((candidate) => candidate.id === nodeId);
+      if (!node) return [];
+      if (node.kind === "snapshot") {
+        const snapshotId = node.id.replace("snapshot:", "");
+        return items.filter((item) => item.snapshot.snapshot_id === snapshotId);
       }
-    : null;
+      return items.filter((item) => {
+        const content = item.snapshot.content;
+        if (node.kind === "topic") return content.topic === node.label;
+        if (node.kind === "tension") return content.tensions.includes(node.label);
+        if (node.kind === "philosopher") {
+          return content.related_philosophers.some((philosopher) => philosopher.name === node.label);
+        }
+        return content.tags.includes(node.label);
+      });
+    },
+    [graph.nodes, items],
+  );
 
-  function pointerToGraphPoint(event: PointerEvent<SVGSVGElement | SVGGElement>) {
-    const svg = svgRef.current;
-    if (!svg) return { x: 0, y: 0 };
-    const rect = svg.getBoundingClientRect();
-    const rawX = ((event.clientX - rect.left) / rect.width) * 960;
-    const rawY = ((event.clientY - rect.top) / rect.height) * 470;
-    return {
-      x: 480 + (rawX - 480) / zoom,
-      y: 235 + (rawY - 235) / zoom,
-    };
-  }
+  const selectedSnapshots = useMemo(
+    () => (focusedNode ? snapshotsForNode(focusedNode.id) : []),
+    [focusedNode, snapshotsForNode],
+  );
 
-  function positionFor(nodeId: string) {
-    return positions[nodeId] ?? { x: 480, y: 235 };
-  }
+  useEffect(() => {
+    setGraphPageIndex((currentPage) =>
+      Math.min(currentPage, Math.max(0, graphPages.length - 1)),
+    );
+  }, [graphPages.length]);
 
-  function beginDrag(nodeId: string, event: PointerEvent<SVGGElement>) {
-    if (springFrameRef.current) {
-      cancelAnimationFrame(springFrameRef.current);
-      springFrameRef.current = null;
+  useEffect(() => {
+    if (!externalFocusedNodeId) return;
+    const targetPage = graphPages.findIndex((page) =>
+      page.nodes.some((node) => node.id === externalFocusedNodeId),
+    );
+    if (targetPage >= 0 && targetPage !== graphPageIndex) {
+      setGraphPageIndex(targetPage);
     }
-    const position = positionFor(nodeId);
-    const point = pointerToGraphPoint(event);
-    dragState.current = {
-      nodeId,
-      offsetX: point.x - position.x,
-      offsetY: point.y - position.y,
+  }, [externalFocusedNodeId, graphPageIndex, graphPages]);
+
+  useEffect(() => {
+    const viewport = graphViewportRef.current;
+    if (!viewport) return undefined;
+    const updateSize = () => {
+      const rect = viewport.getBoundingClientRect();
+      setGraphSize({
+        width: Math.max(300, Math.round(rect.width)),
+        height: Math.max(340, Math.round(rect.height)),
+      });
     };
-    velocityRef.current = {};
-    dragMovedRef.current = false;
-    lastDragDeltaRef.current = { x: 0, y: 0 };
-    setActiveNodeId(nodeId);
-    setHoverNodeId(nodeId);
-    setDraggingNodeId(nodeId);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, []);
 
-  function activateNode(nodeId: string) {
-    setActiveNodeId(nodeId);
-    setHoverNodeId(nodeId);
-    setPulseNodeId(nodeId);
-    const relatedSnapshotIds = snapshotsForNode(nodeId).map((item) => item.snapshot.snapshot_id);
-    onNavigateSnapshots(relatedSnapshotIds);
-    if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
-    pulseTimerRef.current = window.setTimeout(() => {
-      setPulseNodeId(null);
-      pulseTimerRef.current = null;
-    }, 760);
-  }
+  useEffect(() => {
+    const viewport = graphViewportRef.current;
+    if (!viewport) return undefined;
+    const preventPageScroll = (event: globalThis.WheelEvent) => event.preventDefault();
+    viewport.addEventListener("wheel", preventPageScroll, { passive: false });
+    return () => viewport.removeEventListener("wheel", preventPageScroll);
+  }, []);
 
-  function snapshotsForNode(nodeId: string) {
-    const node = graph.nodes.find((candidate) => candidate.id === nodeId);
-    if (!node) return [];
-    if (node.kind === "snapshot") {
-      const snapshotId = node.id.replace("snapshot:", "");
-      return items.filter((item) => item.snapshot.snapshot_id === snapshotId);
-    }
-    return items.filter((item) => {
-      const content = item.snapshot.content;
-      if (node.kind === "topic") return content.topic === node.label;
-      if (node.kind === "tension") return content.tensions.includes(node.label);
-      if (node.kind === "philosopher") {
-        return content.related_philosophers.some((philosopher) => philosopher.name === node.label);
-      }
-      return content.tags.includes(node.label);
+  useEffect(() => {
+    const instance = forceGraphRef.current;
+    if (!instance) return;
+
+    type ConfigurableForce = {
+      distance?: (value: number | ((link: ForceThoughtLink) => number)) => ConfigurableForce;
+      strength?: (
+        value: number | ((nodeOrLink: ForceThoughtNode | ForceThoughtLink) => number),
+      ) => ConfigurableForce;
+      distanceMax?: (value: number) => ConfigurableForce;
+    };
+
+    const nodeById = new Map(graphData.nodes.map((node) => [node.id, node]));
+    const linkForce = instance.d3Force("link") as ConfigurableForce | undefined;
+    linkForce?.distance?.((link) => {
+      const source = nodeById.get(graphEndpointId(link.source));
+      const target = nodeById.get(graphEndpointId(link.target));
+      if (source?.kind === "snapshot" || target?.kind === "snapshot") return 62;
+      if (source?.kind === "topic" || target?.kind === "topic") return 54;
+      return 48;
     });
-  }
+    linkForce?.strength?.(0.34);
 
-  function scheduleNodePreview(nodeId: string) {
-    if (hoverTimerRef.current) window.clearTimeout(hoverTimerRef.current);
-    hoverTimerRef.current = window.setTimeout(() => {
-      setHoverNodeId(nodeId);
-      hoverTimerRef.current = null;
-    }, 100);
-  }
+    const chargeForce = instance.d3Force("charge") as ConfigurableForce | undefined;
+    chargeForce?.strength?.((nodeOrLink) => {
+      const node = nodeOrLink as ForceThoughtNode;
+      if (node.kind === "topic") return -175;
+      if (node.kind === "snapshot") return -142;
+      return -112;
+    });
+    chargeForce?.distanceMax?.(560);
+    instance.d3ReheatSimulation();
+  }, [graphData]);
+
+  useEffect(() => {
+    initialFitDoneRef.current = false;
+    setActiveNodeId(null);
+    setHoverNodeId(null);
+    setPulseNodeId(null);
+    setDraggingNodeId(null);
+    setTooltipPoint(null);
+    setZoom(1);
+    setGraphPlaced(false);
+    if (fitTimerRef.current) window.clearTimeout(fitTimerRef.current);
+    fitTimerRef.current = window.setTimeout(() => {
+      forceGraphRef.current?.d3ReheatSimulation();
+      forceGraphRef.current?.zoomToFit(420, 72);
+      setGraphPlaced(true);
+      fitTimerRef.current = null;
+    }, 70);
+  }, [graphData]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setGraphPlaced(false);
+        if (fitTimerRef.current) window.clearTimeout(fitTimerRef.current);
+        fitTimerRef.current = window.setTimeout(() => {
+          forceGraphRef.current?.d3ReheatSimulation();
+          forceGraphRef.current?.zoomToFit(460, 72);
+          setGraphPlaced(true);
+          fitTimerRef.current = null;
+        }, 70);
+      },
+      { rootMargin: "-12% 0px -25% 0px", threshold: 0.26 },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) window.clearTimeout(hoverTimerRef.current);
+      if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
+      if (fitTimerRef.current) window.clearTimeout(fitTimerRef.current);
+      if (zoomFrameRef.current) window.cancelAnimationFrame(zoomFrameRef.current);
+    };
+  }, []);
 
   function clearNodePreview() {
     if (hoverTimerRef.current) {
       window.clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
     }
-    if (!dragState.current) setHoverNodeId(null);
+    setHoverNodeId(null);
+    setTooltipPoint(null);
   }
 
-  function graphPullStrength(nodeId: string, draggedNodeId: string) {
-    if (nodeId === draggedNodeId) return 1;
-    const connected = graph.edges.some(
-      (edge) =>
-        (edge.source === draggedNodeId && edge.target === nodeId) ||
-        (edge.target === draggedNodeId && edge.source === nodeId),
-    );
-    if (connected) return 0.48;
-    const draggedBase = initialPositions[draggedNodeId] ?? { x: 480, y: 235 };
-    const nodeBase = initialPositions[nodeId] ?? { x: 480, y: 235 };
-    const distance = Math.hypot(nodeBase.x - draggedBase.x, nodeBase.y - draggedBase.y);
-    return Math.max(0.08, 0.24 - distance / 2200);
+  function clearGraphFocus() {
+    clearNodePreview();
+    setActiveNodeId(null);
+    setPulseNodeId(null);
   }
 
-  function moveDrag(event: PointerEvent<SVGSVGElement>) {
-    const currentDrag = dragState.current;
-    if (!currentDrag) return;
-    const point = pointerToGraphPoint(event);
-    const draggedBase = initialPositions[currentDrag.nodeId] ?? positionFor(currentDrag.nodeId);
-    const draggedTarget = {
-      x: Math.min(920, Math.max(40, point.x - currentDrag.offsetX)),
-      y: Math.min(430, Math.max(40, point.y - currentDrag.offsetY)),
-    };
-    const delta = {
-      x: draggedTarget.x - draggedBase.x,
-      y: draggedTarget.y - draggedBase.y,
-    };
-    if (Math.hypot(delta.x, delta.y) > 3) {
-      dragMovedRef.current = true;
-    }
-    const previousDelta = lastDragDeltaRef.current;
-    lastDragDeltaRef.current = delta;
-    const nextPositions: Record<string, GraphPosition> = {};
-    const nextVelocities: Record<string, GraphPosition> = {};
-
-    graph.nodes.forEach((node) => {
-      const base = initialPositions[node.id] ?? { x: 480, y: 235 };
-      const strength = graphPullStrength(node.id, currentDrag.nodeId);
-      const sway = node.id === currentDrag.nodeId ? 0 : Math.sin((base.x + base.y + delta.x) / 95) * 4 * strength;
-      nextPositions[node.id] = {
-        x: Math.min(930, Math.max(30, base.x + delta.x * strength + sway)),
-        y: Math.min(440, Math.max(30, base.y + delta.y * strength - sway * 0.5)),
-      };
-      nextVelocities[node.id] = {
-        x: (delta.x - previousDelta.x) * strength * 0.12,
-        y: (delta.y - previousDelta.y) * strength * 0.12,
-      };
-    });
-    velocityRef.current = nextVelocities;
-    positionsRef.current = nextPositions;
-    setPositions(nextPositions);
+  function scheduleNodePreview(node: NodeObject) {
+    clearNodePreview();
+    hoverTimerRef.current = window.setTimeout(() => {
+      const nodeId = String(node.id ?? "");
+      if (!nodeId) return;
+      const point =
+        typeof node.x === "number" && typeof node.y === "number"
+          ? forceGraphRef.current?.graph2ScreenCoords(node.x, node.y)
+          : null;
+      setHoverNodeId(nodeId);
+      setTooltipPoint(point ?? { x: graphSize.width / 2, y: graphSize.height / 2 });
+      hoverTimerRef.current = null;
+    }, 100);
   }
 
-  function endDrag() {
-    dragState.current = null;
-    setDraggingNodeId(null);
-    startSpringBack();
-  }
-
-  function startSpringBack() {
-    if (springFrameRef.current) {
-      cancelAnimationFrame(springFrameRef.current);
-    }
-    const stiffness = 0.055;
-    const damping = 0.78;
-
-    function tick() {
-      let moving = false;
-      const nextPositions: Record<string, GraphPosition> = {};
-      const nextVelocities: Record<string, GraphPosition> = {};
-
-      graph.nodes.forEach((node) => {
-        const current = positionsRef.current[node.id] ?? initialPositions[node.id] ?? { x: 480, y: 235 };
-        const target = initialPositions[node.id] ?? current;
-        const velocity = velocityRef.current[node.id] ?? { x: 0, y: 0 };
-        const nextVelocity = {
-          x: (velocity.x + (target.x - current.x) * stiffness) * damping,
-          y: (velocity.y + (target.y - current.y) * stiffness) * damping,
-        };
-        const nextPosition = {
-          x: current.x + nextVelocity.x,
-          y: current.y + nextVelocity.y,
-        };
-        const nodeMoving =
-          Math.abs(nextVelocity.x) > 0.08 ||
-          Math.abs(nextVelocity.y) > 0.08 ||
-          Math.hypot(nextPosition.x - target.x, nextPosition.y - target.y) > 0.8;
-
-        if (nodeMoving) moving = true;
-        nextPositions[node.id] = nodeMoving ? nextPosition : target;
-        nextVelocities[node.id] = nodeMoving ? nextVelocity : { x: 0, y: 0 };
-      });
-
-      positionsRef.current = nextPositions;
-      velocityRef.current = nextVelocities;
-      setPositions(nextPositions);
-      if (moving) {
-        springFrameRef.current = requestAnimationFrame(tick);
-      } else {
-        springFrameRef.current = null;
-      }
-    }
-
-    springFrameRef.current = requestAnimationFrame(tick);
+  function activateNode(node: NodeObject) {
+    const nodeId = String(node.id ?? "");
+    if (!nodeId) return;
+    setActiveNodeId(nodeId);
+    setPulseNodeId(nodeId);
+    onNavigateSnapshots(snapshotsForNode(nodeId).map((item) => item.snapshot.snapshot_id));
+    if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
+    pulseTimerRef.current = window.setTimeout(() => {
+      setPulseNodeId(null);
+      pulseTimerRef.current = null;
+    }, 520);
   }
 
   function resetLayout() {
-    if (springFrameRef.current) {
-      cancelAnimationFrame(springFrameRef.current);
-      springFrameRef.current = null;
-    }
-    positionsRef.current = initialPositions;
-    velocityRef.current = {};
-    setPositions(initialPositions);
-    setActiveNodeId(null);
-    setHoverNodeId(null);
-    setPulseNodeId(null);
-    setZoom(1);
+    graphData.nodes.forEach((node) => {
+      const position = initialPositions[node.id] ?? { x: 480, y: 235 };
+      node.x = position.x - 480;
+      node.y = position.y - 235;
+      node.vx = 0;
+      node.vy = 0;
+      node.fx = undefined;
+      node.fy = undefined;
+    });
+    clearGraphFocus();
+    forceGraphRef.current?.d3ReheatSimulation();
+    if (fitTimerRef.current) window.clearTimeout(fitTimerRef.current);
+    fitTimerRef.current = window.setTimeout(() => {
+      forceGraphRef.current?.zoomToFit(420, 72);
+      fitTimerRef.current = null;
+    }, 80);
   }
 
-  function changeZoom(delta: number) {
-    setZoom((currentZoom) => Math.min(1.9, Math.max(0.62, Number((currentZoom + delta).toFixed(2)))));
+  function changeZoom(direction: -1 | 1) {
+    const instance = forceGraphRef.current;
+    if (!instance) return;
+    const currentZoom = instance.zoom();
+    const minimumZoom = graphSize.width < 540 ? 0.28 : 0.5;
+    const nextZoom = Math.min(
+      2.4,
+      Math.max(minimumZoom, currentZoom * (direction > 0 ? 1.18 : 0.85)),
+    );
+    instance.zoom(nextZoom, 180);
   }
 
-  function handleWheel(event: WheelEvent<SVGSVGElement>) {
-    event.preventDefault();
-    changeZoom(event.deltaY > 0 ? -0.08 : 0.08);
+  function changeGraphPage(direction: -1 | 1) {
+    clearGraphFocus();
+    setGraphPlaced(false);
+    setGraphPageIndex((currentPage) =>
+      Math.min(graphPages.length - 1, Math.max(0, currentPage + direction)),
+    );
   }
+
+  function updateZoomLabel(nextZoom: number) {
+    if (zoomFrameRef.current) window.cancelAnimationFrame(zoomFrameRef.current);
+    zoomFrameRef.current = window.requestAnimationFrame(() => {
+      setZoom(nextZoom);
+      zoomFrameRef.current = null;
+    });
+  }
+
+  const resetLabelLayout = useCallback(() => {
+    labelBoxesRef.current = [];
+  }, []);
+
+  const drawNode = useCallback(
+    (rawNode: NodeObject, context: CanvasRenderingContext2D, globalScale: number) => {
+      const node = rawNode as ForceThoughtNode;
+      if (typeof node.x !== "number" || typeof node.y !== "number") return;
+      const nodeX = node.x;
+      const nodeY = node.y;
+      const nodeId = String(node.id);
+      const active = nodeId === focusedNodeId;
+      const connected = connectedNodeIds.has(nodeId);
+      const dimmed = Boolean(focusedNodeId) && !connected;
+      const dragging = nodeId === draggingNodeId;
+      const pulsing = nodeId === pulseNodeId;
+      const scale = Math.max(globalScale, 0.01);
+      const radius =
+        (active || dragging ? 4.1 : connected ? 2.8 : Math.min(2.6, 1.75 + node.weight * 0.22)) /
+        scale;
+      const nodeColors: Record<GraphNodeKind, string> = {
+        topic: "#55595c",
+        snapshot: "#6b6f72",
+        tension: "#b9bcbe",
+        philosopher: "#adb1b4",
+        tag: "#c6c9cb",
+      };
+
+      context.save();
+      context.globalAlpha = dimmed ? 0.2 : 1;
+      if (pulsing) {
+        context.beginPath();
+        context.arc(nodeX, nodeY, radius + 5 / scale, 0, Math.PI * 2);
+        context.strokeStyle = "rgba(118, 89, 220, 0.28)";
+        context.lineWidth = 1 / scale;
+        context.stroke();
+      }
+      context.beginPath();
+      context.arc(nodeX, nodeY, radius, 0, Math.PI * 2);
+      context.fillStyle = active ? "#7659dc" : connected ? "#8f9497" : nodeColors[node.kind];
+      context.fill();
+      if (active) {
+        context.beginPath();
+        context.arc(nodeX, nodeY, radius + 2.6 / scale, 0, Math.PI * 2);
+        context.strokeStyle = "rgba(118, 89, 220, 0.32)";
+        context.lineWidth = 0.9 / scale;
+        context.stroke();
+      }
+
+      const compactViewport = graphSize.width < 540;
+      const lines = splitGraphLabel(graphLabelFor(node), compactViewport ? 7 : 10);
+      const fontSize = 10.6 / scale;
+      const lineHeight = 13.2 / scale;
+      context.font = `540 ${fontSize}px "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif`;
+      const labelWidth = Math.max(...lines.map((line) => context.measureText(line).width));
+      const labelHeight = lines.length * lineHeight;
+      const baseY = nodeY + radius + 3 / scale;
+      const horizontalSteps = compactViewport
+        ? [0, -0.32, 0.32, -0.64, 0.64]
+        : [0, -0.28, 0.28, -0.56, 0.56];
+      const rowCount = compactViewport ? 12 : 9;
+      const belowCandidates = Array.from({ length: rowCount }, (_, row) =>
+        horizontalSteps.map((step) => ({
+          x: step * Math.max(labelWidth, 48 / scale),
+          y: row * (labelHeight + 3 / scale),
+        })),
+      ).flat();
+      const aboveBaseOffset = -(radius * 2 + 6 / scale + labelHeight);
+      const aboveCandidates = Array.from({ length: rowCount }, (_, row) =>
+        horizontalSteps.map((step) => ({
+          x: step * Math.max(labelWidth, 48 / scale),
+          y: aboveBaseOffset - row * (labelHeight + 3 / scale),
+        })),
+      ).flat();
+      const candidates = [...belowCandidates, ...aboveCandidates];
+      let placement = candidates[0];
+      for (const candidate of candidates) {
+        const box: GraphLabelBox = {
+          x: nodeX + candidate.x - labelWidth / 2,
+          y: baseY + candidate.y,
+          width: labelWidth,
+          height: labelHeight,
+        };
+        const paddingX = 4 / scale;
+        const paddingY = 2 / scale;
+        const screenPosition = forceGraphRef.current?.graph2ScreenCoords(
+          nodeX + candidate.x,
+          baseY + candidate.y,
+        );
+        const screenWidth = labelWidth * scale;
+        const screenHeight = labelHeight * scale;
+        const outsideViewport = screenPosition
+          ? screenPosition.x - screenWidth / 2 < 8 ||
+            screenPosition.x + screenWidth / 2 > graphSize.width - 8 ||
+            screenPosition.y < 8 ||
+            screenPosition.y + screenHeight > graphSize.height - 8
+          : false;
+        const overlaps = labelBoxesRef.current.some(
+          (placed) =>
+            box.x < placed.x + placed.width + paddingX &&
+            box.x + box.width + paddingX > placed.x &&
+            box.y < placed.y + placed.height + paddingY &&
+            box.y + box.height + paddingY > placed.y,
+        );
+        if (outsideViewport) continue;
+        placement = candidate;
+        if (!overlaps) break;
+      }
+      const finalScreenPosition = forceGraphRef.current?.graph2ScreenCoords(
+        nodeX + placement.x,
+        baseY + placement.y,
+      );
+      if (finalScreenPosition) {
+        const halfScreenWidth = (labelWidth * scale) / 2;
+        const clampedScreenX = Math.min(
+          graphSize.width - halfScreenWidth - 8,
+          Math.max(halfScreenWidth + 8, finalScreenPosition.x),
+        );
+        placement = {
+          x: placement.x + (clampedScreenX - finalScreenPosition.x) / scale,
+          y: placement.y,
+        };
+      }
+      const labelBox: GraphLabelBox = {
+        x: nodeX + placement.x - labelWidth / 2,
+        y: baseY + placement.y,
+        width: labelWidth,
+        height: labelHeight,
+      };
+      labelBoxesRef.current.push(labelBox);
+
+      context.globalAlpha = dimmed ? 0.16 : active ? 1 : 0.88;
+      context.fillStyle = active ? "#2b2057" : "#25282a";
+      context.textAlign = "center";
+      context.textBaseline = "top";
+      lines.forEach((line, lineIndex) => {
+        context.fillText(
+          line,
+          nodeX + placement.x,
+          baseY + placement.y + lineIndex * lineHeight,
+        );
+      });
+      context.restore();
+    },
+    [connectedNodeIds, draggingNodeId, focusedNodeId, graphSize.width, pulseNodeId],
+  );
+
+  const paintNodePointerArea = useCallback(
+    (
+      node: NodeObject,
+      paintColor: string,
+      context: CanvasRenderingContext2D,
+      globalScale: number,
+    ) => {
+      if (typeof node.x !== "number" || typeof node.y !== "number") return;
+      context.beginPath();
+      context.arc(node.x, node.y, Math.max(5, 8 / Math.max(globalScale, 0.01)), 0, Math.PI * 2);
+      context.fillStyle = paintColor;
+      context.fill();
+    },
+    [],
+  );
+
+  const linkColor = useCallback(
+    (link: LinkObject) => {
+      const sourceId = graphEndpointId(link.source);
+      const targetId = graphEndpointId(link.target);
+      if (!focusedNodeId) return "rgba(98, 105, 112, 0.29)";
+      return sourceId === focusedNodeId || targetId === focusedNodeId
+        ? "rgba(118, 89, 220, 0.72)"
+        : "rgba(98, 105, 112, 0.055)";
+    },
+    [focusedNodeId],
+  );
+
+  const linkWidth = useCallback(
+    (link: LinkObject) => {
+      const active =
+        graphEndpointId(link.source) === focusedNodeId || graphEndpointId(link.target) === focusedNodeId;
+      if (!focusedNodeId) return 1.05;
+      return active ? 1.65 : 0.34;
+    },
+    [focusedNodeId],
+  );
+
+  const tooltipPosition = tooltipPoint
+    ? (() => {
+        const halfWidth = Math.min(145, Math.max(110, (graphSize.width - 24) / 2));
+        return {
+          x: Math.min(graphSize.width - halfWidth - 8, Math.max(halfWidth + 8, tooltipPoint.x)),
+          y: Math.min(graphSize.height - 16, Math.max(142, tooltipPoint.y)),
+        };
+      })()
+    : null;
 
   return (
-    <section className="thought-relation-graph" aria-label="思想关系图谱">
+    <section
+      className={`thought-relation-graph force-graph-enabled${graphPlaced ? " graph-placed" : ""}`}
+      ref={sectionRef}
+      aria-label="思想关系图谱"
+    >
       <header className="relation-graph-header">
         <div>
           <p className="section-kicker">OBSIDIAN GRAPH</p>
           <h2>思想关系图谱</h2>
         </div>
-        <p>
-          悬停 100ms 浮出节点信息；抓住一个节点时，整张网会被柔和牵动，松手后带着惯性回到思想坐标。
-        </p>
+        <p>每页是一组真实相连的思想；拖住一个节点时，整张关系网会像柔软织物一样随之移动。</p>
         <div className="relation-graph-controls" aria-label="图谱控制">
-          <button type="button" onClick={() => changeZoom(-0.12)} aria-label="缩小图谱">－</button>
+          {graphPages.length > 1 ? (
+            <div className="relation-graph-pagination" aria-label="思想群落翻页">
+              <button
+                type="button"
+                onClick={() => changeGraphPage(-1)}
+                disabled={graphPageIndex === 0}
+                aria-label="上一组思想关系"
+                title="上一组思想关系"
+              >
+                <ChevronLeft size={15} strokeWidth={1.8} />
+              </button>
+              <span>{graphPageIndex + 1} / {graphPages.length}</span>
+              <button
+                type="button"
+                onClick={() => changeGraphPage(1)}
+                disabled={graphPageIndex === graphPages.length - 1}
+                aria-label="下一组思想关系"
+                title="下一组思想关系"
+              >
+                <ChevronRight size={15} strokeWidth={1.8} />
+              </button>
+            </div>
+          ) : null}
+          <button type="button" onClick={() => changeZoom(-1)} aria-label="缩小图谱">－</button>
           <span>{Math.round(zoom * 100)}%</span>
-          <button type="button" onClick={() => changeZoom(0.12)} aria-label="放大图谱">＋</button>
+          <button type="button" onClick={() => changeZoom(1)} aria-label="放大图谱">＋</button>
           <button type="button" onClick={resetLayout}>重置视图</button>
         </div>
       </header>
 
       <div className="relation-graph-workspace">
-        <div className="relation-graph-stage">
-          <div className="relation-graph-ambient" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-            <span />
+        <div
+          className="relation-graph-stage"
+          onMouseLeave={clearGraphFocus}
+          role="img"
+          aria-label="可拖动、缩放和悬停查看信息的思想关系图谱"
+        >
+          <div className="relation-force-graph-shell relation-graph-constellation" ref={graphViewportRef}>
+            <ForceGraph2D
+              ref={forceGraphRef}
+              width={graphSize.width}
+              height={graphSize.height}
+              graphData={graphData}
+              backgroundColor="#f4f4f2"
+              nodeRelSize={1}
+              nodeVal={() => 1}
+              nodeLabel={() => ""}
+              nodeCanvasObjectMode={() => "replace"}
+              nodeCanvasObject={drawNode}
+              nodePointerAreaPaint={paintNodePointerArea}
+              linkColor={linkColor}
+              linkWidth={linkWidth}
+              linkCurvature={0}
+              minZoom={graphSize.width < 540 ? 0.28 : 0.5}
+              maxZoom={2.4}
+              warmupTicks={8}
+              cooldownTicks={320}
+              cooldownTime={9000}
+              d3AlphaDecay={0.018}
+              d3VelocityDecay={0.26}
+              enableNodeDrag
+              enablePanInteraction
+              enableZoomInteraction
+              onRenderFramePre={resetLabelLayout}
+              onNodeHover={(node) => {
+                if (node) scheduleNodePreview(node);
+                else clearNodePreview();
+              }}
+              onNodeClick={activateNode}
+              onNodeDrag={(node) => {
+                setDraggingNodeId(String(node.id ?? ""));
+                setActiveNodeId(String(node.id ?? ""));
+                clearNodePreview();
+              }}
+              onNodeDragEnd={(node) => {
+                node.fx = node.x;
+                node.fy = node.y;
+                setDraggingNodeId(null);
+              }}
+              onBackgroundClick={clearGraphFocus}
+              onZoom={({ k }) => updateZoomLabel(k)}
+              onEngineStop={() => {
+                if (initialFitDoneRef.current || graphData.nodes.length === 0) return;
+                initialFitDoneRef.current = true;
+                forceGraphRef.current?.zoomToFit(420, 72);
+              }}
+            />
           </div>
-          <svg
-            ref={svgRef}
-            className="relation-graph-canvas"
-            viewBox="0 0 960 470"
-            role="img"
-            aria-label="可拖动思想关系图谱"
-            onWheel={handleWheel}
-            onPointerMove={moveDrag}
-            onPointerUp={endDrag}
-            onPointerLeave={() => {
-              endDrag();
-              clearNodePreview();
-            }}
-          >
-            <defs>
-              <radialGradient id="graphNodeGlow" cx="50%" cy="45%" r="62%">
-                <stop offset="0%" stopColor="#fffdf7" />
-                <stop offset="100%" stopColor="#e7d8bc" />
-              </radialGradient>
-            </defs>
-            <g transform={`translate(480 235) scale(${zoom}) translate(-480 -235)`}>
-              <g className="relation-graph-links">
-                {graph.edges.map((edge, edgeIndex) => {
-                  const source = positionFor(edge.source);
-                  const target = positionFor(edge.target);
-                  const active = focusedNodeId === edge.source || focusedNodeId === edge.target;
-                  const dimmed = Boolean(focusedNodeId) && !active;
-                  const lineProps = {
-                    x1: source.x,
-                    x2: target.x,
-                    y1: source.y,
-                    y2: target.y,
-                  };
-                  return (
-                    <g key={edge.id} className="relation-graph-link">
-                      <line
-                        className={`${active ? "active" : ""}${dimmed ? " dimmed" : ""}`}
-                        pathLength={1}
-                        style={{ animationDelay: `${edgeIndex * 70}ms` }}
-                        {...lineProps}
-                      />
-                      <line
-                        className={`relation-flow-line${active ? " active" : ""}${dimmed ? " dimmed" : ""}`}
-                        pathLength={1}
-                        style={{ animationDelay: `${edgeIndex * 230}ms` }}
-                        {...lineProps}
-                      />
-                    </g>
-                  );
-                })}
-              </g>
-              <g className="relation-graph-nodes">
-                {graph.nodes.map((node, nodeIndex) => {
-                  const position = positionFor(node.id);
-                  const active = node.id === focusedNodeId;
-                  const connected = connectedNodeIds.has(node.id);
-                  const dimmed = Boolean(focusedNodeId) && !connected;
-                  const dragging = node.id === draggingNodeId;
-                  const pulsing = node.id === pulseNodeId;
-                  const radius = Math.min(21, 8.5 + node.weight * 2);
-                  const nodeMotionStyle = {
-                    "--node-enter-delay": `${Math.min(720, 80 + nodeIndex * 45)}ms`,
-                    "--node-float-duration": `${10 + (nodeIndex % 5) * 1.8}s`,
-                    "--node-breathe-duration": `${6.8 + (nodeIndex % 4) * 0.9}s`,
-                    "--node-float-x": `${((nodeIndex % 3) - 1) * 2.6}px`,
-                    "--node-float-y": `${nodeIndex % 2 === 0 ? -3.2 : 2.8}px`,
-                  } as CSSProperties;
-                  return (
-                    <g
-                      className={`thought-graph-node ${node.kind}${active ? " active" : ""}${connected ? " connected" : ""}${dimmed ? " dimmed" : ""}${dragging ? " dragging" : ""}${pulsing ? " pulsing" : ""}`}
-                      key={node.id}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`${node.label}，${graphNodeKindLabels[node.kind]}节点，可拖动`}
-                      transform={`translate(${position.x} ${position.y})`}
-                      onClick={() => {
-                        if (dragMovedRef.current) {
-                          dragMovedRef.current = false;
-                          return;
-                        }
-                        activateNode(node.id);
-                      }}
-                      onFocus={() => setHoverNodeId(node.id)}
-                      onBlur={clearNodePreview}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          activateNode(node.id);
-                        }
-                      }}
-                      onPointerEnter={() => scheduleNodePreview(node.id)}
-                      onPointerLeave={clearNodePreview}
-                      onPointerDown={(event) => beginDrag(node.id, event)}
-                    >
-                      <g className="node-body" style={nodeMotionStyle}>
-                        {pulsing ? <circle className="graph-node-ripple" r={radius + 5} /> : null}
-                        <circle className="graph-node-core" r={radius} />
-                        <text y={radius + 16}>{node.label.length > 8 ? `${node.label.slice(0, 8)}…` : node.label}</text>
-                      </g>
-                    </g>
-                  );
-                })}
-              </g>
-            </g>
-          </svg>
 
           {hoverNodeId && focusedNode && tooltipPosition ? (
             <div
               className="relation-graph-tooltip"
               role="status"
-              style={{
-                left: `${(tooltipPosition.x / 960) * 100}%`,
-                top: `${(tooltipPosition.y / 470) * 100}%`,
-              }}
+              style={{ left: tooltipPosition.x, top: tooltipPosition.y }}
             >
               <div className="relation-graph-tooltip-heading">
                 <span>{graphNodeKindLabels[focusedNode.kind]}</span>
@@ -1116,9 +1463,7 @@ function ThoughtRelationGraph({
                 </div>
               ) : null}
             </div>
-          ) : (
-            <p className="relation-graph-hint">悬停节点查看思想卡片，拖动节点感受整张网的弹性牵引。</p>
-          )}
+          ) : null}
         </div>
       </div>
     </section>
