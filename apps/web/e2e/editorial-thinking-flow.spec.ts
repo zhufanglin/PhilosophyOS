@@ -555,9 +555,17 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".archive-insights")).toContainText("诚实与德性");
   await expect(page.locator(".archive-insights")).toContainText("善意隐瞒与逃避责任之间的界限仍不清楚");
   await expect(page.locator(".archive-insights")).toContainText("1 次");
+  await expect(page.locator(".tension-insight-panel")).toContainText("反复出现的思想张力");
+  await expect(page.locator(".tension-insight-panel")).toContainText("最近证据");
+  await expect(page.locator(".tension-insight-panel")).toContainText("可继续追问");
+  await expect(page.locator(".tension-insight-panel")).toContainText("善意隐瞒与逃避责任之间的界限仍不清楚");
+  await page.locator(".tension-insight-panel button", { hasText: "筛选这条张力" }).click();
+  await expect(page.locator(".archive-filter-ledger select").nth(1)).toHaveValue("善意隐瞒与逃避责任之间的界限仍不清楚。");
+  await expect(page.locator(".timeline-card")).toHaveCount(1);
   await expect(page.locator(".philosopher-influence-archive")).toContainText("影响我的哲学家");
   await expect(page.locator(".philosopher-influence-archive")).toContainText("康德");
   await expect(page.locator(".philosopher-influence-archive")).toContainText("问题涉及诚实义务与道德原则");
+  await expectNoHorizontalOverflow(page);
   const jsonDownloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: "备份 JSON" }).click();
   const jsonDownload = await jsonDownloadPromise;

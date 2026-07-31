@@ -439,6 +439,89 @@ async def test_philosopher_influence_endpoint_returns_empty_state(
     assert response.json() == {"items": []}
 
 
+def test_tension_insight_service_aggregates_recurring_evidence_nodes(
+    tmp_path: Path,
+) -> None:
+    """Recurring tensions keep counts, recent evidence, and source topics."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    repository = ReflectionSnapshotRepository(create_snapshot_engine(snapshot_path))
+
+    def add_snapshot(
+        snapshot_id: str,
+        created_at: str,
+        topic: str,
+        title: str,
+        tensions: list[str],
+        next_question: str | None,
+    ) -> None:
+        repository.add(
+            created_at=created_at,
+            request_payload={"question": f"{topic} 的问题"},
+            response_payload={
+                "snapshot_id": snapshot_id,
+                "status": "completed",
+                "content": {
+                    "topic": topic,
+                    "title": title,
+                    "user_position": "我暂时还在两种判断之间摇摆。",
+                    "confidence": 0.7,
+                    "core_question": f"{topic} 的核心问题",
+                    "key_insights": [],
+                    "tensions": tensions,
+                    "related_philosophers": [],
+                    "change_signal": {"changed": False},
+                    "next_question": next_question,
+                    "tags": [],
+                },
+                "provider": "openai",
+                "provider_model": "test-model",
+                "pending_reason": None,
+            },
+        )
+
+    add_snapshot(
+        "snap_first_tension",
+        "2026-07-28T09:00:00+00:00",
+        "诚实与德性",
+        "诚实的边界",
+        ["善意隐瞒与逃避责任之间的界限仍不清楚。"],
+        "什么时候善意隐瞒会变成逃避责任？",
+    )
+    add_snapshot(
+        "snap_second_tension",
+        "2026-07-30T09:00:00+00:00",
+        "自由与责任",
+        "责任的边界",
+        ["善意隐瞒与逃避责任之间的界限仍不清楚。", "自由与因果限制之间的关系仍不稳定。"],
+        "限制是否必然取消自由？",
+    )
+    repository.add(
+        created_at="2026-07-31T09:00:00+00:00",
+        request_payload={"question": "待补生成"},
+        response_payload={
+            "snapshot_id": "snap_pending_tension",
+            "status": "pending",
+            "content": None,
+            "provider": "none",
+            "pending_reason": "not configured",
+        },
+    )
+
+    insights = snapshot_service.list_tension_insights(
+        PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path))
+    )
+
+    assert [item["label"] for item in insights] == [
+        "善意隐瞒与逃避责任之间的界限仍不清楚。",
+        "自由与因果限制之间的关系仍不稳定。",
+    ]
+    assert insights[0]["count"] == 2
+    assert set(insights[0]["topics"]) == {"诚实与德性", "自由与责任"}
+    assert insights[0]["evidence"][0]["snapshot_id"] == "snap_second_tension"
+    assert insights[0]["evidence"][0]["next_question"] == "限制是否必然取消自由？"
+
+
 @pytest.mark.anyio
 async def test_archive_export_restore_and_delete_are_lossless_and_atomic(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path

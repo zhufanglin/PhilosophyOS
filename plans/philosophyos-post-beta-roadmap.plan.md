@@ -45,7 +45,7 @@
 - **Acceptance:** 思想档案页能展示哲学家影响列表；每个哲学家至少显示一个证据节点和原因；点击人物可跳到西方哲学家图鉴或筛选对应档案；无数据时显示可恢复的空状态。
 - **Dependencies:** 功能 Beta 3.1, 3.3
 
-### 1.2 [ ] 思想张力聚合
+### 1.2 [x] 思想张力聚合 *(completed 2026-08-01)*
 - **Files:** `apps/api/app/services/reflection_snapshots.py`, `apps/web/src/pages/ThoughtArchivePage.tsx`, `apps/web/src/styles.css`, `apps/api/tests/`
 - **What:** 把思想快照中的 `tensions` 聚合为独立洞察，展示最常出现、最近出现和可继续追问的张力。
 - **Acceptance:** 档案页顶部显示张力分布；点击张力能筛选对应节点；每个张力保留至少一个来源节点；移动端无横向溢出。

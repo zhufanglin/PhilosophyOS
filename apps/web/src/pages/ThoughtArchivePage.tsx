@@ -93,6 +93,20 @@ type ArchiveAggregate = {
   count: number;
 };
 
+type TensionInsight = {
+  label: string;
+  count: number;
+  topics: string[];
+  evidence: Array<{
+    snapshotId: string;
+    createdAt: string;
+    title: string;
+    topic: string;
+    question: string;
+    nextQuestion: string | null;
+  }>;
+};
+
 type CompletedSnapshotItem = ReflectionSnapshotListItem & {
   snapshot: ReflectionSnapshotListItem["snapshot"] & {
     content: NonNullable<ReflectionSnapshotListItem["snapshot"]["content"]>;
@@ -308,6 +322,60 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
   };
 }
 
+function buildTensionInsights(items: CompletedSnapshotItem[], limit = 8): TensionInsight[] {
+  const tensionMap = new Map<
+    string,
+    {
+      count: number;
+      topics: Set<string>;
+      evidence: TensionInsight["evidence"];
+    }
+  >();
+
+  items.forEach((item) => {
+    const content = item.snapshot.content;
+    const seenInSnapshot = new Set<string>();
+    content.tensions
+      .map((tension) => tension.trim())
+      .filter(Boolean)
+      .forEach((tension) => {
+        const current = tensionMap.get(tension) ?? {
+          count: 0,
+          topics: new Set<string>(),
+          evidence: [],
+        };
+        if (!seenInSnapshot.has(tension)) {
+          current.count += 1;
+          seenInSnapshot.add(tension);
+        }
+        current.topics.add(content.topic);
+        current.evidence.push({
+          snapshotId: item.snapshot.snapshot_id,
+          createdAt: item.created_at,
+          title: content.title,
+          topic: content.topic,
+          question: item.question,
+          nextQuestion: content.next_question,
+        });
+        tensionMap.set(tension, current);
+      });
+  });
+
+  return [...tensionMap.entries()]
+    .map(([label, value]) => ({
+      label,
+      count: value.count,
+      topics: [...value.topics].sort((first, second) => first.localeCompare(second, "zh-CN")).slice(0, 6),
+      evidence: [...value.evidence].sort((first, second) => second.createdAt.localeCompare(first.createdAt)).slice(0, 3),
+    }))
+    .sort((first, second) => {
+      const firstLatest = first.evidence[0]?.createdAt ?? "";
+      const secondLatest = second.evidence[0]?.createdAt ?? "";
+      return second.count - first.count || secondLatest.localeCompare(firstLatest) || first.label.localeCompare(second.label, "zh-CN");
+    })
+    .slice(0, limit);
+}
+
 function graphSeed(value: string) {
   let hash = 0;
   for (let index = 0; index < value.length; index += 1) {
@@ -485,6 +553,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [highlightedSnapshotIds, setHighlightedSnapshotIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [topicFilter, setTopicFilter] = useState("");
+  const [tensionFilter, setTensionFilter] = useState("");
   const [philosopherFilter, setPhilosopherFilter] = useState(() => new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("philosopher") ?? "");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -572,6 +641,10 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     () => [...new Set(items.flatMap((item) => item.snapshot.content?.related_philosophers.map((entry) => entry.name) ?? []))].sort((a, b) => a.localeCompare(b, "zh-CN")),
     [items],
   );
+  const tensionOptions = useMemo(
+    () => [...new Set(items.flatMap((item) => item.snapshot.content?.tensions ?? []))].sort((a, b) => a.localeCompare(b, "zh-CN")),
+    [items],
+  );
   const filteredItems = useMemo(() => {
     const query = searchTerm.trim().toLocaleLowerCase("zh-CN");
     return items.filter((item) => {
@@ -580,13 +653,14 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       if (fromDate && createdDate < fromDate) return false;
       if (toDate && createdDate > toDate) return false;
       if (topicFilter && content?.topic !== topicFilter) return false;
+      if (tensionFilter && !content?.tensions.includes(tensionFilter)) return false;
       if (philosopherFilter && !content?.related_philosophers.some((entry) => entry.name === philosopherFilter)) return false;
       if (!query) return true;
       return [item.question, content?.title, content?.topic, content?.user_position, content?.core_question, ...(content?.tensions ?? []), ...(content?.tags ?? []), ...(content?.related_philosophers.map((entry) => entry.name) ?? [])]
         .filter(Boolean).join(" " ).toLocaleLowerCase("zh-CN").includes(query);
     });
-  }, [fromDate, items, philosopherFilter, searchTerm, toDate, topicFilter]);
-  const hasFilters = Boolean(searchTerm || topicFilter || philosopherFilter || fromDate || toDate);
+  }, [fromDate, items, philosopherFilter, searchTerm, tensionFilter, toDate, topicFilter]);
+  const hasFilters = Boolean(searchTerm || topicFilter || tensionFilter || philosopherFilter || fromDate || toDate);
   const completedCount = useMemo(
     () => filteredItems.filter((item) => item.snapshot.status === "completed").length,
     [filteredItems],
@@ -609,6 +683,10 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     () => collectAggregates(completedContents.flatMap((content) => content.tensions)),
     [completedContents],
   );
+  const tensionInsights = useMemo(
+    () => buildTensionInsights(completedSnapshotItems),
+    [completedSnapshotItems],
+  );
   const changedCount = useMemo(
     () => completedContents.filter((content) => content.change_signal.changed).length,
     [completedContents],
@@ -618,6 +696,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   function clearFilters() {
     setSearchTerm("");
     setTopicFilter("");
+    setTensionFilter("");
     setPhilosopherFilter("");
     setFromDate("");
     setToDate("");
@@ -785,6 +864,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
             <div><Search size={16} /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="主题、立场、张力、哲学家或标签" /></div>
           </label>
           <label><span>主题</span><select value={topicFilter} onChange={(event) => setTopicFilter(event.target.value)}><option value="">全部主题</option>{topicOptions.map((topic) => <option key={topic} value={topic}>{topic}</option>)}</select></label>
+          <label><span>张力</span><select value={tensionFilter} onChange={(event) => setTensionFilter(event.target.value)}><option value="">全部张力</option>{tensionOptions.map((tension) => <option key={tension} value={tension}>{tension}</option>)}</select></label>
           <label><span>哲学家</span><select value={philosopherFilter} onChange={(event) => setPhilosopherFilter(event.target.value)}><option value="">全部哲学家</option>{philosopherOptions.map((name) => <option key={name} value={name}>{name}</option>)}</select></label>
           <label><span>开始日期</span><input type="date" value={fromDate} max={toDate || undefined} onChange={(event) => setFromDate(event.target.value)} /></label>
           <label><span>结束日期</span><input type="date" value={toDate} min={fromDate || undefined} onChange={(event) => setToDate(event.target.value)} /></label>
@@ -854,6 +934,65 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
             <h2>{changedCount} 次</h2>
             <p>已识别的立场移动会在节点详情中保留证据。</p>
           </article>
+        </section>
+      ) : null}
+
+      {!loading && !error && completedSnapshotItems.length > 0 ? (
+        <section className="tension-insight-panel" aria-label="思想张力聚合">
+          <header className="tension-insight-header">
+            <div>
+              <p className="section-kicker">TENSION INDEX</p>
+              <h2>反复出现的思想张力</h2>
+            </div>
+            <p>
+              张力不是结论失败，而是思想还在生长的地方。这里会把反复出现的未解问题保留来源，方便你回到具体节点继续追问。
+            </p>
+          </header>
+          {tensionInsights.length > 0 ? (
+            <div className="tension-insight-grid">
+              {tensionInsights.map((insight, index) => {
+                const latestEvidence = insight.evidence[0];
+                return (
+                  <article key={insight.label}>
+                    <div className="tension-insight-rank">
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <strong>{insight.count} 次</strong>
+                    </div>
+                    <div className="tension-insight-copy">
+                      <h3>{insight.label}</h3>
+                      <div>
+                        {insight.topics.slice(0, 4).map((topic) => (
+                          <small key={topic}>{topic}</small>
+                        ))}
+                      </div>
+                      {latestEvidence ? (
+                        <p>
+                          最近证据：《{latestEvidence.title}》 · {formatSnapshotTime(latestEvidence.createdAt)}
+                        </p>
+                      ) : null}
+                      {latestEvidence?.nextQuestion ? (
+                        <em>可继续追问：{latestEvidence.nextQuestion}</em>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTensionFilter(insight.label);
+                        focusTimelineSnapshots(insight.evidence.map((evidence) => evidence.snapshotId));
+                      }}
+                    >
+                      筛选这条张力
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="tension-insight-empty">
+              <h3>还没有可聚合的思想张力</h3>
+              <p>当思想节点里出现未解决的问题或概念拉扯时，它们会在这里成为可追踪的线索。</p>
+            </div>
+          )}
         </section>
       ) : null}
 

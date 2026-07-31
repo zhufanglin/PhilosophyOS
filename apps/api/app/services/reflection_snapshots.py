@@ -338,6 +338,90 @@ def list_philosopher_influences(
     return ReflectionPhilosopherInfluenceResponse(items=influences[:limit])
 
 
+def list_tension_insights(
+    current_settings: PhilosophyOSSettings = settings,
+    *,
+    limit: int = 8,
+) -> list[dict[str, object]]:
+    """Aggregate recurring unresolved tensions across completed snapshots."""
+
+    tension_map: dict[str, dict[str, object]] = {}
+    records = snapshot_repository(current_settings).list_all()
+    for record in records:
+        try:
+            response = ReflectionSnapshotResponse.model_validate(record.response_payload)
+        except (TypeError, ValueError):
+            continue
+        content = response.content
+        if response.status != SnapshotStatus.COMPLETED or content is None:
+            continue
+
+        seen_in_snapshot: set[str] = set()
+        for tension in content.tensions:
+            label = tension.strip()
+            if not label:
+                continue
+            entry = tension_map.setdefault(
+                label,
+                {
+                    "label": label,
+                    "count": 0,
+                    "topics": set(),
+                    "evidence": [],
+                    "latest_created_at": record.created_at,
+                },
+            )
+            if label not in seen_in_snapshot:
+                entry["count"] = int(entry["count"]) + 1
+                seen_in_snapshot.add(label)
+            topics = entry["topics"]
+            if isinstance(topics, set):
+                topics.add(content.topic)
+            evidence = entry["evidence"]
+            if isinstance(evidence, list):
+                evidence.append(
+                    {
+                        "snapshot_id": response.snapshot_id,
+                        "created_at": record.created_at,
+                        "title": content.title,
+                        "topic": content.topic,
+                        "question": record.question,
+                        "next_question": content.next_question,
+                    }
+                )
+            if str(entry["latest_created_at"]) < record.created_at:
+                entry["latest_created_at"] = record.created_at
+
+    insights = []
+    for entry in tension_map.values():
+        evidence_items = sorted(
+            [
+                item
+                for item in entry["evidence"]
+                if isinstance(item, dict) and isinstance(item.get("created_at"), str)
+            ],
+            key=lambda item: str(item["created_at"]),
+            reverse=True,
+        )
+        insights.append(
+            {
+                "label": entry["label"],
+                "count": entry["count"],
+                "topics": sorted(
+                    [topic for topic in entry["topics"] if isinstance(topic, str)],
+                    key=lambda topic: topic.casefold(),
+                )[:6],
+                "latest_created_at": entry["latest_created_at"],
+                "evidence": evidence_items[:3],
+            }
+        )
+
+    insights.sort(key=lambda item: str(item["label"]).casefold())
+    insights.sort(key=lambda item: str(item["latest_created_at"]), reverse=True)
+    insights.sort(key=lambda item: int(item["count"]), reverse=True)
+    return insights[:limit]
+
+
 def update_reflection_snapshot_decision(
     snapshot_id: str,
     decision: SnapshotDecision,
