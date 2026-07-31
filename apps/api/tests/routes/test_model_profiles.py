@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 from pydantic import SecretStr
 
 from app.main import app
 from app.routes import model_profiles as model_profile_routes
-from app.routes.model_profiles import build_connection_test_response, build_model_profiles_response
-from app.settings import PhilosophyOSSettings
+from app.routes.model_profiles import (
+    build_connection_test_response,
+    build_model_profiles_response,
+    safe_base_url,
+)
+from app.settings import PhilosophyOSSettings, settings
+from app.storage.model_profile_repository import restore_settings
 
 
 @pytest.mark.anyio
@@ -47,8 +54,18 @@ def test_model_profile_status_marks_configured_keys_without_exposing_values() ->
     assert profiles["gpt"]["configured"] is True
     assert profiles["deepseek"]["configured"] is False
     assert profiles["gpt"]["base_url_host"] == "relay.example.com"
+    assert profiles["gpt"]["base_url"] == "https://relay.example.com/v1"
     assert "free-secret" not in str(payload)
     assert "gpt-secret" not in str(payload)
+
+
+def test_safe_base_url_removes_credentials_query_and_fragment() -> None:
+    """Readable endpoint metadata cannot leak URL-embedded credentials."""
+
+    assert (
+        safe_base_url("https://user:secret@relay.example.com/v1?token=hidden#debug")
+        == "https://relay.example.com/v1"
+    )
 
 
 def test_openapi_exposes_model_profiles_resource() -> None:
@@ -146,5 +163,92 @@ async def test_connection_test_endpoint_rejects_unknown_profile() -> None:
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/api/v1/model-profiles/unknown/test-connection")
+
+    assert response.status_code == 422
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("profile", "model", "base_url", "api_style", "key_attribute"),
+    [
+        (
+            "free",
+            "doubao-seed-2-0-lite-260428",
+            "https://ark.cn-beijing.volces.com/api/v3/",
+            "responses",
+            "free_api_key",
+        ),
+        (
+            "gpt",
+            "gpt-5.6",
+            "https://api.openai.com/v1/",
+            "responses",
+            "gpt_api_key",
+        ),
+        (
+            "deepseek",
+            "deepseek-v4-pro",
+            "https://api.deepseek.com/",
+            "chat_completions",
+            "deepseek_api_key",
+        ),
+    ],
+)
+async def test_model_profile_update_persists_key_without_echoing_it(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    profile: str,
+    model: str,
+    base_url: str,
+    api_style: str,
+    key_attribute: str,
+) -> None:
+    """Browser updates survive a settings reload while all responses stay key-free."""
+
+    snapshot_path = str(tmp_path / "thought-snapshots.jsonl")
+    monkeypatch.setattr(settings, "thought_snapshots_path", snapshot_path)
+    secret = f"{profile}-local-test-secret"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.patch(
+            f"/api/v1/model-profiles/{profile}",
+            json={
+                "api_key": secret,
+                "model": model,
+                "base_url": base_url,
+                "api_style": api_style,
+                "selected": True,
+            },
+        )
+
+    assert response.status_code == 200
+    assert secret not in response.text
+    assert "api_key" not in response.text.lower()
+    assert response.json()["selected_profile"] == profile
+
+    restored = PhilosophyOSSettings(thought_snapshots_path=snapshot_path)
+    restore_settings(restored)
+    assert restored.model_profile == profile
+    selected = restored.model_copy(update={"model_profile": profile})
+    assert selected.selected_model == model
+    assert selected.selected_base_url == base_url.rstrip("/")
+    restored_key = getattr(restored, key_attribute)
+    assert restored_key is not None
+    assert restored_key.get_secret_value() == secret
+
+
+@pytest.mark.anyio
+async def test_model_profile_update_rejects_invalid_base_url() -> None:
+    """A malformed provider address returns an actionable validation response."""
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.patch(
+            "/api/v1/model-profiles/gpt",
+            json={
+                "model": "gpt-5.6",
+                "base_url": "not-a-url",
+                "api_style": "responses",
+            },
+        )
 
     assert response.status_code == 422

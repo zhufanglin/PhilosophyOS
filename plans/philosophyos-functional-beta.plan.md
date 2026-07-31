@@ -93,7 +93,7 @@ flowchart LR
 | 输入 Base URL、模型和 Key | 本机后端持久化 | 明文不回传 |
 | 测试连接 | 发起最小请求 | 显示成功、延迟或可行动错误 |
 
-### 2.1 [ ] 增加安全的本地模型设置接口
+### 2.1 [x] 增加安全的本地模型设置接口 *(completed 2026-07-31)*
 - **Files:** `apps/api/app/routes/model_profiles.py`, `apps/api/app/settings.py`, `apps/api/app/services/`, `apps/api/tests/`
 - **What:** 增加读取配置状态与更新本地配置的 API；敏感字段只写不读，日志必须脱敏，并对 Base URL、模型名和 API 风格做校验。
 - **Acceptance:** 三类 profile 均可保存和重启恢复；任何 GET 响应均不包含完整 Key；错误地址返回明确错误。

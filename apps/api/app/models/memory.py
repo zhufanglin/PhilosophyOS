@@ -81,6 +81,22 @@ class DialogueSessionMessage(Base):
     session: Mapped[DialogueSession] = relationship(back_populates="messages")
 
 
+class ModelProfileConfig(Base):
+    """Private, local configuration for one selectable model profile."""
+
+    __tablename__ = "model_profile_configs"
+
+    profile: Mapped[str] = mapped_column(String(40), primary_key=True)
+    api_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    model: Mapped[str] = mapped_column(String(200))
+    base_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    api_style: Mapped[str] = mapped_column(String(40))
+    selected: Mapped[bool] = mapped_column(Boolean, default=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+
+
 class AttributionSubject(StrEnum):
     """Who owns the proposition expressed in one attributed claim."""
 

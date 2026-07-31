@@ -8,7 +8,7 @@ from typing import cast
 from sqlalchemy import Engine, Table, create_engine
 
 from app.models.knowledge import Base
-from app.models.memory import DialogueSession, DialogueSessionMessage
+from app.models.memory import DialogueSession, DialogueSessionMessage, ModelProfileConfig
 from app.models.reflection import ReflectionSnapshotRecord
 
 
@@ -28,6 +28,7 @@ def create_snapshot_engine(snapshot_log_path: str | Path) -> Engine:
         cast(Table, ReflectionSnapshotRecord.__table__),
         cast(Table, DialogueSession.__table__),
         cast(Table, DialogueSessionMessage.__table__),
+        cast(Table, ModelProfileConfig.__table__),
     ]
     Base.metadata.create_all(engine, tables=local_tables)
     return engine

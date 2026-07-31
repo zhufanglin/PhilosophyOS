@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 from fastapi import APIRouter
 
@@ -13,8 +13,10 @@ from app.schemas.model_profiles import (
     ModelProfileConnectionTestResponse,
     ModelProfilesResponse,
     ModelProfileStatus,
+    ModelProfileUpdateRequest,
 )
 from app.settings import ModelProfile, PhilosophyOSSettings, settings
+from app.storage.model_profile_repository import save_profile
 
 router = APIRouter(prefix="/api/v1", tags=["model-profiles"])
 
@@ -25,7 +27,23 @@ def base_url_host(base_url: str | None) -> str | None:
     if base_url is None:
         return None
     parsed = urlparse(base_url)
-    return parsed.netloc or parsed.path or None
+    if parsed.hostname is None:
+        return parsed.path or None
+    port = f":{parsed.port}" if parsed.port is not None else ""
+    return f"{parsed.hostname}{port}"
+
+
+def safe_base_url(base_url: str | None) -> str | None:
+    """Keep a useful endpoint path while removing credentials, query, and fragment."""
+
+    if base_url is None:
+        return None
+    parsed = urlparse(base_url)
+    hostname = parsed.hostname
+    if not hostname:
+        return None
+    port = f":{parsed.port}" if parsed.port is not None else ""
+    return urlunparse((parsed.scheme, f"{hostname}{port}", parsed.path, "", "", ""))
 
 
 def build_model_profiles_response(
@@ -38,10 +56,11 @@ def build_model_profiles_response(
         profiles=[
             ModelProfileStatus(
                 profile="free",
-                label="免费",
+                label="豆包",
                 configured=current_settings.free_api_key is not None,
                 model=current_settings.free_model,
                 base_url_host=base_url_host(current_settings.free_base_url),
+                base_url=safe_base_url(current_settings.free_base_url),
                 api_style=current_settings.free_api_style,
             ),
             ModelProfileStatus(
@@ -53,6 +72,9 @@ def build_model_profiles_response(
                 base_url_host=base_url_host(
                     current_settings.gpt_base_url or current_settings.openai_base_url
                 ),
+                base_url=safe_base_url(
+                    current_settings.gpt_base_url or current_settings.openai_base_url
+                ),
                 api_style=current_settings.gpt_api_style or current_settings.openai_api_style,
             ),
             ModelProfileStatus(
@@ -61,6 +83,7 @@ def build_model_profiles_response(
                 configured=current_settings.deepseek_api_key is not None,
                 model=current_settings.deepseek_model,
                 base_url_host=base_url_host(current_settings.deepseek_base_url),
+                base_url=safe_base_url(current_settings.deepseek_base_url),
                 api_style=current_settings.deepseek_api_style,
             ),
         ],
@@ -75,6 +98,47 @@ def build_model_profiles_response(
 async def list_model_profiles() -> ModelProfilesResponse:
     """Return key-free backend model profile status for the frontend."""
 
+    return build_model_profiles_response(settings)
+
+
+@router.patch(
+    "/model-profiles/{profile}",
+    response_model=ModelProfilesResponse,
+    summary="Save one local model profile without returning its key",
+)
+async def update_model_profile(
+    profile: ModelProfile,
+    request: ModelProfileUpdateRequest,
+) -> ModelProfilesResponse:
+    """Persist browser-provided settings in the local SQLite store."""
+
+    selected = settings.model_copy(update={"model_profile": profile})
+    current_key = (
+        selected.selected_api_key.get_secret_value()
+        if selected.selected_api_key
+        else None
+    )
+    api_key = request.api_key if request.api_key is not None and request.api_key else current_key
+    updates = {
+        f"{profile}_api_key": api_key,
+        f"{profile}_model": request.model,
+        f"{profile}_base_url": request.base_url,
+        f"{profile}_api_style": request.api_style,
+    }
+    for name, value in updates.items():
+        setattr(settings, name, value)
+    if request.selected:
+        settings.model_profile = profile
+
+    save_profile(
+        settings,
+        profile,
+        api_key=api_key,
+        model=request.model,
+        base_url=request.base_url,
+        api_style=request.api_style,
+        selected=request.selected,
+    )
     return build_model_profiles_response(settings)
 
 

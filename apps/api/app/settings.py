@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 from typing import Literal
 
-from pydantic import BaseModel, Field, SecretStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
 AIProviderName = Literal["auto", "openai", "deterministic"]
 OpenAIAPIStyle = Literal["responses", "chat_completions"]
@@ -17,6 +17,8 @@ ModelProfile = Literal["free", "gpt", "deepseek"]
 
 class PhilosophyOSSettings(BaseModel):
     """Small typed settings object backed by environment variables."""
+
+    model_config = ConfigDict(validate_assignment=True)
 
     openai_api_key: SecretStr | None = None
     openai_model: str = Field(default="gpt-5.6", min_length=1)
@@ -172,3 +174,12 @@ class PhilosophyOSSettings(BaseModel):
 
 
 settings = PhilosophyOSSettings.from_env()
+
+# SQLite is the durable local store; environment variables remain the first-run defaults.
+try:
+    from app.storage.model_profile_repository import restore_settings
+
+    restore_settings(settings)
+except Exception:
+    # Startup must remain usable even if a previous local store is unavailable.
+    pass
