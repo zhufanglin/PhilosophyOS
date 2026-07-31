@@ -4196,6 +4196,7 @@ h1 {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 12px;
+  scroll-margin-top: 96px;
 }
 
 .timeline-rail {
@@ -4229,6 +4230,7 @@ h1 {
 }
 
 .timeline-card-body {
+  position: relative;
   padding: 22px;
   border: 1px solid var(--rule);
   border-radius: 18px;
@@ -4236,6 +4238,35 @@ h1 {
     linear-gradient(135deg, rgb(255 255 255 / 58%), rgb(241 232 214 / 46%)),
     var(--paper);
   box-shadow: 0 14px 38px rgb(43 34 24 / 7%);
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.timeline-card.graph-focused .timeline-card-body {
+  border-color: rgb(47 107 77 / 42%);
+  box-shadow:
+    0 18px 42px rgb(43 34 24 / 9%),
+    0 0 0 4px rgb(47 107 77 / 10%);
+  transform: translateY(-2px);
+}
+
+.timeline-card.graph-focused .timeline-rail span {
+  background: var(--gold);
+  box-shadow:
+    0 0 0 1px rgb(43 64 49 / 22%),
+    0 0 0 7px rgb(177 138 70 / 14%);
+}
+
+.timeline-card.graph-focused .timeline-card-body::after {
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgb(177 138 70 / 28%);
+  border-radius: inherit;
+  content: "";
+  animation: timeline-graph-focus 1100ms ease-out both;
+  pointer-events: none;
 }
 
 .timeline-meta,
@@ -4550,6 +4581,18 @@ h1 {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes timeline-graph-focus {
+  from {
+    opacity: 0.72;
+    transform: scale(0.992);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.018);
   }
 }
 

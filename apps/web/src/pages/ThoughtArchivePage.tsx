@@ -287,6 +287,9 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedSnapshotId, setExpandedSnapshotId] = useState<string | null>(null);
+  const [highlightedSnapshotIds, setHighlightedSnapshotIds] = useState<string[]>([]);
+  const timelineCardRefs = useRef<Record<string, HTMLElement | null>>({});
+  const highlightTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -318,6 +321,14 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     void loadSnapshots();
     return () => controller.abort();
   }, [apiBaseUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current) {
+        window.clearTimeout(highlightTimerRef.current);
+      }
+    };
+  }, []);
 
   const completedCount = useMemo(
     () => items.filter((item) => item.snapshot.status === "completed").length,
@@ -355,6 +366,33 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
           : item,
       ),
     );
+  }
+
+  function focusTimelineSnapshots(snapshotIds: string[]) {
+    const uniqueSnapshotIds = [...new Set(snapshotIds)].filter(Boolean);
+    const firstSnapshotId = uniqueSnapshotIds[0];
+    if (!firstSnapshotId) return;
+
+    setExpandedSnapshotId(firstSnapshotId);
+    setHighlightedSnapshotIds(uniqueSnapshotIds);
+
+    if (highlightTimerRef.current) {
+      window.clearTimeout(highlightTimerRef.current);
+    }
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        timelineCardRefs.current[firstSnapshotId]?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      });
+    });
+
+    highlightTimerRef.current = window.setTimeout(() => {
+      setHighlightedSnapshotIds([]);
+      highlightTimerRef.current = null;
+    }, 2600);
   }
 
   return (
@@ -434,7 +472,11 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       ) : null}
 
       {!loading && !error && graphData.nodes.length > 0 ? (
-        <ThoughtRelationGraph items={completedSnapshotItems} graph={graphData} />
+        <ThoughtRelationGraph
+          graph={graphData}
+          items={completedSnapshotItems}
+          onNavigateSnapshots={focusTimelineSnapshots}
+        />
       ) : null}
 
       {!loading && !error && items.length > 0 ? (
@@ -443,9 +485,13 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
             <TimelineCard
               apiBaseUrl={apiBaseUrl}
               expanded={expandedSnapshotId === item.snapshot.snapshot_id}
+              highlighted={highlightedSnapshotIds.includes(item.snapshot.snapshot_id)}
               item={item}
               key={item.snapshot.snapshot_id}
               onReviewSaved={updateSnapshotReview}
+              registerCard={(node) => {
+                timelineCardRefs.current[item.snapshot.snapshot_id] = node;
+              }}
               onToggle={() =>
                 setExpandedSnapshotId((current) =>
                   current === item.snapshot.snapshot_id ? null : item.snapshot.snapshot_id,
@@ -462,11 +508,13 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
 type TimelineCardProps = {
   item: ReflectionSnapshotListItem;
   expanded: boolean;
+  highlighted: boolean;
   apiBaseUrl: string;
   onReviewSaved: (
     snapshotId: string,
     review: SnapshotReviewResponse["snapshot_review"],
   ) => void;
+  registerCard: (node: HTMLElement | null) => void;
   onToggle: () => void;
 };
 
@@ -606,9 +654,11 @@ function ThoughtEvolutionMap({ items }: { items: CompletedSnapshotItem[] }) {
 function ThoughtRelationGraph({
   graph,
   items,
+  onNavigateSnapshots,
 }: {
   graph: ReturnType<typeof buildThoughtGraph>;
   items: CompletedSnapshotItem[];
+  onNavigateSnapshots: (snapshotIds: string[]) => void;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [positions, setPositions] = useState<Record<string, GraphPosition>>({});
@@ -623,6 +673,7 @@ function ThoughtRelationGraph({
   const springFrameRef = useRef<number | null>(null);
   const hoverTimerRef = useRef<number | null>(null);
   const pulseTimerRef = useRef<number | null>(null);
+  const dragMovedRef = useRef(false);
   const lastDragDeltaRef = useRef({ x: 0, y: 0 });
 
   const initialPositions = useMemo(() => buildInitialGraphPositions(graph.nodes), [graph.nodes]);
@@ -673,19 +724,7 @@ function ThoughtRelationGraph({
   }, [focusedNodeId, graph.edges]);
   const selectedSnapshots = useMemo(() => {
     if (!focusedNode) return [];
-    if (focusedNode.kind === "snapshot") {
-      const snapshotId = focusedNode.id.replace("snapshot:", "");
-      return items.filter((item) => item.snapshot.snapshot_id === snapshotId);
-    }
-    return items.filter((item) => {
-      const content = item.snapshot.content;
-      if (focusedNode.kind === "topic") return content.topic === focusedNode.label;
-      if (focusedNode.kind === "tension") return content.tensions.includes(focusedNode.label);
-      if (focusedNode.kind === "philosopher") {
-        return content.related_philosophers.some((philosopher) => philosopher.name === focusedNode.label);
-      }
-      return content.tags.includes(focusedNode.label);
-    });
+    return snapshotsForNode(focusedNode.id);
   }, [focusedNode, items]);
 
   const focusedPosition = focusedNodeId ? positionFor(focusedNodeId) : null;
@@ -725,6 +764,7 @@ function ThoughtRelationGraph({
       offsetY: point.y - position.y,
     };
     velocityRef.current = {};
+    dragMovedRef.current = false;
     lastDragDeltaRef.current = { x: 0, y: 0 };
     setActiveNodeId(nodeId);
     setHoverNodeId(nodeId);
@@ -736,11 +776,31 @@ function ThoughtRelationGraph({
     setActiveNodeId(nodeId);
     setHoverNodeId(nodeId);
     setPulseNodeId(nodeId);
+    const relatedSnapshotIds = snapshotsForNode(nodeId).map((item) => item.snapshot.snapshot_id);
+    onNavigateSnapshots(relatedSnapshotIds);
     if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
     pulseTimerRef.current = window.setTimeout(() => {
       setPulseNodeId(null);
       pulseTimerRef.current = null;
     }, 760);
+  }
+
+  function snapshotsForNode(nodeId: string) {
+    const node = graph.nodes.find((candidate) => candidate.id === nodeId);
+    if (!node) return [];
+    if (node.kind === "snapshot") {
+      const snapshotId = node.id.replace("snapshot:", "");
+      return items.filter((item) => item.snapshot.snapshot_id === snapshotId);
+    }
+    return items.filter((item) => {
+      const content = item.snapshot.content;
+      if (node.kind === "topic") return content.topic === node.label;
+      if (node.kind === "tension") return content.tensions.includes(node.label);
+      if (node.kind === "philosopher") {
+        return content.related_philosophers.some((philosopher) => philosopher.name === node.label);
+      }
+      return content.tags.includes(node.label);
+    });
   }
 
   function scheduleNodePreview(nodeId: string) {
@@ -786,6 +846,9 @@ function ThoughtRelationGraph({
       x: draggedTarget.x - draggedBase.x,
       y: draggedTarget.y - draggedBase.y,
     };
+    if (Math.hypot(delta.x, delta.y) > 3) {
+      dragMovedRef.current = true;
+    }
     const previousDelta = lastDragDeltaRef.current;
     lastDragDeltaRef.current = delta;
     const nextPositions: Record<string, GraphPosition> = {};
@@ -986,7 +1049,13 @@ function ThoughtRelationGraph({
                       tabIndex={0}
                       aria-label={`${node.label}，${graphNodeKindLabels[node.kind]}节点，可拖动`}
                       transform={`translate(${position.x} ${position.y})`}
-                      onClick={() => activateNode(node.id)}
+                      onClick={() => {
+                        if (dragMovedRef.current) {
+                          dragMovedRef.current = false;
+                          return;
+                        }
+                        activateNode(node.id);
+                      }}
                       onFocus={() => setHoverNodeId(node.id)}
                       onBlur={clearNodePreview}
                       onKeyDown={(event) => {
@@ -1043,10 +1112,21 @@ function ThoughtRelationGraph({
   );
 }
 
-function TimelineCard({ item, expanded, apiBaseUrl, onReviewSaved, onToggle }: TimelineCardProps) {
+function TimelineCard({
+  item,
+  expanded,
+  highlighted,
+  apiBaseUrl,
+  onReviewSaved,
+  registerCard,
+  onToggle,
+}: TimelineCardProps) {
   const content = item.snapshot.content;
   return (
-    <article className={`timeline-card ${item.snapshot.status} ${expanded ? "expanded" : ""}`}>
+    <article
+      className={`timeline-card ${item.snapshot.status} ${expanded ? "expanded" : ""}${highlighted ? " graph-focused" : ""}`}
+      ref={registerCard}
+    >
       <div className="timeline-rail" aria-hidden="true">
         <span />
       </div>
