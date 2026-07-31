@@ -189,6 +189,32 @@ class ReflectionSnapshotListResponse(BaseModel):
     items: list[ReflectionSnapshotListItem]
 
 
+class ReflectionPhilosopherInfluenceEvidence(BaseModel):
+    """One thought node that explains why a philosopher is considered influential."""
+
+    snapshot_id: str
+    created_at: str
+    title: str
+    topic: str
+    question: str
+    reason: str
+
+
+class ReflectionPhilosopherInfluence(BaseModel):
+    """Aggregated philosopher influence across completed thought snapshots."""
+
+    name: str
+    count: int = Field(ge=1)
+    topics: list[str] = Field(default_factory=list)
+    evidence: list[ReflectionPhilosopherInfluenceEvidence] = Field(default_factory=list)
+
+
+class ReflectionPhilosopherInfluenceResponse(BaseModel):
+    """Philosophers that repeatedly appear in the user's thought archive."""
+
+    items: list[ReflectionPhilosopherInfluence]
+
+
 class ReflectionArchiveRecord(BaseModel):
     """One lossless archive record including its immutable source request."""
 

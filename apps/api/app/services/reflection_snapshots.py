@@ -17,6 +17,9 @@ from app.schemas.reflection_snapshots import (
     ReflectionArchiveImportResponse,
     ReflectionArchivePackage,
     ReflectionArchiveRecord,
+    ReflectionPhilosopherInfluence,
+    ReflectionPhilosopherInfluenceEvidence,
+    ReflectionPhilosopherInfluenceResponse,
     ReflectionSnapshotContent,
     ReflectionSnapshotCorrectionRequest,
     ReflectionSnapshotCorrectionResponse,
@@ -247,6 +250,92 @@ def list_reflection_snapshots(
             continue
 
     return ReflectionSnapshotListResponse(items=items)
+
+
+def list_philosopher_influences(
+    current_settings: PhilosophyOSSettings = settings,
+    *,
+    limit: int = 8,
+) -> ReflectionPhilosopherInfluenceResponse:
+    """Aggregate completed snapshots into a philosopher influence view."""
+
+    influence_map: dict[str, dict[str, object]] = {}
+    records = snapshot_repository(current_settings).list_all()
+    for record in records:
+        try:
+            response = ReflectionSnapshotResponse.model_validate(record.response_payload)
+        except (TypeError, ValueError):
+            continue
+        content = response.content
+        if response.status != SnapshotStatus.COMPLETED or content is None:
+            continue
+
+        seen_in_snapshot: set[str] = set()
+        for philosopher in content.related_philosophers:
+            name = philosopher.name.strip()
+            reason = philosopher.reason.strip()
+            if not name or not reason:
+                continue
+            entry = influence_map.setdefault(
+                name,
+                {
+                    "count": 0,
+                    "topics": set(),
+                    "evidence": [],
+                    "latest_created_at": record.created_at,
+                },
+            )
+            if name not in seen_in_snapshot:
+                entry["count"] = int(entry["count"]) + 1
+                seen_in_snapshot.add(name)
+            topics = entry["topics"]
+            if isinstance(topics, set):
+                topics.add(content.topic)
+            evidence = entry["evidence"]
+            if isinstance(evidence, list):
+                evidence.append(
+                    ReflectionPhilosopherInfluenceEvidence(
+                        snapshot_id=response.snapshot_id,
+                        created_at=record.created_at,
+                        title=content.title,
+                        topic=content.topic,
+                        question=record.question,
+                        reason=reason,
+                    )
+                )
+            if str(entry["latest_created_at"]) < record.created_at:
+                entry["latest_created_at"] = record.created_at
+
+    influences = [
+        ReflectionPhilosopherInfluence(
+            name=name,
+            count=int(entry["count"]),
+            topics=sorted(
+                [topic for topic in entry["topics"] if isinstance(topic, str)],
+                key=lambda topic: topic.casefold(),
+            )[:6],
+            evidence=sorted(
+                [
+                    item
+                    for item in entry["evidence"]
+                    if isinstance(item, ReflectionPhilosopherInfluenceEvidence)
+                ],
+                key=lambda item: item.created_at,
+                reverse=True,
+            )[:3],
+        )
+        for name, entry in influence_map.items()
+    ]
+    influences.sort(key=lambda item: item.name.casefold())
+    influences.sort(
+        key=lambda item: max(
+            (evidence.created_at for evidence in item.evidence),
+            default="",
+        ),
+        reverse=True,
+    )
+    influences.sort(key=lambda item: item.count, reverse=True)
+    return ReflectionPhilosopherInfluenceResponse(items=influences[:limit])
 
 
 def update_reflection_snapshot_decision(

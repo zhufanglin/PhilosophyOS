@@ -230,6 +230,33 @@ async function mockArchiveExports(page: Page) {
   });
 }
 
+async function mockPhilosopherInfluences(page: Page) {
+  await page.route(`${apiBaseUrl}/api/v1/reflection-archive/philosopher-influences**`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        items: [
+          {
+            name: "康德",
+            count: 1,
+            topics: ["诚实与德性"],
+            evidence: [
+              {
+                snapshot_id: "snap_timeline_e2e",
+                created_at: "2026-07-28T09:00:00+00:00",
+                title: "诚实是在伤害与责任之间保持清醒",
+                topic: "诚实与德性",
+                question: "诚实是否总是值得坚持？",
+                reason: "问题涉及诚实义务与道德原则。",
+              },
+            ],
+          },
+        ],
+      }),
+    });
+  });
+}
+
 async function mockDialogueSessions(page: Page) {
   await page.route(`${apiBaseUrl}/api/v1/dialogue-sessions**`, async (route) => {
     await route.fulfill({
@@ -394,6 +421,7 @@ test.beforeEach(async ({ page }) => {
   await mockObsidianDraft(page);
   await mockReflectionSnapshot(page);
   await mockArchiveExports(page);
+  await mockPhilosopherInfluences(page);
   await mockDialogueSessions(page);
   await mockDialogueTurn(page);
 });
@@ -527,6 +555,9 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".archive-insights")).toContainText("诚实与德性");
   await expect(page.locator(".archive-insights")).toContainText("善意隐瞒与逃避责任之间的界限仍不清楚");
   await expect(page.locator(".archive-insights")).toContainText("1 次");
+  await expect(page.locator(".philosopher-influence-archive")).toContainText("影响我的哲学家");
+  await expect(page.locator(".philosopher-influence-archive")).toContainText("康德");
+  await expect(page.locator(".philosopher-influence-archive")).toContainText("问题涉及诚实义务与道德原则");
   const jsonDownloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: "备份 JSON" }).click();
   const jsonDownload = await jsonDownloadPromise;

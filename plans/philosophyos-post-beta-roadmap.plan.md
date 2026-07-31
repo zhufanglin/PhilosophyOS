@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | draft |
+| Status | in-progress |
 | Created | 2026-08-01 |
 | Ticket | N/A |
 | Branch | main |
@@ -39,7 +39,7 @@
 
 **Success criteria:** 用户能在思想档案中看到影响自己的哲学家、常见思想张力、未完成追问和一份可校对的周报草稿；所有结论都有来源节点和原因。
 
-### 1.1 [ ] 哲学家影响轨迹
+### 1.1 [x] 哲学家影响轨迹 *(completed 2026-08-01)*
 - **Files:** `apps/api/app/routes/reflection_snapshots.py`, `apps/api/app/services/reflection_snapshots.py`, `apps/web/src/pages/ThoughtArchivePage.tsx`, `apps/web/src/styles.css`, `apps/api/tests/`
 - **What:** 聚合思想快照中的 `related_philosophers`，生成“影响我的哲学家”视图：出现频率、相关主题、关联节点、影响原因和进入图鉴/档案的跳转。
 - **Acceptance:** 思想档案页能展示哲学家影响列表；每个哲学家至少显示一个证据节点和原因；点击人物可跳到西方哲学家图鉴或筛选对应档案；无数据时显示可恢复的空状态。

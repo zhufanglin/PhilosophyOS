@@ -227,6 +227,7 @@ def test_openapi_exposes_reflection_snapshot_resource() -> None:
     """The API contract includes the versioned reflection snapshot resource."""
 
     assert "/api/v1/reflection-snapshots" in app.openapi()["paths"]
+    assert "/api/v1/reflection-archive/philosopher-influences" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/retry" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/content" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/decision" in app.openapi()["paths"]
@@ -327,6 +328,115 @@ async def test_reflection_snapshot_list_endpoint_returns_recent_items(
     assert empty.status_code == 200
     assert empty.json()["items"] == []
     assert invalid_range.status_code == 422
+
+
+@pytest.mark.anyio
+async def test_philosopher_influence_endpoint_aggregates_evidence_nodes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The archive can explain which philosophers repeatedly influenced the user."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    test_settings = PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path))
+    monkeypatch.setattr(snapshot_routes, "settings", test_settings)
+    repository = ReflectionSnapshotRepository(create_snapshot_engine(snapshot_path))
+
+    def add_completed_snapshot(
+        snapshot_id: str,
+        created_at: str,
+        question: str,
+        topic: str,
+        title: str,
+        philosophers: list[dict[str, str]],
+    ) -> None:
+        repository.add(
+            created_at=created_at,
+            request_payload={"question": question},
+            response_payload={
+                "snapshot_id": snapshot_id,
+                "status": "completed",
+                "content": {
+                    "topic": topic,
+                    "title": title,
+                    "user_position": "我正在确认自己的判断边界。",
+                    "confidence": 0.7,
+                    "core_question": question,
+                    "key_insights": [],
+                    "tensions": [],
+                    "related_philosophers": philosophers,
+                    "change_signal": {"changed": False},
+                    "next_question": None,
+                    "tags": [],
+                },
+                "provider": "openai",
+                "provider_model": "test-model",
+                "pending_reason": None,
+            },
+        )
+
+    add_completed_snapshot(
+        "snap_kant_first",
+        "2026-07-28T09:00:00+00:00",
+        "诚实是否总是义务？",
+        "诚实与德性",
+        "义务与诚实",
+        [{"name": "康德", "reason": "问题涉及诚实义务与普遍法则。"}],
+    )
+    add_completed_snapshot(
+        "snap_kant_second",
+        "2026-07-30T09:00:00+00:00",
+        "自由是否意味着承担责任？",
+        "自由与责任",
+        "自由中的责任",
+        [
+            {"name": "康德", "reason": "责任与自主性之间的关系需要康德式澄清。"},
+            {"name": "亚里士多德", "reason": "德性实践为责任提供习惯层面的解释。"},
+        ],
+    )
+    repository.add(
+        created_at="2026-07-31T09:00:00+00:00",
+        request_payload={"question": "待补生成的问题"},
+        response_payload={
+            "snapshot_id": "snap_pending",
+            "status": "pending",
+            "content": None,
+            "provider": "none",
+            "pending_reason": "not configured",
+        },
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/api/v1/reflection-archive/philosopher-influences")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert [item["name"] for item in payload["items"]] == ["康德", "亚里士多德"]
+    assert payload["items"][0]["count"] == 2
+    assert set(payload["items"][0]["topics"]) == {"诚实与德性", "自由与责任"}
+    assert payload["items"][0]["evidence"][0]["snapshot_id"] == "snap_kant_second"
+    assert "自主性" in payload["items"][0]["evidence"][0]["reason"]
+    assert payload["items"][1]["evidence"][0]["title"] == "自由中的责任"
+
+
+@pytest.mark.anyio
+async def test_philosopher_influence_endpoint_returns_empty_state(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Empty archives remain recoverable for the frontend."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    snapshot_path.write_text("", encoding="utf-8")
+    monkeypatch.setattr(
+        snapshot_routes,
+        "settings",
+        PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path)),
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/api/v1/reflection-archive/philosopher-influences")
+
+    assert response.status_code == 200
+    assert response.json() == {"items": []}
 
 
 @pytest.mark.anyio

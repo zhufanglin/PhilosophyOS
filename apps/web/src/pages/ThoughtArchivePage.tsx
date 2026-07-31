@@ -68,6 +68,22 @@ type ReflectionSnapshotListResponse = {
   items: ReflectionSnapshotListItem[];
 };
 
+type ReflectionPhilosopherInfluenceResponse = {
+  items: Array<{
+    name: string;
+    count: number;
+    topics: string[];
+    evidence: Array<{
+      snapshot_id: string;
+      created_at: string;
+      title: string;
+      topic: string;
+      question: string;
+      reason: string;
+    }>;
+  }>;
+};
+
 type ThoughtArchivePageProps = {
   apiBaseUrl: string;
 };
@@ -462,6 +478,8 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [items, setItems] = useState<ReflectionSnapshotListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [influences, setInfluences] = useState<ReflectionPhilosopherInfluenceResponse["items"]>([]);
+  const [influenceError, setInfluenceError] = useState<string | null>(null);
   const [expandedSnapshotId, setExpandedSnapshotId] = useState<string | null>(null);
   const [focusedGraphSnapshotId, setFocusedGraphSnapshotId] = useState<string | null>(null);
   const [highlightedSnapshotIds, setHighlightedSnapshotIds] = useState<string[]>([]);
@@ -475,6 +493,19 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const timelineCardRefs = useRef<Record<string, HTMLElement | null>>({});
   const highlightTimerRef = useRef<number | null>(null);
+
+  async function reloadPhilosopherInfluences(signal?: AbortSignal) {
+    const response = await fetch(
+      `${apiBaseUrl}/api/v1/reflection-archive/philosopher-influences?limit=8`,
+      { signal },
+    );
+    if (!response.ok) {
+      throw new Error(`哲学家影响接口返回 ${response.status}`);
+    }
+    const payload = (await response.json()) as ReflectionPhilosopherInfluenceResponse;
+    setInfluences(payload.items);
+    setInfluenceError(null);
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -504,6 +535,24 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     }
 
     void loadSnapshots();
+    return () => controller.abort();
+  }, [apiBaseUrl]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadPhilosopherInfluences() {
+      try {
+        await reloadPhilosopherInfluences(controller.signal);
+      } catch (requestError) {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") {
+          return;
+        }
+        setInfluenceError(requestError instanceof Error ? requestError.message : "暂时无法读取哲学家影响轨迹");
+      }
+    }
+
+    void loadPhilosopherInfluences();
     return () => controller.abort();
   }, [apiBaseUrl]);
 
@@ -579,6 +628,11 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     if (!response.ok) throw new Error("无法刷新思想档案");
     const payload = (await response.json()) as ReflectionSnapshotListResponse;
     setItems(payload.items);
+    try {
+      await reloadPhilosopherInfluences();
+    } catch (requestError) {
+      setInfluenceError(requestError instanceof Error ? requestError.message : "暂时无法刷新哲学家影响轨迹");
+    }
   }
 
   async function importArchive(file: File) {
@@ -609,6 +663,9 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     const response = await fetch(`${apiBaseUrl}/api/v1/reflection-snapshots/${snapshotId}`, { method: "DELETE" });
     if (!response.ok) { setArchiveActionStatus("删除失败，请稍后重试。"); return; }
     setItems((current) => current.filter((item) => item.snapshot.snapshot_id !== snapshotId));
+    void reloadPhilosopherInfluences().catch((requestError: unknown) => {
+      setInfluenceError(requestError instanceof Error ? requestError.message : "暂时无法刷新哲学家影响轨迹");
+    });
     setArchiveActionStatus("这条思想档案已删除。");
   }
 
@@ -623,7 +680,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       method: "DELETE", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ confirm: phrase }),
     });
-    if (response.ok) { setItems([]); setArchiveActionStatus("全部思想档案已清空。"); }
+    if (response.ok) { setItems([]); setInfluences([]); setArchiveActionStatus("全部思想档案已清空。"); }
     else setArchiveActionStatus("清空失败，现有档案没有改变。");
     setArchiveActionBusy(false);
   }
@@ -797,6 +854,60 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
             <h2>{changedCount} 次</h2>
             <p>已识别的立场移动会在节点详情中保留证据。</p>
           </article>
+        </section>
+      ) : null}
+
+      {!loading && !error ? (
+        <section className="philosopher-influence-archive" aria-label="影响我的哲学家">
+          <header className="philosopher-influence-header">
+            <div>
+              <p className="section-kicker">PHILOSOPHER TRAIL</p>
+              <h2>影响我的哲学家</h2>
+            </div>
+            <p>
+              这里不是“最常见哲学家”列表，而是从你的思想节点里抽出证据：谁反复进入你的问题、在什么主题里出现、理由是什么。
+            </p>
+          </header>
+          {influenceError ? <p className="philosopher-influence-error">{influenceError}</p> : null}
+          {influences.length > 0 ? (
+            <div className="philosopher-influence-grid">
+              {influences.map((influence) => {
+                const firstEvidence = influence.evidence[0];
+                return (
+                  <article key={influence.name}>
+                    <div className="philosopher-influence-topline">
+                      <strong>{influence.name}</strong>
+                      <span>{influence.count} 次出现</span>
+                    </div>
+                    <div className="philosopher-influence-tags">
+                      {influence.topics.slice(0, 4).map((topic) => (
+                        <small key={topic}>{topic}</small>
+                      ))}
+                    </div>
+                    {firstEvidence ? (
+                      <div className="philosopher-influence-evidence">
+                        <span>证据节点</span>
+                        <h3>{firstEvidence.title}</h3>
+                        <p>{firstEvidence.reason}</p>
+                        <small>{firstEvidence.topic} · {firstEvidence.question}</small>
+                      </div>
+                    ) : (
+                      <p className="philosopher-influence-empty">还没有找到足够证据，继续完成更多思想节点后会补全。</p>
+                    )}
+                    <div className="philosopher-influence-actions">
+                      <a href={`#philosophers?search=${encodeURIComponent(influence.name)}`}>打开图鉴</a>
+                      <button type="button" onClick={() => setPhilosopherFilter(influence.name)}>筛选档案</button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="philosopher-influence-empty-state">
+              <h3>还没有形成稳定影响轨迹</h3>
+              <p>完成更多带有哲学家关联的思想节点后，这里会自动长出来。</p>
+            </div>
+          )}
         </section>
       ) : null}
 

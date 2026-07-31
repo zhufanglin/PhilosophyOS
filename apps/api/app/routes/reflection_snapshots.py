@@ -12,6 +12,7 @@ from app.schemas.reflection_snapshots import (
     ReflectionArchiveDeleteResponse,
     ReflectionArchiveImportResponse,
     ReflectionArchivePackage,
+    ReflectionPhilosopherInfluenceResponse,
     ReflectionSnapshotCorrectionRequest,
     ReflectionSnapshotCorrectionResponse,
     ReflectionSnapshotDecisionRequest,
@@ -31,6 +32,7 @@ from app.services.reflection_snapshots import (
     export_reflection_archive,
     import_reflection_archive,
     list_reflection_snapshots,
+    list_philosopher_influences as aggregate_philosopher_influences,
     render_reflection_archive_markdown,
     retry_reflection_snapshot,
     update_reflection_snapshot_decision,
@@ -86,7 +88,7 @@ async def import_reflection_archive_endpoint(
         return import_reflection_archive(package, settings)
     except ValueError as error:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)
         ) from error
 
 
@@ -137,7 +139,7 @@ async def list_reflection_snapshots_endpoint(
 
     if from_date and to_date and from_date > to_date:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="from_date must not be later than to_date",
         )
 
@@ -184,6 +186,20 @@ async def list_reflection_snapshots_endpoint(
     return ReflectionSnapshotListResponse(
         items=[item for item in response.items if matches(item)][:limit]
     )
+
+
+@router.get(
+    "/reflection-archive/philosopher-influences",
+    response_model=ReflectionPhilosopherInfluenceResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Aggregate philosophers that repeatedly influence the archive",
+)
+async def list_philosopher_influences_endpoint(
+    limit: int = Query(default=8, ge=1, le=20),
+) -> ReflectionPhilosopherInfluenceResponse:
+    """Return philosophers ranked by repeated appearance in completed snapshots."""
+
+    return aggregate_philosopher_influences(settings, limit=limit)
 
 
 @router.post(
