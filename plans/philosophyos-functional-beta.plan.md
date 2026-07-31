@@ -69,7 +69,7 @@ flowchart LR
 - **Acceptance:** 完成三轮对话后刷新页面，消息顺序、模型、模式和轮次保持一致；用户可明确新建会话。
 - **Dependencies:** 1.1
 
-### 1.3 [ ] 完成快照失败重试与用户修正闭环
+### 1.3 [x] 完成快照失败重试与用户修正闭环 *(completed 2026-07-31)*
 - **Files:** `apps/api/app/routes/reflection_snapshots.py`, `apps/api/app/services/reflection_snapshots.py`, `apps/web/src/components/ReflectionReview.tsx`, `apps/web/src/pages/ThoughtArchivePage.tsx`
 - **What:** 对待生成或失败快照提供重新生成；用户可编辑关键立场、张力和下一问题，所有修改保留来源与时间。
 - **Acceptance:** 模型失败时原话仍保存；恢复连接后可单独重试；修正后的内容立即反映到档案和关系图谱。

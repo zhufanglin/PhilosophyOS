@@ -3181,6 +3181,68 @@ h1 {
   font-weight: 820;
 }
 
+.snapshot-retry-button {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
+  padding: 0 11px;
+  border: 1px solid rgb(43 64 49 / 16%);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 58%);
+  color: var(--forest);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 820;
+  cursor: pointer;
+}
+
+.snapshot-retry-button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.snapshot-decision-panel > .snapshot-correction-form {
+  display: grid;
+  gap: 9px;
+  padding-top: 4px;
+}
+
+.snapshot-correction-form label,
+.snapshot-correction-panel label {
+  display: grid;
+  gap: 6px;
+}
+
+.snapshot-correction-form label span,
+.snapshot-correction-panel label span {
+  color: #84663e;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.snapshot-correction-form textarea,
+.snapshot-correction-panel textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 10px 11px;
+  border: 1px solid rgb(43 64 49 / 14%);
+  border-radius: 6px;
+  outline: 0;
+  background: rgb(255 255 255 / 58%);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.snapshot-action-message {
+  color: var(--forest) !important;
+  font-weight: 780;
+}
+
 .thought-archive-page {
   display: grid;
   gap: 26px;
@@ -4254,6 +4316,84 @@ h1 {
   border: 1px solid rgb(54 89 111 / 14%);
   border-radius: 14px;
   background: rgb(255 253 247 / 66%);
+}
+
+.snapshot-recovery-panel,
+.snapshot-correction-panel {
+  display: grid;
+  gap: 11px;
+  padding: 15px;
+  border: 1px solid rgb(43 64 49 / 14%);
+  border-radius: 8px;
+  background: rgb(255 253 247 / 66%);
+}
+
+.snapshot-recovery-panel {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.snapshot-recovery-panel p,
+.snapshot-correction-panel > div p {
+  margin-top: 4px;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.snapshot-recovery-panel button,
+.snapshot-correction-panel footer button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid var(--forest);
+  border-radius: 6px;
+  background: var(--forest);
+  color: #fff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 840;
+  cursor: pointer;
+}
+
+.snapshot-recovery-panel button:disabled,
+.snapshot-correction-panel footer button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.snapshot-recovery-panel em {
+  grid-column: 1 / -1;
+  color: var(--forest);
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+.snapshot-correction-panel footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.snapshot-correction-panel footer span,
+.snapshot-correction-panel footer em {
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+.snapshot-correction-panel footer em {
+  color: var(--forest);
+}
+
+@media (max-width: 560px) {
+  .snapshot-recovery-panel {
+    grid-template-columns: 1fr;
+  }
 }
 
 .snapshot-review-panel > div:first-child p {

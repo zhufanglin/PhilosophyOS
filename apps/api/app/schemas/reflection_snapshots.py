@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas.dialogue import ModelProfile
 from app.schemas.obsidian import ObsidianDraftItem
@@ -78,6 +79,16 @@ class ReflectionSnapshotContent(BaseModel):
     tags: list[str] = Field(default_factory=list, max_length=10)
 
 
+class ReflectionSnapshotRevision(BaseModel):
+    """One user-authored correction with the previous AI wording preserved."""
+
+    source: Literal["user"] = "user"
+    updated_at: str
+    previous_user_position: str
+    previous_tensions: list[str]
+    previous_next_question: str | None = None
+
+
 class ReflectionSnapshotRequest(BaseModel):
     """Request to create a durable thought snapshot from a reviewed dialogue."""
 
@@ -101,6 +112,37 @@ class ReflectionSnapshotResponse(BaseModel):
     user_decision: SnapshotDecision | None = None
     decision_updated_at: str | None = None
     snapshot_review: ReflectionSnapshotReview | None = None
+    revisions: list[ReflectionSnapshotRevision] = Field(default_factory=list)
+    generation_attempts: int = Field(default=1, ge=1)
+    last_generation_attempt_at: str | None = None
+
+
+class ReflectionSnapshotCorrectionRequest(BaseModel):
+    """User-owned fields that can replace an AI-generated summary."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    user_position: str = Field(min_length=1, max_length=1000)
+    tensions: list[str] = Field(default_factory=list, max_length=6)
+    next_question: str | None = Field(default=None, max_length=500)
+
+    @field_validator("tensions")
+    @classmethod
+    def normalize_tensions(cls, values: list[str]) -> list[str]:
+        """Drop blank tensions and reject oversized values."""
+
+        normalized = [value.strip() for value in values if value.strip()]
+        if any(len(value) > 300 for value in normalized):
+            raise ValueError("Each tension must be at most 300 characters")
+        return normalized
+
+
+class ReflectionSnapshotCorrectionResponse(BaseModel):
+    """Updated content plus the revision event appended for traceability."""
+
+    snapshot_id: str
+    content: ReflectionSnapshotContent
+    revision: ReflectionSnapshotRevision
 
 
 class ReflectionSnapshotDecisionRequest(BaseModel):

@@ -4,7 +4,7 @@ import ForceGraph2D, {
   type LinkObject,
   type NodeObject,
 } from "react-force-graph-2d";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -33,6 +33,15 @@ type ReflectionSnapshotListItem = {
       note: string | null;
       updated_at: string;
     } | null;
+    revisions: Array<{
+      source: "user";
+      updated_at: string;
+      previous_user_position: string;
+      previous_tensions: string[];
+      previous_next_question: string | null;
+    }>;
+    generation_attempts: number;
+    last_generation_attempt_at: string | null;
     content: {
       topic: string;
       title: string;
@@ -443,6 +452,12 @@ type SnapshotReviewResponse = {
   snapshot_review: NonNullable<ReflectionSnapshotListItem["snapshot"]["snapshot_review"]>;
 };
 
+type SnapshotCorrectionResponse = {
+  snapshot_id: string;
+  content: NonNullable<ReflectionSnapshotListItem["snapshot"]["content"]>;
+  revision: ReflectionSnapshotListItem["snapshot"]["revisions"][number];
+};
+
 export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [items, setItems] = useState<ReflectionSnapshotListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -525,6 +540,19 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       currentItems.map((item) =>
         item.snapshot.snapshot_id === snapshotId
           ? { ...item, snapshot: { ...item.snapshot, snapshot_review: review } }
+          : item,
+      ),
+    );
+  }
+
+  function updateSnapshot(
+    snapshotId: string,
+    update: Partial<ReflectionSnapshotListItem["snapshot"]>,
+  ) {
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.snapshot.snapshot_id === snapshotId
+          ? { ...item, snapshot: { ...item.snapshot, ...update } }
           : item,
       ),
     );
@@ -661,6 +689,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
               item={item}
               key={item.snapshot.snapshot_id}
               onReviewSaved={updateSnapshotReview}
+              onSnapshotUpdated={updateSnapshot}
               registerCard={(node) => {
                 timelineCardRefs.current[item.snapshot.snapshot_id] = node;
               }}
@@ -681,6 +710,10 @@ type TimelineCardProps = {
   onReviewSaved: (
     snapshotId: string,
     review: SnapshotReviewResponse["snapshot_review"],
+  ) => void;
+  onSnapshotUpdated: (
+    snapshotId: string,
+    update: Partial<ReflectionSnapshotListItem["snapshot"]>,
   ) => void;
   registerCard: (node: HTMLElement | null) => void;
   onToggle: () => void;
@@ -1476,6 +1509,7 @@ function TimelineCard({
   highlighted,
   apiBaseUrl,
   onReviewSaved,
+  onSnapshotUpdated,
   registerCard,
   onToggle,
 }: TimelineCardProps) {
@@ -1535,7 +1569,12 @@ function TimelineCard({
         </button>
 
         {expanded ? (
-          <TimelineDetail apiBaseUrl={apiBaseUrl} item={item} onReviewSaved={onReviewSaved} />
+          <TimelineDetail
+            apiBaseUrl={apiBaseUrl}
+            item={item}
+            onReviewSaved={onReviewSaved}
+            onSnapshotUpdated={onSnapshotUpdated}
+          />
         ) : null}
       </div>
     </article>
@@ -1573,12 +1612,17 @@ function TimelineDetail({
   item,
   apiBaseUrl,
   onReviewSaved,
+  onSnapshotUpdated,
 }: {
   item: ReflectionSnapshotListItem;
   apiBaseUrl: string;
   onReviewSaved: (
     snapshotId: string,
     review: SnapshotReviewResponse["snapshot_review"],
+  ) => void;
+  onSnapshotUpdated: (
+    snapshotId: string,
+    update: Partial<ReflectionSnapshotListItem["snapshot"]>,
   ) => void;
 }) {
   const content = item.snapshot.content;
@@ -1589,6 +1633,74 @@ function TimelineDetail({
   const [reviewNote, setReviewNote] = useState(item.snapshot.snapshot_review?.note ?? "");
   const [reviewStatus, setReviewStatus] = useState<string | null>(null);
   const [savingReview, setSavingReview] = useState(false);
+  const [retryingSnapshot, setRetryingSnapshot] = useState(false);
+  const [snapshotActionStatus, setSnapshotActionStatus] = useState<string | null>(null);
+  const [savingCorrection, setSavingCorrection] = useState(false);
+  const [correctedPosition, setCorrectedPosition] = useState(content?.user_position ?? "");
+  const [correctedTensions, setCorrectedTensions] = useState(content?.tensions.join("\n") ?? "");
+  const [correctedNextQuestion, setCorrectedNextQuestion] = useState(content?.next_question ?? "");
+
+  useEffect(() => {
+    if (!content) return;
+    setCorrectedPosition(content.user_position);
+    setCorrectedTensions(content.tensions.join("\n"));
+    setCorrectedNextQuestion(content.next_question ?? "");
+  }, [content]);
+
+  async function retrySnapshot() {
+    if (retryingSnapshot) return;
+    setRetryingSnapshot(true);
+    setSnapshotActionStatus(null);
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/v1/reflection-snapshots/${item.snapshot.snapshot_id}/retry`,
+        { method: "POST" },
+      );
+      if (!response.ok) throw new Error(`Snapshot retry returned ${response.status}`);
+      const payload = (await response.json()) as ReflectionSnapshotListItem["snapshot"];
+      onSnapshotUpdated(item.snapshot.snapshot_id, payload);
+      setSnapshotActionStatus(
+        payload.status === "completed" ? "思想节点已补生成。" : "模型仍不可用，原话保持不变。",
+      );
+    } catch {
+      setSnapshotActionStatus("补生成暂时失败，请恢复连接后再试。");
+    } finally {
+      setRetryingSnapshot(false);
+    }
+  }
+
+  async function saveCorrection() {
+    if (!content || !correctedPosition.trim() || savingCorrection) return;
+    setSavingCorrection(true);
+    setSnapshotActionStatus(null);
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/v1/reflection-snapshots/${item.snapshot.snapshot_id}/content`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_position: correctedPosition.trim(),
+            tensions: correctedTensions.split("\n").map((value) => value.trim()).filter(Boolean),
+            next_question: correctedNextQuestion.trim() || null,
+          }),
+        },
+      );
+      if (!response.ok) throw new Error(`Snapshot correction returned ${response.status}`);
+      const payload = (await response.json()) as SnapshotCorrectionResponse;
+      onSnapshotUpdated(item.snapshot.snapshot_id, {
+        content: payload.content,
+        user_decision: "edit",
+        decision_updated_at: payload.revision.updated_at,
+        revisions: [...item.snapshot.revisions, payload.revision],
+      });
+      setSnapshotActionStatus("修正已保存，档案与关系图谱已同步更新。");
+    } catch {
+      setSnapshotActionStatus("修正暂未写入，请稍后重试。");
+    } finally {
+      setSavingCorrection(false);
+    }
+  }
 
   async function saveSnapshotReview() {
     if (savingReview) return;
@@ -1622,6 +1734,18 @@ function TimelineDetail({
 
   return (
     <div className="timeline-detail-panel">
+      {item.snapshot.status === "pending" ? (
+        <section className="snapshot-recovery-panel" aria-label="补生成思想节点">
+          <div>
+            <strong>原话已经保存</strong>
+            <p>只重新请求这一条思想总结，不会重复记录对话或新建节点。</p>
+          </div>
+          <button type="button" disabled={retryingSnapshot} onClick={() => void retrySnapshot()}>
+            <RotateCcw size={15} /> {retryingSnapshot ? "正在补生成" : "重新生成"}
+          </button>
+          {snapshotActionStatus ? <em>{snapshotActionStatus}</em> : null}
+        </section>
+      ) : null}
       {relationExplanation ? (
         <section className="timeline-relation-note" aria-label="图谱关系解释">
           <div className="relation-note-heading">
@@ -1716,6 +1840,36 @@ function TimelineDetail({
               ? `；${formatSnapshotTime(item.snapshot.decision_updated_at)} 更新`
               : ""}
           </p>
+        </section>
+      ) : null}
+
+      {content ? (
+        <section className="snapshot-correction-panel" aria-label="修正思想节点内容">
+          <div>
+            <strong>修正 AI 总结</strong>
+            <p>修改会成为档案当前版本，上一版内容与修改时间仍会保留。</p>
+          </div>
+          <label>
+            <span>我的当前立场</span>
+            <textarea rows={3} value={correctedPosition} onChange={(event) => setCorrectedPosition(event.target.value)} />
+          </label>
+          <label>
+            <span>仍在拉扯的问题（每行一个）</span>
+            <textarea rows={3} value={correctedTensions} onChange={(event) => setCorrectedTensions(event.target.value)} />
+          </label>
+          <label>
+            <span>下一步问题</span>
+            <textarea rows={2} value={correctedNextQuestion} onChange={(event) => setCorrectedNextQuestion(event.target.value)} />
+          </label>
+          <footer>
+            <button type="button" disabled={!correctedPosition.trim() || savingCorrection} onClick={() => void saveCorrection()}>
+              {savingCorrection ? "正在写入" : "保存修正版本"}
+            </button>
+            {item.snapshot.revisions.length > 0 ? (
+              <span>{item.snapshot.revisions.length} 次用户修正</span>
+            ) : null}
+            {snapshotActionStatus ? <em>{snapshotActionStatus}</em> : null}
+          </footer>
         </section>
       ) : null}
 

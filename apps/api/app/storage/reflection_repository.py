@@ -58,6 +58,12 @@ class ReflectionSnapshotRepository:
         with Session(self.engine) as session:
             return list(session.scalars(statement))
 
+    def get(self, snapshot_id: str) -> ReflectionSnapshotRecord | None:
+        """Return one stored snapshot with its immutable request payload."""
+
+        with Session(self.engine) as session:
+            return session.get(ReflectionSnapshotRecord, snapshot_id)
+
     def update_response(
         self,
         snapshot_id: str,

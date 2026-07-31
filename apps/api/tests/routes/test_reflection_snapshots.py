@@ -8,9 +8,13 @@ from pathlib import Path
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.agent.providers import ProviderRequest, ProviderResponse
 from app.main import app
 from app.routes import reflection_snapshots as snapshot_routes
+from app.services import reflection_snapshots as snapshot_service
 from app.settings import PhilosophyOSSettings
+from app.storage.database import create_snapshot_engine
+from app.storage.reflection_repository import ReflectionSnapshotRepository
 
 
 def snapshot_payload() -> dict[str, object]:
@@ -28,6 +32,31 @@ def snapshot_payload() -> dict[str, object]:
         ],
         "model_profile": "free",
     }
+
+
+class SuccessfulSnapshotProvider:
+    """Provider stub that returns one valid structured thought snapshot."""
+
+    def generate(self, request: ProviderRequest) -> ProviderResponse:
+        content = {
+            "topic": "自由与责任",
+            "title": "限制中的自由",
+            "user_position": "自由是在限制中承担选择。",
+            "confidence": 0.76,
+            "emotional_tone": "更清晰",
+            "core_question": "限制是否必然取消自由？",
+            "key_insights": ["承担是自由的一部分"],
+            "tensions": ["因果限制与责任"],
+            "related_philosophers": [],
+            "change_signal": {"changed": False},
+            "next_question": "哪些限制仍允许负责？",
+            "tags": ["自由", "责任"],
+        }
+        return ProviderResponse(
+            assistant_message=json.dumps(content, ensure_ascii=False),
+            provider="openai",
+            model="test-snapshot-model",
+        )
 
 
 @pytest.mark.anyio
@@ -61,10 +90,145 @@ async def test_reflection_snapshot_endpoint_persists_pending_without_api_key(
     assert stored["snapshot"]["snapshot_id"] == payload["snapshot_id"]
 
 
+@pytest.mark.anyio
+async def test_pending_snapshot_retries_in_place_and_preserves_user_evidence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A recovered model updates one pending record without losing the source words."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    unavailable_settings = PhilosophyOSSettings(
+        thought_snapshots_path=str(snapshot_path),
+        model_profile="free",
+    )
+    monkeypatch.setattr(snapshot_routes, "settings", unavailable_settings)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        create_response = await client.post(
+            "/api/v1/reflection-snapshots",
+            json=snapshot_payload(),
+        )
+
+    snapshot_id = create_response.json()["snapshot_id"]
+    configured_settings = unavailable_settings.model_copy(
+        update={"free_api_key": "test-key"}
+    )
+    monkeypatch.setattr(snapshot_routes, "settings", configured_settings)
+    monkeypatch.setattr(
+        snapshot_service,
+        "select_dialogue_provider",
+        lambda settings: SuccessfulSnapshotProvider(),
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        retry_response = await client.post(
+            f"/api/v1/reflection-snapshots/{snapshot_id}/retry"
+        )
+        list_response = await client.get("/api/v1/reflection-snapshots?limit=10")
+
+    assert retry_response.status_code == 200
+    retried = retry_response.json()
+    assert retried["snapshot_id"] == snapshot_id
+    assert retried["status"] == "completed"
+    assert retried["generation_attempts"] == 2
+    assert retried["content"]["user_position"] == "自由是在限制中承担选择。"
+
+    listed = list_response.json()["items"]
+    assert len(listed) == 1
+    assert listed[0]["snapshot"]["snapshot_id"] == snapshot_id
+    repository = ReflectionSnapshotRepository(create_snapshot_engine(snapshot_path))
+    record = repository.get(snapshot_id)
+    assert record is not None
+    assert record.request_payload["user_statements"] == [
+        "我以前觉得自由就是想做什么就做什么。"
+    ]
+
+
+@pytest.mark.anyio
+async def test_snapshot_content_correction_updates_archive_and_preserves_revision(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """User corrections become the current archive content and retain AI wording."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    configured_settings = PhilosophyOSSettings(
+        thought_snapshots_path=str(snapshot_path),
+        model_profile="free",
+        free_api_key="test-key",
+    )
+    monkeypatch.setattr(snapshot_routes, "settings", configured_settings)
+    monkeypatch.setattr(
+        snapshot_service,
+        "select_dialogue_provider",
+        lambda settings: SuccessfulSnapshotProvider(),
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        create_response = await client.post(
+            "/api/v1/reflection-snapshots",
+            json=snapshot_payload(),
+        )
+        snapshot_id = create_response.json()["snapshot_id"]
+        correction_response = await client.patch(
+            f"/api/v1/reflection-snapshots/{snapshot_id}/content",
+            json={
+                "user_position": "自由是理解限制后仍愿意承担行动。",
+                "tensions": ["限制与能动性", "责任与因果"],
+                "next_question": "教育能否扩大这种自由？",
+            },
+        )
+        list_response = await client.get("/api/v1/reflection-snapshots?limit=1")
+
+    assert correction_response.status_code == 200
+    correction = correction_response.json()
+    assert correction["content"]["user_position"] == "自由是理解限制后仍愿意承担行动。"
+    assert correction["revision"]["source"] == "user"
+    assert correction["revision"]["previous_user_position"] == "自由是在限制中承担选择。"
+
+    listed = list_response.json()["items"][0]["snapshot"]
+    assert listed["user_decision"] == "edit"
+    assert listed["content"]["tensions"] == ["限制与能动性", "责任与因果"]
+    assert listed["content"]["next_question"] == "教育能否扩大这种自由？"
+    assert listed["revisions"][0] == correction["revision"]
+
+
+@pytest.mark.anyio
+async def test_pending_snapshot_cannot_be_corrected_before_generation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The API distinguishes missing generated content from an editable summary."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    monkeypatch.setattr(
+        snapshot_routes,
+        "settings",
+        PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path)),
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        create_response = await client.post(
+            "/api/v1/reflection-snapshots",
+            json=snapshot_payload(),
+        )
+        snapshot_id = create_response.json()["snapshot_id"]
+        response = await client.patch(
+            f"/api/v1/reflection-snapshots/{snapshot_id}/content",
+            json={
+                "user_position": "尚未生成，不能修改。",
+                "tensions": [],
+                "next_question": None,
+            },
+        )
+
+    assert response.status_code == 409
+
+
 def test_openapi_exposes_reflection_snapshot_resource() -> None:
     """The API contract includes the versioned reflection snapshot resource."""
 
     assert "/api/v1/reflection-snapshots" in app.openapi()["paths"]
+    assert "/api/v1/reflection-snapshots/{snapshot_id}/retry" in app.openapi()["paths"]
+    assert "/api/v1/reflection-snapshots/{snapshot_id}/content" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/decision" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/review" in app.openapi()["paths"]
 

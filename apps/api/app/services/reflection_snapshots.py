@@ -12,6 +12,8 @@ from app.agent.providers import ProviderRequest, select_dialogue_provider
 from app.schemas.dialogue import DialogueMode, ModelProfile
 from app.schemas.reflection_snapshots import (
     ReflectionSnapshotContent,
+    ReflectionSnapshotCorrectionRequest,
+    ReflectionSnapshotCorrectionResponse,
     ReflectionSnapshotDecisionResponse,
     ReflectionSnapshotListItem,
     ReflectionSnapshotListResponse,
@@ -19,6 +21,7 @@ from app.schemas.reflection_snapshots import (
     ReflectionSnapshotResponse,
     ReflectionSnapshotReview,
     ReflectionSnapshotReviewResponse,
+    ReflectionSnapshotRevision,
     SnapshotDecision,
     SnapshotReviewVerdict,
     SnapshotStatus,
@@ -204,18 +207,39 @@ def create_reflection_snapshot(
     model_profile = request.model_profile or ModelProfile(current_settings.model_profile)
     selected_settings = current_settings.model_copy(update={"model_profile": model_profile.value})
 
+    response = generate_snapshot_response(
+        snapshot_id,
+        request,
+        selected_settings,
+        generation_attempts=1,
+    )
+    persist_snapshot_record(response, request, current_settings)
+    return response
+
+
+def generate_snapshot_response(
+    snapshot_id: str,
+    request: ReflectionSnapshotRequest,
+    selected_settings: PhilosophyOSSettings,
+    *,
+    generation_attempts: int,
+) -> ReflectionSnapshotResponse:
+    """Run one model attempt without mutating the immutable source request."""
+
+    attempted_at = datetime.now(UTC).isoformat()
+
     if (
         selected_settings.selected_api_key is None
         or selected_settings.ai_provider == "deterministic"
     ):
-        response = ReflectionSnapshotResponse(
+        return ReflectionSnapshotResponse(
             snapshot_id=snapshot_id,
             status=SnapshotStatus.PENDING,
             provider="none",
             pending_reason="当前模型没有可用 API key，已先保存原始记录，稍后可补生成思想快照。",
+            generation_attempts=generation_attempts,
+            last_generation_attempt_at=attempted_at,
         )
-        persist_snapshot_record(response, request, current_settings)
-        return response
 
     provider = select_dialogue_provider(selected_settings)
     provider_request = ProviderRequest(
@@ -231,21 +255,109 @@ def create_reflection_snapshot(
         provider_response = provider.generate(provider_request)
         content = parse_snapshot_content(provider_response.assistant_message)
     except (Exception, ValidationError, json.JSONDecodeError) as error:
-        response = ReflectionSnapshotResponse(
+        return ReflectionSnapshotResponse(
             snapshot_id=snapshot_id,
             status=SnapshotStatus.PENDING,
             provider="none",
             pending_reason=f"{type(error).__name__}: {error}",
+            generation_attempts=generation_attempts,
+            last_generation_attempt_at=attempted_at,
         )
-        persist_snapshot_record(response, request, current_settings)
-        return response
 
-    response = ReflectionSnapshotResponse(
+    return ReflectionSnapshotResponse(
         snapshot_id=snapshot_id,
         status=SnapshotStatus.COMPLETED,
         content=content,
         provider=provider_response.provider,
         provider_model=provider_response.model,
+        generation_attempts=generation_attempts,
+        last_generation_attempt_at=attempted_at,
     )
-    persist_snapshot_record(response, request, current_settings)
-    return response
+
+
+def retry_reflection_snapshot(
+    snapshot_id: str,
+    current_settings: PhilosophyOSSettings = settings,
+) -> ReflectionSnapshotResponse | None:
+    """Retry generation for one pending snapshot using its original user evidence."""
+
+    repository = snapshot_repository(current_settings)
+    record = repository.get(snapshot_id)
+    if record is None:
+        return None
+
+    request = ReflectionSnapshotRequest.model_validate(record.request_payload)
+    existing = ReflectionSnapshotResponse.model_validate(record.response_payload)
+    if existing.status is SnapshotStatus.COMPLETED:
+        return existing
+
+    model_profile = request.model_profile or ModelProfile(current_settings.model_profile)
+    selected_settings = current_settings.model_copy(update={"model_profile": model_profile.value})
+    retried = generate_snapshot_response(
+        snapshot_id,
+        request,
+        selected_settings,
+        generation_attempts=existing.generation_attempts + 1,
+    ).model_copy(
+        update={
+            "user_decision": existing.user_decision,
+            "decision_updated_at": existing.decision_updated_at,
+            "snapshot_review": existing.snapshot_review,
+            "revisions": existing.revisions,
+        }
+    )
+    updated = repository.update_response(
+        snapshot_id,
+        lambda _: retried.model_dump(mode="json"),
+    )
+    return ReflectionSnapshotResponse.model_validate(updated) if updated else None
+
+
+def correct_reflection_snapshot(
+    snapshot_id: str,
+    correction: ReflectionSnapshotCorrectionRequest,
+    current_settings: PhilosophyOSSettings = settings,
+) -> ReflectionSnapshotCorrectionResponse | None:
+    """Apply a user correction while preserving the previous AI wording."""
+
+    repository = snapshot_repository(current_settings)
+    record = repository.get(snapshot_id)
+    if record is None:
+        return None
+
+    existing = ReflectionSnapshotResponse.model_validate(record.response_payload)
+    if existing.content is None:
+        raise ValueError("Pending snapshots must be generated before correction")
+
+    updated_at = datetime.now(UTC).isoformat()
+    previous = existing.content
+    revision = ReflectionSnapshotRevision(
+        updated_at=updated_at,
+        previous_user_position=previous.user_position,
+        previous_tensions=previous.tensions,
+        previous_next_question=previous.next_question,
+    )
+    corrected_content = previous.model_copy(
+        update={
+            "user_position": correction.user_position,
+            "tensions": correction.tensions,
+            "next_question": correction.next_question,
+        }
+    )
+    corrected = existing.model_copy(
+        update={
+            "content": corrected_content,
+            "user_decision": SnapshotDecision.EDIT,
+            "decision_updated_at": updated_at,
+            "revisions": [*existing.revisions, revision],
+        }
+    )
+    repository.update_response(
+        snapshot_id,
+        lambda _: corrected.model_dump(mode="json"),
+    )
+    return ReflectionSnapshotCorrectionResponse(
+        snapshot_id=snapshot_id,
+        content=corrected_content,
+        revision=revision,
+    )

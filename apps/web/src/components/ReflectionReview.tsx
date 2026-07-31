@@ -6,12 +6,13 @@ import {
   CircleHelp,
   Pencil,
   Quote,
+  RotateCcw,
   Route,
   Save,
   ShieldCheck,
   UserRoundCheck,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type ReflectionOrigin = "user" | "ai" | "unresolved";
 type ReflectionKind = "viewpoint" | "reason" | "concept" | "question" | "related";
@@ -54,8 +55,17 @@ type ReflectionSnapshotResponse = {
     title: string;
     topic: string;
     user_position: string;
+    tensions: string[];
     next_question: string | null;
   } | null;
+};
+
+type ReflectionSnapshotCorrectionResponse = {
+  snapshot_id: string;
+  content: NonNullable<ReflectionSnapshotResponse["content"]>;
+  revision: {
+    updated_at: string;
+  };
 };
 
 type ReflectionSnapshotDecisionResponse = {
@@ -151,10 +161,23 @@ export function ReflectionReview({
   const [snapshotDecisionMessage, setSnapshotDecisionMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [retryingSnapshot, setRetryingSnapshot] = useState(false);
+  const [savingCorrection, setSavingCorrection] = useState(false);
+  const [snapshotActionMessage, setSnapshotActionMessage] = useState<string | null>(null);
+  const [correctedPosition, setCorrectedPosition] = useState("");
+  const [correctedTensions, setCorrectedTensions] = useState("");
+  const [correctedNextQuestion, setCorrectedNextQuestion] = useState("");
   const selectedItems = useMemo(() => items.filter((item) => item.selected), [items]);
   const canSave = selectedItems.some(
     (item) => item.kind === "viewpoint" && item.origin === "user",
   );
+
+  useEffect(() => {
+    if (!snapshotResult?.content) return;
+    setCorrectedPosition(snapshotResult.content.user_position);
+    setCorrectedTensions(snapshotResult.content.tensions.join("\n"));
+    setCorrectedNextQuestion(snapshotResult.content.next_question ?? "");
+  }, [snapshotResult?.content]);
 
   function updateItem(itemId: string, update: Partial<ReviewItem>) {
     setItems((current) =>
@@ -241,26 +264,74 @@ export function ReflectionReview({
     }
   }
 
-  async function saveObsidianDraft() {
+  async function retrySnapshotGeneration() {
+    if (!snapshotResult || retryingSnapshot) return;
+    setRetryingSnapshot(true);
+    setSnapshotActionMessage(null);
+    try {
+      const response = snapshotResult.snapshot_id === "pending"
+        ? await createReflectionSnapshot()
+        : await fetch(
+            `${apiBaseUrl}/api/v1/reflection-snapshots/${snapshotResult.snapshot_id}/retry`,
+            { method: "POST" },
+          ).then(async (result) => {
+            if (!result.ok) throw new Error(`Reflection snapshot retry returned ${result.status}`);
+            return (await result.json()) as ReflectionSnapshotResponse;
+          });
+      setSnapshotResult(response);
+      setSnapshotActionMessage(
+        response.status === "completed" ? "思想节点已补生成。" : "模型仍不可用，原始记录保持不变。",
+      );
+    } catch {
+      setSnapshotActionMessage("暂时无法重试，原始记录仍已保存。");
+    } finally {
+      setRetryingSnapshot(false);
+    }
+  }
+
+  async function saveSnapshotCorrection() {
+    if (!snapshotResult?.content || !correctedPosition.trim() || savingCorrection) return;
+    setSavingCorrection(true);
+    setSnapshotActionMessage(null);
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/v1/reflection-snapshots/${snapshotResult.snapshot_id}/content`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_position: correctedPosition.trim(),
+            tensions: correctedTensions.split("\n").map((value) => value.trim()).filter(Boolean),
+            next_question: correctedNextQuestion.trim() || null,
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(`Reflection snapshot correction returned ${response.status}`);
+      }
+      const payload = (await response.json()) as ReflectionSnapshotCorrectionResponse;
+      setSnapshotResult((current) => current ? {
+        ...current,
+        content: payload.content,
+        user_decision: "edit",
+        decision_updated_at: payload.revision.updated_at,
+      } : current);
+      setSnapshotDecision("edit");
+      setSnapshotDecisionMessage("修改后的总结已写入思想档案。");
+      setSnapshotActionMessage("档案与关系图谱会使用这个修正版本。");
+    } catch {
+      setSnapshotActionMessage("修改暂未写入，请保留本页并稍后重试。 ");
+    } finally {
+      setSavingCorrection(false);
+    }
+  }
+
+  async function saveReflection() {
     if (!canSave || savingDraft) return;
     setSavingDraft(true);
     setSaveError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/v1/obsidian-drafts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question,
-          user_statements: userStatements,
-          selected_items: selectedItemsPayload(),
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`Obsidian draft API returned ${response.status}`);
-      }
-      const payload = (await response.json()) as ObsidianDraftResponse;
-      setDraftResult(payload);
       try {
         setSnapshotResult(await createReflectionSnapshot());
       } catch (error) {
@@ -274,8 +345,24 @@ export function ReflectionReview({
         });
       }
       setSaved(true);
-    } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "保存 Obsidian 草稿失败");
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/obsidian-drafts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question,
+            user_statements: userStatements,
+            selected_items: selectedItemsPayload(),
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`Obsidian draft API returned ${response.status}`);
+        }
+        setDraftResult((await response.json()) as ObsidianDraftResponse);
+      } catch {
+        setSaveError("思想档案已保存；本机未写入可选的 Obsidian 草稿。");
+      }
     } finally {
       setSavingDraft(false);
     }
@@ -303,6 +390,10 @@ export function ReflectionReview({
             <span>{draftResult.file_name}</span>
             <code>{draftResult.absolute_path}</code>
           </div>
+        ) : saveError ? (
+          <div className="obsidian-draft-result" role="status">
+            <strong>{saveError}</strong>
+          </div>
         ) : null}
         {snapshotResult ? (
           <div className={`thought-snapshot-result ${snapshotResult.status}`} role="status">
@@ -317,7 +408,17 @@ export function ReflectionReview({
                 <p>{snapshotResult.content.user_position}</p>
               </>
             ) : (
-              <span>{snapshotResult.pending_reason}</span>
+              <>
+                <span>{snapshotResult.pending_reason}</span>
+                <button
+                  className="snapshot-retry-button"
+                  type="button"
+                  disabled={retryingSnapshot}
+                  onClick={() => void retrySnapshotGeneration()}
+                >
+                  <RotateCcw size={15} /> {retryingSnapshot ? "正在补生成" : "重新生成这一条"}
+                </button>
+              </>
             )}
             {snapshotResult.status === "completed" ? (
               <div className="snapshot-decision-panel" aria-label="处理 AI 总结">
@@ -353,8 +454,28 @@ export function ReflectionReview({
                   </button>
                 </div>
                 {snapshotDecisionMessage ? <p>{snapshotDecisionMessage}</p> : null}
+                {snapshotDecision === "edit" ? (
+                  <div className="snapshot-correction-form">
+                    <label>
+                      <span>我的当前立场</span>
+                      <textarea rows={3} value={correctedPosition} onChange={(event) => setCorrectedPosition(event.target.value)} />
+                    </label>
+                    <label>
+                      <span>仍在拉扯的问题（每行一个）</span>
+                      <textarea rows={3} value={correctedTensions} onChange={(event) => setCorrectedTensions(event.target.value)} />
+                    </label>
+                    <label>
+                      <span>下一步问题</span>
+                      <textarea rows={2} value={correctedNextQuestion} onChange={(event) => setCorrectedNextQuestion(event.target.value)} />
+                    </label>
+                    <button type="button" disabled={!correctedPosition.trim() || savingCorrection} onClick={() => void saveSnapshotCorrection()}>
+                      {savingCorrection ? "正在写入" : "保存修正版本"}
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ) : null}
+            {snapshotActionMessage ? <p className="snapshot-action-message">{snapshotActionMessage}</p> : null}
           </div>
         ) : null}
         <button className="primary-button" type="button" onClick={onReturnToday}>
@@ -416,10 +537,10 @@ export function ReflectionReview({
       <footer className="reflection-actions">
         <div>
           <strong>{selectedItems.length} 项已选择</strong>
-          <span>{saveError ?? "未勾选的内容不会保存；保存后会生成 Markdown / Obsidian 草稿与思想节点。"}</span>
+          <span>{saveError ?? "未勾选的内容不会保存；思想档案保存在本机，Obsidian 草稿是可选副本。"}</span>
         </div>
-        <button className="primary-button" type="button" disabled={!canSave || savingDraft} onClick={saveObsidianDraft}>
-          <Save size={17} /> {savingDraft ? "正在生成草稿" : "保存为思想草稿"}
+        <button className="primary-button" type="button" disabled={!canSave || savingDraft} onClick={saveReflection}>
+          <Save size={17} /> {savingDraft ? "正在保存" : "保存到思想档案"}
         </button>
       </footer>
     </main>
