@@ -4,7 +4,7 @@ import ForceGraph2D, {
   type LinkObject,
   type NodeObject,
 } from "react-force-graph-2d";
-import { ChevronLeft, ChevronRight, RotateCcw, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, RotateCcw, Search, ShieldCheck, Trash2, Upload, X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -470,6 +470,9 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [philosopherFilter, setPhilosopherFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [archiveActionStatus, setArchiveActionStatus] = useState<string | null>(null);
+  const [archiveActionBusy, setArchiveActionBusy] = useState(false);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const timelineCardRefs = useRef<Record<string, HTMLElement | null>>({});
   const highlightTimerRef = useRef<number | null>(null);
 
@@ -571,6 +574,60 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     setToDate("");
   }
 
+  async function reloadArchive() {
+    const response = await fetch(`${apiBaseUrl}/api/v1/reflection-snapshots?limit=100`);
+    if (!response.ok) throw new Error("无法刷新思想档案");
+    const payload = (await response.json()) as ReflectionSnapshotListResponse;
+    setItems(payload.items);
+  }
+
+  async function importArchive(file: File) {
+    setArchiveActionBusy(true);
+    setArchiveActionStatus(null);
+    try {
+      const packageText = await file.text();
+      const packageData = JSON.parse(packageText) as unknown;
+      const response = await fetch(`${apiBaseUrl}/api/v1/reflection-archive/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(packageData),
+      });
+      if (!response.ok) throw new Error("文件格式不正确，现有档案没有改变。");
+      const result = (await response.json()) as { imported: number };
+      await reloadArchive();
+      setArchiveActionStatus(`已安全恢复 ${result.imported} 条思想记录。`);
+    } catch (importError) {
+      setArchiveActionStatus(importError instanceof Error ? importError.message : "导入失败，现有档案没有改变。");
+    } finally {
+      setArchiveActionBusy(false);
+      if (importInputRef.current) importInputRef.current.value = "";
+    }
+  }
+
+  async function deleteSnapshot(snapshotId: string) {
+    if (!window.confirm("确定删除这一条思想档案吗？此操作无法撤销。")) return;
+    const response = await fetch(`${apiBaseUrl}/api/v1/reflection-snapshots/${snapshotId}`, { method: "DELETE" });
+    if (!response.ok) { setArchiveActionStatus("删除失败，请稍后重试。"); return; }
+    setItems((current) => current.filter((item) => item.snapshot.snapshot_id !== snapshotId));
+    setArchiveActionStatus("这条思想档案已删除。");
+  }
+
+  async function clearArchive() {
+    const phrase = window.prompt("此操作无法撤销。请输入“清空全部档案”继续：");
+    if (phrase !== "清空全部档案") {
+      if (phrase !== null) setArchiveActionStatus("确认文字不匹配，未删除任何数据。");
+      return;
+    }
+    setArchiveActionBusy(true);
+    const response = await fetch(`${apiBaseUrl}/api/v1/reflection-archive`, {
+      method: "DELETE", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirm: phrase }),
+    });
+    if (response.ok) { setItems([]); setArchiveActionStatus("全部思想档案已清空。"); }
+    else setArchiveActionStatus("清空失败，现有档案没有改变。");
+    setArchiveActionBusy(false);
+  }
+
   function updateSnapshotReview(snapshotId: string, review: SnapshotReviewResponse["snapshot_review"]) {
     setItems((currentItems) =>
       currentItems.map((item) =>
@@ -645,6 +702,24 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
           <span><Clock3 size={16} /> {pendingCount} 条待补生成</span>
         </div>
       </header>
+
+      {!loading && !error ? (
+        <section className="archive-preservation-desk" aria-label="思想档案保全与迁移">
+          <div className="archive-preservation-copy">
+            <span><ShieldCheck size={16} /> LOCAL FIRST</span>
+            <h2>馆藏保全台</h2>
+            <p>把思想带走、恢复到另一台设备，或清理不再保留的记录。JSON 可完整恢复，Markdown 适合阅读。</p>
+          </div>
+          <div className="archive-preservation-actions">
+            <a href={`${apiBaseUrl}/api/v1/reflection-archive/export`} download><Download size={16} />备份 JSON</a>
+            <a href={`${apiBaseUrl}/api/v1/reflection-archive/export.md`} download><Download size={16} />导出 Markdown</a>
+            <button type="button" disabled={archiveActionBusy} onClick={() => importInputRef.current?.click()}><Upload size={16} />导入备份</button>
+            <input ref={importInputRef} className="archive-import-input" type="file" accept="application/json,.json" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importArchive(file); }} />
+            <button className="archive-clear-button" type="button" disabled={archiveActionBusy || items.length === 0} onClick={() => void clearArchive()}><Trash2 size={16} />清空全部</button>
+          </div>
+          {archiveActionStatus ? <p className="archive-action-status" role="status">{archiveActionStatus}</p> : null}
+        </section>
+      ) : null}
 
       {!loading && !error && items.length > 0 ? (
         <section className="archive-filter-ledger" aria-label="搜索和筛选思想档案">
@@ -749,6 +824,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
               key={item.snapshot.snapshot_id}
               onReviewSaved={updateSnapshotReview}
               onSnapshotUpdated={updateSnapshot}
+              onDelete={() => void deleteSnapshot(item.snapshot.snapshot_id)}
               registerCard={(node) => {
                 timelineCardRefs.current[item.snapshot.snapshot_id] = node;
               }}
@@ -774,6 +850,7 @@ type TimelineCardProps = {
     snapshotId: string,
     update: Partial<ReflectionSnapshotListItem["snapshot"]>,
   ) => void;
+  onDelete: () => void;
   registerCard: (node: HTMLElement | null) => void;
   onToggle: () => void;
 };
@@ -1569,6 +1646,7 @@ function TimelineCard({
   apiBaseUrl,
   onReviewSaved,
   onSnapshotUpdated,
+  onDelete,
   registerCard,
   onToggle,
 }: TimelineCardProps) {
@@ -1626,6 +1704,7 @@ function TimelineCard({
           {expanded ? "收起思想节点" : "展开思想节点"}
           <ChevronDown size={16} />
         </button>
+        <button className="timeline-delete-button" type="button" onClick={onDelete} aria-label="删除这条思想档案"><Trash2 size={14} />删除</button>
 
         {expanded ? (
           <TimelineDetail

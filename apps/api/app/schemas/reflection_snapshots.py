@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -187,3 +187,38 @@ class ReflectionSnapshotListResponse(BaseModel):
     """Recent stored snapshot events."""
 
     items: list[ReflectionSnapshotListItem]
+
+
+class ReflectionArchiveRecord(BaseModel):
+    """One lossless archive record including its immutable source request."""
+
+    created_at: str
+    request: dict[str, Any]
+    response: ReflectionSnapshotResponse
+
+
+class ReflectionArchivePackage(BaseModel):
+    """Portable, versioned PhilosophyOS thought archive."""
+
+    schema_version: Literal["1.0"] = "1.0"
+    exported_at: str
+    records: list[ReflectionArchiveRecord] = Field(max_length=10_000)
+
+
+class ReflectionArchiveImportResponse(BaseModel):
+    """Result of an atomic archive import."""
+
+    imported: int
+    total: int
+
+
+class ReflectionArchiveDeleteResponse(BaseModel):
+    """Result of a destructive archive operation."""
+
+    deleted: int
+
+
+class ReflectionArchiveClearRequest(BaseModel):
+    """Explicit phrase required before deleting the complete archive."""
+
+    confirm: Literal["清空全部档案"]

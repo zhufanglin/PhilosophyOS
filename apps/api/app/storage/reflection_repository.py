@@ -7,7 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import Engine, select
+from sqlalchemy import Engine, delete, select
 from sqlalchemy.orm import Session
 
 from app.models.reflection import ReflectionSnapshotRecord
@@ -57,6 +57,51 @@ class ReflectionSnapshotRepository:
         )
         with Session(self.engine) as session:
             return list(session.scalars(statement))
+
+    def list_all(self) -> list[ReflectionSnapshotRecord]:
+        """Return every record oldest first for deterministic exports."""
+
+        statement = select(ReflectionSnapshotRecord).order_by(
+            ReflectionSnapshotRecord.created_at.asc()
+        )
+        with Session(self.engine) as session:
+            return list(session.scalars(statement))
+
+    def restore(self, records: list[ReflectionSnapshotRecord]) -> int:
+        """Atomically merge validated archive records, replacing matching ids."""
+
+        if not records:
+            return 0
+        with Session(self.engine) as session:
+            record_ids = [record.snapshot_id for record in records]
+            session.execute(
+                delete(ReflectionSnapshotRecord).where(
+                    ReflectionSnapshotRecord.snapshot_id.in_(record_ids)
+                )
+            )
+            session.add_all(records)
+            session.commit()
+        return len(records)
+
+    def delete(self, snapshot_id: str) -> bool:
+        """Delete one snapshot by id."""
+
+        with Session(self.engine) as session:
+            record = session.get(ReflectionSnapshotRecord, snapshot_id)
+            if record is None:
+                return False
+            session.delete(record)
+            session.commit()
+        return True
+
+    def delete_all(self) -> int:
+        """Delete all snapshots and return the removed row count."""
+
+        with Session(self.engine) as session:
+            count = len(list(session.scalars(select(ReflectionSnapshotRecord.snapshot_id))))
+            session.execute(delete(ReflectionSnapshotRecord))
+            session.commit()
+        return count
 
     def get(self, snapshot_id: str) -> ReflectionSnapshotRecord | None:
         """Return one stored snapshot with its immutable request payload."""

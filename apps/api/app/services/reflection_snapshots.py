@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import uuid4
 
 from pydantic import ValidationError
 
 from app.agent.providers import ProviderRequest, select_dialogue_provider
+from app.models.reflection import ReflectionSnapshotRecord
 from app.schemas.dialogue import DialogueMode, ModelProfile
 from app.schemas.reflection_snapshots import (
+    ReflectionArchiveDeleteResponse,
+    ReflectionArchiveImportResponse,
+    ReflectionArchivePackage,
+    ReflectionArchiveRecord,
     ReflectionSnapshotContent,
     ReflectionSnapshotCorrectionRequest,
     ReflectionSnapshotCorrectionResponse,
@@ -96,8 +102,112 @@ def snapshot_repository(
     repository = ReflectionSnapshotRepository(
         create_snapshot_engine(current_settings.thought_snapshots_path)
     )
-    repository.import_jsonl(current_settings.thought_snapshots_path)
+    source_path = Path(current_settings.thought_snapshots_path).expanduser()
+    migration_marker = source_path.with_suffix(".jsonl-imported")
+    if not migration_marker.exists():
+        repository.import_jsonl(source_path)
+        migration_marker.parent.mkdir(parents=True, exist_ok=True)
+        migration_marker.touch(exist_ok=True)
     return repository
+
+
+def export_reflection_archive(
+    current_settings: PhilosophyOSSettings = settings,
+) -> ReflectionArchivePackage:
+    """Build a lossless, versioned archive package from local snapshots."""
+
+    records = snapshot_repository(current_settings).list_all()
+    return ReflectionArchivePackage(
+        exported_at=datetime.now(UTC).isoformat(),
+        records=[
+            ReflectionArchiveRecord(
+                created_at=record.created_at,
+                request=dict(record.request_payload),
+                response=ReflectionSnapshotResponse.model_validate(record.response_payload),
+            )
+            for record in records
+        ],
+    )
+
+
+def render_reflection_archive_markdown(package: ReflectionArchivePackage) -> str:
+    """Render a readable Markdown copy without losing the JSON backup contract."""
+
+    lines = [
+        "# PhilosophyOS 思想档案",
+        "",
+        f"> 导出时间：{package.exported_at} · 共 {len(package.records)} 条记录",
+        "",
+    ]
+    for record in reversed(package.records):
+        content = record.response.content
+        title = content.title if content else str(record.request.get("question", "待补生成思想"))
+        lines.extend([f"## {title}", "", f"- 时间：{record.created_at}"])
+        if content:
+            philosophers = "、".join(item.name for item in content.related_philosophers)
+            lines.extend(
+                [
+                    f"- 主题：{content.topic}",
+                    f"- 当前立场：{content.user_position}",
+                    f"- 核心问题：{content.core_question}",
+                    f"- 相关哲学家：{philosophers or '暂无'}",
+                    "",
+                ]
+            )
+        else:
+            pending_reason = record.response.pending_reason or "原因未知"
+            lines.extend([f"- 状态：待补生成（{pending_reason}）", ""])
+    return "\n".join(lines)
+
+
+def import_reflection_archive(
+    package: ReflectionArchivePackage,
+    current_settings: PhilosophyOSSettings = settings,
+) -> ReflectionArchiveImportResponse:
+    """Validate the complete package before atomically merging its records."""
+
+    validated_records: list[ReflectionSnapshotRecord] = []
+    seen_ids: set[str] = set()
+    for item in package.records:
+        snapshot_id = item.response.snapshot_id
+        question = str(item.request.get("question", "")).strip()
+        datetime.fromisoformat(item.created_at.replace("Z", "+00:00"))
+        if not question:
+            raise ValueError("Archive record question must not be blank")
+        if snapshot_id in seen_ids:
+            raise ValueError(f"Duplicate snapshot id in archive: {snapshot_id}")
+        seen_ids.add(snapshot_id)
+        validated_records.append(
+            ReflectionSnapshotRecord(
+                snapshot_id=snapshot_id,
+                created_at=item.created_at,
+                question=question,
+                request_payload=item.request,
+                response_payload=item.response.model_dump(mode="json"),
+            )
+        )
+    imported = snapshot_repository(current_settings).restore(validated_records)
+    return ReflectionArchiveImportResponse(imported=imported, total=len(package.records))
+
+
+def delete_reflection_snapshot(
+    snapshot_id: str, current_settings: PhilosophyOSSettings = settings
+) -> ReflectionArchiveDeleteResponse | None:
+    """Delete one local snapshot."""
+
+    if not snapshot_repository(current_settings).delete(snapshot_id):
+        return None
+    return ReflectionArchiveDeleteResponse(deleted=1)
+
+
+def delete_all_reflection_snapshots(
+    current_settings: PhilosophyOSSettings = settings,
+) -> ReflectionArchiveDeleteResponse:
+    """Delete all local snapshots after route-level confirmation."""
+
+    return ReflectionArchiveDeleteResponse(
+        deleted=snapshot_repository(current_settings).delete_all()
+    )
 
 
 def persist_snapshot_record(

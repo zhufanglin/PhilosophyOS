@@ -330,6 +330,81 @@ async def test_reflection_snapshot_list_endpoint_returns_recent_items(
 
 
 @pytest.mark.anyio
+async def test_archive_export_restore_and_delete_are_lossless_and_atomic(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A JSON export restores cleanly and invalid files never overwrite data."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    test_settings = PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path))
+    monkeypatch.setattr(snapshot_routes, "settings", test_settings)
+    repository = ReflectionSnapshotRepository(create_snapshot_engine(snapshot_path))
+    response_payload = {
+        "snapshot_id": "portable_snapshot",
+        "status": "completed",
+        "content": {
+            "topic": "自由与责任",
+            "title": "可以带走的思想",
+            "user_position": "我愿意承担选择。",
+            "confidence": 0.8,
+            "core_question": "责任如何成立？",
+            "related_philosophers": [],
+            "change_signal": {"changed": False},
+        },
+        "provider": "openai",
+        "provider_model": "test-model",
+        "revisions": [
+            {
+                "source": "user",
+                "updated_at": "2026-07-31T10:00:00+00:00",
+                "previous_user_position": "我还不确定。",
+                "previous_tensions": [],
+            }
+        ],
+    }
+    repository.add(
+        created_at="2026-07-31T09:00:00+00:00",
+        request_payload={"question": "责任如何成立？"},
+        response_payload=response_payload,
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        exported = await client.get("/api/v1/reflection-archive/export")
+        markdown = await client.get("/api/v1/reflection-archive/export.md")
+        removed = await client.delete("/api/v1/reflection-snapshots/portable_snapshot")
+        empty_list = await client.get("/api/v1/reflection-snapshots?limit=10")
+        restored = await client.post(
+            "/api/v1/reflection-archive/import", json=exported.json()
+        )
+        restored_list = await client.get("/api/v1/reflection-snapshots?limit=10")
+        corrupt_package = exported.json()
+        corrupt_package["records"][0]["request"]["question"] = ""
+        corrupt = await client.post(
+            "/api/v1/reflection-archive/import", json=corrupt_package
+        )
+        after_corrupt = await client.get("/api/v1/reflection-snapshots?limit=10")
+        cleared = await client.request(
+            "DELETE",
+            "/api/v1/reflection-archive",
+            json={"confirm": "清空全部档案"},
+        )
+
+    assert exported.status_code == 200
+    assert exported.json()["records"][0]["response"]["revisions"][0][
+        "previous_user_position"
+    ] == "我还不确定。"
+    assert markdown.status_code == 200
+    assert "可以带走的思想" in markdown.text
+    assert removed.json() == {"deleted": 1}
+    assert empty_list.json()["items"] == []
+    assert restored.json() == {"imported": 1, "total": 1}
+    assert restored_list.json()["items"][0]["snapshot"]["snapshot_id"] == "portable_snapshot"
+    assert corrupt.status_code == 422
+    assert after_corrupt.json() == restored_list.json()
+    assert cleared.json() == {"deleted": 1}
+
+
+@pytest.mark.anyio
 async def test_reflection_snapshot_decision_endpoint_persists_user_decision(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

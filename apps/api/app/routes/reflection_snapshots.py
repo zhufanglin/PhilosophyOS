@@ -5,9 +5,13 @@ from __future__ import annotations
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.schemas.reflection_snapshots import (
+    ReflectionArchiveClearRequest,
+    ReflectionArchiveDeleteResponse,
+    ReflectionArchiveImportResponse,
+    ReflectionArchivePackage,
     ReflectionSnapshotCorrectionRequest,
     ReflectionSnapshotCorrectionResponse,
     ReflectionSnapshotDecisionRequest,
@@ -22,7 +26,12 @@ from app.schemas.reflection_snapshots import (
 from app.services.reflection_snapshots import (
     correct_reflection_snapshot,
     create_reflection_snapshot,
+    delete_all_reflection_snapshots,
+    delete_reflection_snapshot,
+    export_reflection_archive,
+    import_reflection_archive,
     list_reflection_snapshots,
+    render_reflection_archive_markdown,
     retry_reflection_snapshot,
     update_reflection_snapshot_decision,
     update_reflection_snapshot_review,
@@ -30,6 +39,84 @@ from app.services.reflection_snapshots import (
 from app.settings import settings
 
 router = APIRouter(prefix="/api/v1", tags=["reflection-snapshots"])
+
+
+@router.get(
+    "/reflection-archive/export",
+    response_model=ReflectionArchivePackage,
+    summary="Export a complete portable thought archive",
+)
+async def export_reflection_archive_endpoint() -> Response:
+    """Download a lossless JSON archive package."""
+
+    package = export_reflection_archive(settings)
+    return Response(
+        content=package.model_dump_json(indent=2),
+        media_type="application/json",
+        headers={"Content-Disposition": "attachment; filename=philosophyos-archive.json"},
+    )
+
+
+@router.get(
+    "/reflection-archive/export.md",
+    summary="Export a readable Markdown thought archive",
+)
+async def export_reflection_archive_markdown_endpoint() -> Response:
+    """Download a human-readable Markdown copy."""
+
+    content = render_reflection_archive_markdown(export_reflection_archive(settings))
+    return Response(
+        content=content,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=philosophyos-archive.md"},
+    )
+
+
+@router.post(
+    "/reflection-archive/import",
+    response_model=ReflectionArchiveImportResponse,
+    summary="Validate and restore a portable thought archive",
+)
+async def import_reflection_archive_endpoint(
+    package: ReflectionArchivePackage,
+) -> ReflectionArchiveImportResponse:
+    """Validate all records before performing an atomic merge."""
+
+    try:
+        return import_reflection_archive(package, settings)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)
+        ) from error
+
+
+@router.delete(
+    "/reflection-archive",
+    response_model=ReflectionArchiveDeleteResponse,
+    summary="Delete every local reflection snapshot",
+)
+async def delete_reflection_archive_endpoint(
+    request: ReflectionArchiveClearRequest,
+) -> ReflectionArchiveDeleteResponse:
+    """Clear the complete archive only after an exact confirmation phrase."""
+
+    return delete_all_reflection_snapshots(settings)
+
+
+@router.delete(
+    "/reflection-snapshots/{snapshot_id}",
+    response_model=ReflectionArchiveDeleteResponse,
+    summary="Delete one local reflection snapshot",
+)
+async def delete_reflection_snapshot_endpoint(
+    snapshot_id: str,
+) -> ReflectionArchiveDeleteResponse:
+    """Delete one selected snapshot."""
+
+    response = delete_reflection_snapshot(snapshot_id, settings)
+    if response is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Snapshot not found")
+    return response
 
 
 @router.get(
