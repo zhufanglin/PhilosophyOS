@@ -3964,7 +3964,8 @@ h1 {
 }
 
 .relation-graph-controls button,
-.relation-graph-controls span {
+.relation-graph-controls span,
+.relation-graph-controls select {
   display: inline-flex;
   min-height: 32px;
   align-items: center;
@@ -3977,6 +3978,11 @@ h1 {
   font: inherit;
   font-size: 0.72rem;
   font-weight: 850;
+}
+
+.relation-graph-controls select {
+  max-width: min(240px, 100%);
+  cursor: pointer;
 }
 
 .relation-graph-controls button {
@@ -4879,7 +4885,7 @@ h1 {
   }
 
   .mobile-brand .brand-copy small {
-    color: #9ea59e;
+    color: var(--ink-muted);
   }
 
   .top-bar .api-status strong {

@@ -12,7 +12,7 @@
   --paper-muted: color-mix(in oklch, var(--surface), var(--fg) 5%);
   --ink: var(--fg);
   --ink-soft: color-mix(in oklch, var(--fg), var(--surface) 24%);
-  --ink-muted: color-mix(in oklch, var(--muted), var(--surface) 38%);
+  --ink-muted: color-mix(in oklch, var(--muted), var(--fg) 30%);
   --forest: var(--accent);
   --forest-soft: color-mix(in oklch, var(--accent), transparent 90%);
   --document-blue: var(--fg);
@@ -28,7 +28,7 @@
   --page: var(--surface);
   --bookmark: var(--accent);
   --gilded-rule: color-mix(in oklch, var(--active), var(--fg) 22%);
-  --margin-note: color-mix(in oklch, var(--muted), var(--surface) 34%);
+  --margin-note: color-mix(in oklch, var(--muted), var(--fg) 30%);
 }
 
 html {

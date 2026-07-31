@@ -1,6 +1,8 @@
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+const apiBaseUrl = "http://127.0.0.1:18999";
+
 const criticalViewports = [
   { name: "desktop", width: 1440, height: 1000 },
   { name: "tablet", width: 1024, height: 768 },
@@ -9,7 +11,7 @@ const criticalViewports = [
 ];
 
 async function mockHealth(page: Page) {
-  await page.route("http://127.0.0.1:8000/health", async (route) => {
+  await page.route(`${apiBaseUrl}/health`, async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({ status: "ok", service: "philosophyos-api", version: "0.1.0" }),
@@ -18,7 +20,7 @@ async function mockHealth(page: Page) {
 }
 
 async function mockModelProfiles(page: Page) {
-  await page.route("http://127.0.0.1:8000/api/v1/model-profiles", async (route) => {
+  await page.route(`${apiBaseUrl}/api/v1/model-profiles`, async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -56,7 +58,7 @@ async function mockModelProfiles(page: Page) {
 
 async function mockModelProfileConnectionTest(page: Page) {
   await page.route(
-    "http://127.0.0.1:8000/api/v1/model-profiles/*/test-connection",
+    `${apiBaseUrl}/api/v1/model-profiles/*/test-connection`,
     async (route) => {
       await route.fulfill({
         contentType: "application/json",
@@ -73,7 +75,7 @@ async function mockModelProfileConnectionTest(page: Page) {
 }
 
 async function mockDialogueTurn(page: Page) {
-  await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
+  await page.route(`${apiBaseUrl}/api/v1/dialogue-turns`, async (route) => {
     const request = route.request().postDataJSON() as {
       model_profile?: string;
       requested_mode?: string;

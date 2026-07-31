@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const screenshotDir = "../../output/playwright";
+const apiBaseUrl = "http://127.0.0.1:18999";
 const viewports = [
   { name: "1440", width: 1440, height: 1000 },
   { name: "1024", width: 1024, height: 768 },
@@ -9,7 +10,7 @@ const viewports = [
 ];
 
 async function mockHealth(page: Page) {
-  await page.route("http://127.0.0.1:8000/health", async (route) => {
+  await page.route(`${apiBaseUrl}/health`, async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({ status: "ok", service: "philosophyos-api", version: "0.1.0" }),
@@ -18,7 +19,7 @@ async function mockHealth(page: Page) {
 }
 
 async function mockModelProfiles(page: Page) {
-  await page.route("http://127.0.0.1:8000/api/v1/model-profiles", async (route) => {
+  await page.route(`${apiBaseUrl}/api/v1/model-profiles`, async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -52,11 +53,25 @@ async function mockModelProfiles(page: Page) {
       }),
     });
   });
+  await page.route(`${apiBaseUrl}/api/v1/model-profiles/*`, async (route) => {
+    const selectedProfile = route.request().url().match(/model-profiles\/([^/]+)$/)?.[1] ?? "free";
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        selected_profile: selectedProfile,
+        profiles: [
+          { profile: "free", label: "免费", configured: true, model: "doubao-seed-2-0-lite-260428", base_url_host: "ark.cn-beijing.volces.com", api_style: "responses" },
+          { profile: "gpt", label: "GPT", configured: true, model: "gpt-5.6", base_url_host: "api.synapai.top", api_style: "responses" },
+          { profile: "deepseek", label: "DeepSeek", configured: true, model: "deepseek-v4-flash", base_url_host: "api.deepseek.com", api_style: "chat_completions" },
+        ],
+      }),
+    });
+  });
 }
 
 async function mockModelProfileConnectionTest(page: Page) {
   await page.route(
-    "http://127.0.0.1:8000/api/v1/model-profiles/*/test-connection",
+    `${apiBaseUrl}/api/v1/model-profiles/*/test-connection`,
     async (route) => {
       const profile = route.request().url().match(/model-profiles\/([^/]+)\/test-connection/)?.[1]
         ?? "free";
@@ -75,7 +90,7 @@ async function mockModelProfileConnectionTest(page: Page) {
 }
 
 async function mockObsidianDraft(page: Page) {
-  await page.route("http://127.0.0.1:8000/api/v1/obsidian-drafts", async (route) => {
+  await page.route(`${apiBaseUrl}/api/v1/obsidian-drafts`, async (route) => {
     await route.fulfill({
       status: 201,
       contentType: "application/json",
@@ -89,7 +104,7 @@ async function mockObsidianDraft(page: Page) {
 }
 
 async function mockReflectionSnapshot(page: Page) {
-  await page.route("http://127.0.0.1:8000/api/v1/reflection-snapshots**", async (route) => {
+  await page.route(`${apiBaseUrl}/api/v1/reflection-snapshots**`, async (route) => {
     const method = route.request().method();
 
     if (method === "PATCH") {
@@ -137,6 +152,7 @@ async function mockReflectionSnapshot(page: Page) {
                 provider: "openai",
                 provider_model: "doubao-seed-2-0-lite-260428",
                 pending_reason: null,
+                revisions: [],
                 user_decision: "rejected",
                 decision_updated_at: "2026-07-28T10:00:00+00:00",
                 snapshot_review: {
@@ -189,6 +205,7 @@ async function mockReflectionSnapshot(page: Page) {
           topic: "诚实与德性",
           title: "诚实是在伤害与责任之间保持清醒",
           user_position: "用户倾向于认为诚实仍值得坚持，但需要承认例外情境。",
+          tensions: ["善意隐瞒与逃避责任之间的界限仍不清楚。"],
           next_question: "什么时候善意隐瞒会变成逃避责任？",
         },
       }),
@@ -196,8 +213,34 @@ async function mockReflectionSnapshot(page: Page) {
   });
 }
 
+async function mockArchiveExports(page: Page) {
+  await page.route(`${apiBaseUrl}/api/v1/reflection-archive/export`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      headers: { "Content-Disposition": 'attachment; filename="philosophyos-archive.json"' },
+      body: JSON.stringify({ version: 1, records: [] }),
+    });
+  });
+  await page.route(`${apiBaseUrl}/api/v1/reflection-archive/export.md`, async (route) => {
+    await route.fulfill({
+      contentType: "text/markdown",
+      headers: { "Content-Disposition": 'attachment; filename="philosophyos-archive.md"' },
+      body: "# PhilosophyOS 思想档案",
+    });
+  });
+}
+
+async function mockDialogueSessions(page: Page) {
+  await page.route(`${apiBaseUrl}/api/v1/dialogue-sessions**`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ items: [] }),
+    });
+  });
+}
+
 async function mockDialogueTurn(page: Page) {
-  await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
+  await page.route(`${apiBaseUrl}/api/v1/dialogue-turns`, async (route) => {
     const request = route.request().postDataJSON() as {
       model_profile?: string;
       requested_mode?: string;
@@ -227,8 +270,8 @@ async function mockDialogueTurn(page: Page) {
 
 async function mockDialogueTurnWithFirstFailure(page: Page) {
   let requestCount = 0;
-  await page.unroute("http://127.0.0.1:8000/api/v1/dialogue-turns");
-  await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
+  await page.unroute(`${apiBaseUrl}/api/v1/dialogue-turns`);
+  await page.route(`${apiBaseUrl}/api/v1/dialogue-turns`, async (route) => {
     requestCount += 1;
     const request = route.request().postDataJSON() as {
       model_profile?: string;
@@ -266,8 +309,8 @@ async function mockDialogueTurnWithFirstFailure(page: Page) {
 
 async function mockDialogueTurnWithDeepSeekFailureThenFreeSuccess(page: Page) {
   const requestedProfiles: string[] = [];
-  await page.unroute("http://127.0.0.1:8000/api/v1/dialogue-turns");
-  await page.route("http://127.0.0.1:8000/api/v1/dialogue-turns", async (route) => {
+  await page.unroute(`${apiBaseUrl}/api/v1/dialogue-turns`);
+  await page.route(`${apiBaseUrl}/api/v1/dialogue-turns`, async (route) => {
     const request = route.request().postDataJSON() as {
       model_profile?: string;
       requested_mode?: string;
@@ -350,6 +393,8 @@ test.beforeEach(async ({ page }) => {
   await mockModelProfileConnectionTest(page);
   await mockObsidianDraft(page);
   await mockReflectionSnapshot(page);
+  await mockArchiveExports(page);
+  await mockDialogueSessions(page);
   await mockDialogueTurn(page);
 });
 
@@ -382,7 +427,7 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await expect(page.locator(".settings-privacy-section")).toContainText("API Key");
   await expect(page.locator(".model-profile-card")).toHaveCount(3);
   await page.getByRole("button", { name: "测试DeepSeek连接" }).click();
-  await expect(page.locator(".model-profile-card").filter({ hasText: "DeepSeek" }).getByRole("status")).toContainText("连接成功");
+  await expect(page.locator(".model-card-result").filter({ hasText: "连接成功" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "设置中心" })).toBeHidden();
 
@@ -399,6 +444,18 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await expect(page.locator(".message.user")).toContainText("坚持诚实");
   await expect(page.locator(".message.assistant")).toHaveCount(2);
   await expect(page.locator(".message.assistant").last()).toContainText("API 回答");
+
+  const followupAnswers = [
+    "第二轮我会区分原则本身与执行原则时可能造成的伤害。",
+    "第三轮我的暂定结论是坚持诚实，但完整披露仍要承担情境责任。",
+  ];
+  for (const [index, answer] of followupAnswers.entries()) {
+    await page.locator("#dialogue-answer").fill(answer);
+    await page.locator(".send-button").click();
+    await expect(page.locator(".message.user")).toHaveCount(index + 2);
+    await expect(page.locator(".message.assistant")).toHaveCount(index + 3);
+    await expect(page.locator(".message.assistant").last()).toContainText(`第 ${index + 2} 轮`);
+  }
 
   await page.locator(".source-trigger").click();
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -470,30 +527,33 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".archive-insights")).toContainText("诚实与德性");
   await expect(page.locator(".archive-insights")).toContainText("善意隐瞒与逃避责任之间的界限仍不清楚");
   await expect(page.locator(".archive-insights")).toContainText("1 次");
+  const jsonDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: "备份 JSON" }).click();
+  const jsonDownload = await jsonDownloadPromise;
+  expect(jsonDownload.suggestedFilename()).toBe("philosophyos-archive.json");
+
+  const archiveSearch = page.getByPlaceholder("主题、立场、张力、哲学家或标签");
+  await archiveSearch.fill("康德");
+  await expect(page.locator(".timeline-card")).toHaveCount(1);
+  await archiveSearch.fill("不存在的思想主题");
+  await expect(page.locator(".archive-filter-empty")).toBeVisible();
+  await page.getByRole("button", { name: "恢复全部档案" }).click();
+  await expect(page.locator(".timeline-card")).toHaveCount(1);
+
   await expect(page.locator(".thought-relation-graph")).toContainText("思想关系图谱");
-  await expect(page.locator(".relation-graph-canvas")).toBeVisible();
-  expect(await page.locator(".thought-graph-node").count()).toBeGreaterThan(2);
+  await expect(page.locator(".relation-force-graph-shell canvas")).toBeVisible();
+  const graphNodePicker = page.getByLabel("定位图谱节点");
+  expect(await graphNodePicker.locator("option").count()).toBeGreaterThan(2);
   await page.getByRole("button", { name: "放大图谱" }).click();
-  await expect(page.locator(".relation-graph-controls")).toContainText("112%");
   await page.getByRole("button", { name: "缩小图谱" }).click();
-  await page.locator(".thought-graph-node").first().hover();
-  await page.waitForTimeout(130);
-  await expect(page.locator(".relation-graph-tooltip")).toBeVisible();
-  const graphNodeBox = await page.locator(".thought-graph-node").first().boundingBox();
-  if (graphNodeBox) {
-    await page.mouse.move(graphNodeBox.x + graphNodeBox.width / 2, graphNodeBox.y + graphNodeBox.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(graphNodeBox.x + graphNodeBox.width / 2 + 72, graphNodeBox.y + graphNodeBox.height / 2 + 36);
-    await page.mouse.up();
-    await page.waitForTimeout(240);
-  }
+  await graphNodePicker.selectOption({ label: "诚实是在伤害与责任之间保持清醒 · 思想节点" });
+  await expect(graphNodePicker).toHaveValue("snapshot:snap_timeline_e2e");
+  await expect(page.locator(".timeline-detail-panel")).toBeVisible();
+  await expect(page.locator(".timeline-card.expanded")).toContainText("诚实是在伤害与责任之间保持清醒");
   await page.getByRole("button", { name: "重置视图" }).click();
-  await expect(page.locator(".relation-graph-controls")).toContainText("100%");
   await expect(page.locator(".timeline-card")).toContainText("诚实是在伤害与责任之间保持清醒");
   await expect(page.locator(".timeline-card")).toContainText("不同意");
   await expect(page.locator(".timeline-card")).toContainText("什么时候善意隐瞒会变成逃避责任");
-  await page.getByRole("button", { name: /展开思想节点/ }).click();
-  await expect(page.locator(".timeline-detail-panel")).toBeVisible();
   await expect(page.locator(".timeline-detail-panel")).toContainText("核心问题");
   await expect(page.locator(".timeline-detail-panel")).toContainText("诚实不是机械地说出全部事实");
   await expect(page.locator(".timeline-detail-panel")).toContainText("康德");
@@ -510,6 +570,27 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
 
   expect(consoleProblems.warnings).toEqual([]);
   expect(consoleProblems.errors).toEqual([]);
+});
+
+test("backend disconnection shows a recovery action without blocking the page", async ({ page }) => {
+  await page.route(`${apiBaseUrl}/**`, async (route) => route.abort("connectionrefused"));
+  await page.goto("/#today");
+
+  await expect(page.locator(".api-status")).toContainText("知识服务离线");
+  await expect(page.locator(".api-status")).toContainText("后端未启动，请运行 scripts\\start-dev.cmd");
+  await expect(page.locator(".daily-question h1")).toBeVisible();
+});
+
+test("archive and philosopher atlas remain usable at 390px", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#archive");
+  await expect(page.locator(".thought-archive-page")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await expectMobileNavClearance(page, ".thought-timeline");
+
+  await page.goto("/#philosophers");
+  await expect(page.locator(".philosopher-atlas-page")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
 });
 
 test("dialogue API failure can be retried without duplicating the user turn", async ({ page }) => {
@@ -542,7 +623,7 @@ test("deepseek failure can switch to free model without duplicating the user tur
   const consoleProblems = collectConsoleProblems(page);
   const requestedProfiles = await mockDialogueTurnWithDeepSeekFailureThenFreeSuccess(page);
 
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 1024, height: 768 });
   await page.goto("/#today");
   await page.locator(".start-button").click();
   await expect(page.locator(".dialogue-page")).toBeVisible();

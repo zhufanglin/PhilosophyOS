@@ -1257,7 +1257,10 @@ function ForceThoughtRelationGraph({
     if (!nodeId) return;
     setActiveNodeId(nodeId);
     setPulseNodeId(nodeId);
-    onNavigateSnapshots(snapshotsForNode(nodeId).map((item) => item.snapshot.snapshot_id));
+    const snapshotIds = nodeId.startsWith("snapshot:")
+      ? [nodeId.slice("snapshot:".length)]
+      : snapshotsForNode(nodeId).map((item) => item.snapshot.snapshot_id);
+    onNavigateSnapshots(snapshotIds);
     if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
     pulseTimerRef.current = window.setTimeout(() => {
       setPulseNodeId(null);
@@ -1520,6 +1523,21 @@ function ForceThoughtRelationGraph({
         </div>
         <p>每页是一组真实相连的思想；拖住一个节点时，整张关系网会像柔软织物一样随之移动。</p>
         <div className="relation-graph-controls" aria-label="图谱控制">
+          <select
+            aria-label="定位图谱节点"
+            value={activeNodeId ?? ""}
+            onChange={(event) => {
+              const node = graphData.nodes.find((candidate) => candidate.id === event.target.value);
+              if (node) activateNode(node);
+            }}
+          >
+            <option value="">定位节点</option>
+            {graphData.nodes.map((node) => (
+              <option key={node.id} value={node.id}>
+                {node.label} · {graphNodeKindLabels[node.kind]}
+              </option>
+            ))}
+          </select>
           {graphPages.length > 1 ? (
             <div className="relation-graph-pagination" aria-label="思想群落翻页">
               <button
@@ -1544,7 +1562,7 @@ function ForceThoughtRelationGraph({
             </div>
           ) : null}
           <button type="button" onClick={() => changeZoom(-1)} aria-label="缩小图谱">－</button>
-          <span>{Math.round(zoom * 100)}%</span>
+          <span className="relation-graph-zoom">{Math.round(zoom * 100)}%</span>
           <button type="button" onClick={() => changeZoom(1)} aria-label="放大图谱">＋</button>
           <button type="button" onClick={resetLayout}>重置视图</button>
         </div>
