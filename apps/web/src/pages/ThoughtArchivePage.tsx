@@ -287,6 +287,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedSnapshotId, setExpandedSnapshotId] = useState<string | null>(null);
+  const [focusedGraphSnapshotId, setFocusedGraphSnapshotId] = useState<string | null>(null);
   const [highlightedSnapshotIds, setHighlightedSnapshotIds] = useState<string[]>([]);
   const timelineCardRefs = useRef<Record<string, HTMLElement | null>>({});
   const highlightTimerRef = useRef<number | null>(null);
@@ -374,6 +375,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     if (!firstSnapshotId) return;
 
     setExpandedSnapshotId(firstSnapshotId);
+    setFocusedGraphSnapshotId(firstSnapshotId);
     setHighlightedSnapshotIds(uniqueSnapshotIds);
 
     if (highlightTimerRef.current) {
@@ -393,6 +395,14 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
       setHighlightedSnapshotIds([]);
       highlightTimerRef.current = null;
     }, 2600);
+  }
+
+  function toggleTimelineSnapshot(snapshotId: string) {
+    setExpandedSnapshotId((current) => {
+      const nextSnapshotId = current === snapshotId ? null : snapshotId;
+      setFocusedGraphSnapshotId(nextSnapshotId);
+      return nextSnapshotId;
+    });
   }
 
   return (
@@ -473,6 +483,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
 
       {!loading && !error && graphData.nodes.length > 0 ? (
         <ThoughtRelationGraph
+          focusedSnapshotId={focusedGraphSnapshotId}
           graph={graphData}
           items={completedSnapshotItems}
           onNavigateSnapshots={focusTimelineSnapshots}
@@ -492,11 +503,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
               registerCard={(node) => {
                 timelineCardRefs.current[item.snapshot.snapshot_id] = node;
               }}
-              onToggle={() =>
-                setExpandedSnapshotId((current) =>
-                  current === item.snapshot.snapshot_id ? null : item.snapshot.snapshot_id,
-                )
-              }
+              onToggle={() => toggleTimelineSnapshot(item.snapshot.snapshot_id)}
             />
           ))}
         </section>
@@ -652,10 +659,12 @@ function ThoughtEvolutionMap({ items }: { items: CompletedSnapshotItem[] }) {
 }
 
 function ThoughtRelationGraph({
+  focusedSnapshotId,
   graph,
   items,
   onNavigateSnapshots,
 }: {
+  focusedSnapshotId: string | null;
   graph: ReturnType<typeof buildThoughtGraph>;
   items: CompletedSnapshotItem[];
   onNavigateSnapshots: (snapshotIds: string[]) => void;
@@ -711,7 +720,8 @@ function ThoughtRelationGraph({
     };
   }, []);
 
-  const focusedNodeId = hoverNodeId ?? activeNodeId;
+  const externalFocusedNodeId = focusedSnapshotId ? `snapshot:${focusedSnapshotId}` : null;
+  const focusedNodeId = hoverNodeId ?? activeNodeId ?? externalFocusedNodeId;
   const focusedNode = graph.nodes.find((node) => node.id === focusedNodeId) ?? null;
   const connectedNodeIds = useMemo(() => {
     if (!focusedNodeId) return new Set<string>();
