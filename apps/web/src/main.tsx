@@ -1,4 +1,4 @@
-import { Archive, BookMarked, Compass, Landmark, MessageSquare, Search, Settings2, UserRound, Users, X } from "lucide-react";
+import { Archive, BookMarked, Compass, Landmark, MessageSquare, Search, Settings2, UserRound, X } from "lucide-react";
 import { StrictMode, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -110,43 +110,9 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8001";
 
-type AppView = "today" | "dialogue" | "explore" | "concept" | "archive" | "philosophers" | "friends" | "notes";
+type AppView = "today" | "dialogue" | "explore" | "concept" | "archive" | "philosophers";
 
-const appViews: AppView[] = ["today", "dialogue", "explore", "concept", "archive", "philosophers", "friends", "notes"];
-
-type ComingSoonModule = {
-  id: "friends" | "notes";
-  icon: typeof Users;
-  kicker: string;
-  title: string;
-  description: string;
-  status: string;
-  actions: string[];
-  nextMilestones: string[];
-};
-
-const comingSoonModules: Record<"friends" | "notes", ComingSoonModule> = {
-  friends: {
-    id: "friends",
-    icon: Users,
-    kicker: "COLLABORATION / 设计中",
-    title: "好友讨论室",
-    description: "未来这里会承载和朋友一起讨论哲学问题、互相追问、共同批注观点的协作空间。",
-    status: "MVP 阶段先保留入口，避免功能在导航里被吞掉。",
-    actions: ["邀请好友讨论同一个命题", "共享一段对话作为讨论材料", "把朋友的反问保存为思想线索"],
-    nextMilestones: ["账号与好友关系", "讨论房间", "共同批注与权限"],
-  },
-  notes: {
-    id: "notes",
-    icon: BookMarked,
-    kicker: "NOTE WORKBENCH / 设计中",
-    title: "笔记工作台",
-    description: "未来这里会把对话、思想快照、Obsidian/Markdown 草稿整理成可继续写作的个人哲学笔记。",
-    status: "当前已有思想快照和归档，笔记工作台会在此基础上扩展。",
-    actions: ["汇总本周思想快照", "编辑 Markdown 草稿", "把概念节点整理成文章提纲"],
-    nextMilestones: ["本地笔记索引", "Markdown 编辑器", "Obsidian 同步策略"],
-  },
-};
+const appViews: AppView[] = ["today", "dialogue", "explore", "concept", "archive", "philosophers"];
 
 const settingsArchiveNotes = [
   {
@@ -515,46 +481,6 @@ function App() {
       } as CSSProperties)
     : undefined;
 
-  function renderComingSoonModule(moduleId: "friends" | "notes") {
-    const module = comingSoonModules[moduleId];
-    const Icon = module.icon;
-
-    return (
-      <main className="module-placeholder-page" id={module.id}>
-        <section className="module-placeholder-hero" aria-labelledby={`${module.id}-title`}>
-          <div className="module-placeholder-mark" aria-hidden="true">
-            <Icon size={32} />
-          </div>
-          <div>
-            <p className="section-kicker">{module.kicker}</p>
-            <h1 id={`${module.id}-title`}>{module.title}</h1>
-            <p>{module.description}</p>
-          </div>
-        </section>
-
-        <section className="module-placeholder-grid" aria-label={`${module.title}规划`}>
-          <article>
-            <span>当前状态</span>
-            <strong>{module.status}</strong>
-            <p>这不是死入口，也不是灰色装饰；它会作为后续商业化和协作能力的预留舱位。</p>
-          </article>
-          <article>
-            <span>可做的事</span>
-            <ul>
-              {module.actions.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </article>
-          <article>
-            <span>后续里程碑</span>
-            <ol>
-              {module.nextMilestones.map((item) => <li key={item}>{item}</li>)}
-            </ol>
-          </article>
-        </section>
-      </main>
-    );
-  }
-
   function renderModelPanel() {
     if (!modelPanelOpen) {
       return null;
@@ -787,8 +713,6 @@ function App() {
             <small className="nav-section-label archive-label">个人馆藏</small>
             <a className={view === "archive" ? "active" : ""} href="#archive" aria-current={view === "archive" ? "page" : undefined}><Archive size={17} /> 思想档案</a>
             <a className={view === "philosophers" ? "active" : ""} href="#philosophers" aria-current={view === "philosophers" ? "page" : undefined}><Landmark size={17} /> 西方哲学家</a>
-            <a className={view === "friends" ? "active" : ""} href="#friends" aria-current={view === "friends" ? "page" : undefined}><Users size={17} /> 好友</a>
-            <a className={view === "notes" ? "active" : ""} href="#notes" aria-current={view === "notes" ? "page" : undefined}><BookMarked size={17} /> 笔记工作台</a>
           </nav>
         </div>
         <div className="edition-mark">
@@ -890,8 +814,6 @@ function App() {
           />
         ) : null}
         {view === "explore" ? <ExplorePage apiBaseUrl={apiBaseUrl} /> : null}
-        {view === "friends" ? renderComingSoonModule("friends") : null}
-        {view === "notes" ? renderComingSoonModule("notes") : null}
       </div>
 
       <nav className="mobile-nav" aria-label="移动端主导航">
@@ -900,8 +822,6 @@ function App() {
         <a className={view === "explore" ? "active" : ""} href="#explore"><Compass size={19} /><span>探索</span></a>
         <a className={view === "archive" ? "active" : ""} href="#archive"><Archive size={19} /><span>档案</span></a>
         <a className={view === "philosophers" ? "active" : ""} href="#philosophers"><Landmark size={19} /><span>图鉴</span></a>
-        <a className={view === "friends" ? "active" : ""} href="#friends"><Users size={19} /><span>好友</span></a>
-        <a className={view === "notes" ? "active" : ""} href="#notes"><BookMarked size={19} /><span>笔记</span></a>
       </nav>
     </div>
     {renderModelPanel()}

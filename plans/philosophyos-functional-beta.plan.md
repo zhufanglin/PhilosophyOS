@@ -171,7 +171,7 @@ flowchart LR
 - **Acceptance:** API 测试、前端构建和核心 E2E 全部通过；桌面与 390px 手机视口无阻塞性问题。
 - **Dependencies:** 1.3, 2.2, 3.2, 3.3, 4.1
 
-### 4.3 [ ] 收紧 Beta 导航与发布说明
+### 4.3 [x] 收紧 Beta 导航与发布说明 *(completed 2026-08-01)*
 - **Files:** `apps/web/src/main.tsx`, `apps/web/src/styles.css`, `README.md`, `docs/product/mvp-scope.md`
 - **What:** 主导航只保留已完成模块；未完成能力进入“后续计划”说明；补充安装、备份、隐私和故障恢复说明。
 - **Acceptance:** 页面无死入口和占位功能；新用户按 README 可完成一次完整使用；明确说明数据位置和 API Key 边界。
