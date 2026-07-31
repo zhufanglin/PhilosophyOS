@@ -99,7 +99,7 @@ flowchart LR
 - **Acceptance:** 三类 profile 均可保存和重启恢复；任何 GET 响应均不包含完整 Key；错误地址返回明确错误。
 - **Dependencies:** 1.1
 
-### 2.2 [ ] 完成首次使用与模型设置页面
+### 2.2 [x] 完成首次使用与模型设置页面 *(completed 2026-07-31)*
 - **Files:** `apps/web/src/main.tsx`, `apps/web/src/components/`, `apps/web/src/styles.css`
 - **What:** 将现有模型切换器扩展为设置面板；未配置时引导录入，已配置时只显示掩码、模型和连接状态。
 - **Acceptance:** 用户不接触终端即可完成配置、测试和切换；手机与桌面均无溢出；页面不保存明文 Key。

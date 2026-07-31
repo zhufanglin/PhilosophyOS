@@ -24,6 +24,7 @@ type ModelProfileStatus = {
   configured: boolean;
   model: string;
   base_url_host: string | null;
+  base_url: string | null;
   api_style: "responses" | "chat_completions";
 };
 
@@ -54,6 +55,57 @@ type ModelProfileTestState = {
 };
 
 type ModelProfileTestStates = Partial<Record<ModelProfile, ModelProfileTestState>>;
+
+type ModelProfileDraft = {
+  apiKey: string;
+  model: string;
+  baseUrl: string;
+  apiStyle: "responses" | "chat_completions";
+};
+
+type ModelProfileGuide = {
+  name: string;
+  description: string;
+  signupUrl: string;
+  signupLabel: string;
+  defaultModel: string;
+  modelOptions: string[];
+  defaultBaseUrl: string;
+  apiStyle: "responses" | "chat_completions";
+};
+
+const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
+  free: {
+    name: "豆包 / 火山方舟",
+    description: "适合先免费体验，Key 在火山引擎方舟控制台创建。",
+    signupUrl: "https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey",
+    signupLabel: "打开火山方舟控制台",
+    defaultModel: "doubao-seed-2-0-lite-260428",
+    modelOptions: ["doubao-seed-2-0-lite-260428"],
+    defaultBaseUrl: "https://ark.cn-beijing.volces.com/api/v3",
+    apiStyle: "responses",
+  },
+  gpt: {
+    name: "GPT / OpenAI",
+    description: "使用 OpenAI 官方 API。需要在平台创建 API Key，费用由平台账户承担。",
+    signupUrl: "https://platform.openai.com/api-keys",
+    signupLabel: "打开 OpenAI API Keys",
+    defaultModel: "gpt-5.6",
+    modelOptions: ["gpt-5.6", "gpt-4.1-mini"],
+    defaultBaseUrl: "https://api.openai.com/v1",
+    apiStyle: "responses",
+  },
+  deepseek: {
+    name: "DeepSeek",
+    description: "使用 DeepSeek 官方平台创建 Key，可选择 Flash 或 Pro。",
+    signupUrl: "https://platform.deepseek.com/api_keys",
+    signupLabel: "打开 DeepSeek API Keys",
+    defaultModel: "deepseek-v4-flash",
+    modelOptions: ["deepseek-v4-flash", "deepseek-v4-pro"],
+    defaultBaseUrl: "https://api.deepseek.com",
+    apiStyle: "chat_completions",
+  },
+};
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8001";
 
@@ -111,7 +163,7 @@ const settingsArchiveNotes = [
 ];
 
 const settingsPrivacyNotes = [
-  "API Key 只放在后端环境变量中，前端只显示配置状态，不展示密钥。",
+  "API Key 由本机后端写入 SQLite 私有配置；前端可以提交新 Key，但不会存储或再次读取明文。",
   "发送给模型的是本轮哲学回答与必要上下文，不会自动上传整个本地档案。",
   "思想档案优先保留在你的本地服务中，后续商业化同步功能需要单独授权。",
 ];
@@ -133,6 +185,9 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [modelProfiles, setModelProfiles] = useState<ModelProfileStatus[]>([]);
   const [modelProfileTests, setModelProfileTests] = useState<ModelProfileTestStates>({});
+  const [modelProfileDrafts, setModelProfileDrafts] = useState<Partial<Record<ModelProfile, ModelProfileDraft>>>({});
+  const [savingProfile, setSavingProfile] = useState<ModelProfile | null>(null);
+  const [modelProfileSaveMessages, setModelProfileSaveMessages] = useState<Partial<Record<ModelProfile, string>>>({});
   const [modelPanelOpen, setModelPanelOpen] = useState(false);
   const [view, setView] = useState<AppView>(() => {
     const hash = window.location.hash.slice(1);
@@ -168,6 +223,23 @@ function App() {
         setHealth((await healthResponse.json()) as HealthResponse);
         const profilesPayload = (await profilesResponse.json()) as ModelProfilesResponse;
         setModelProfiles(profilesPayload.profiles);
+        setModelProfile(profilesPayload.selected_profile);
+        window.localStorage.setItem("philosophyos:model-profile", profilesPayload.selected_profile);
+        setModelProfileDrafts((current) => {
+          const next = { ...current };
+          profilesPayload.profiles.forEach((profile) => {
+            if (!next[profile.profile]) {
+              const guide = modelProfileGuides[profile.profile];
+              next[profile.profile] = {
+                apiKey: "",
+                model: profile.model || guide.defaultModel,
+                baseUrl: profile.base_url ?? guide.defaultBaseUrl,
+                apiStyle: profile.api_style,
+              };
+            }
+          });
+          return next;
+        });
       } catch (requestError) {
         if (requestError instanceof DOMException && requestError.name === "AbortError") {
           return;
@@ -212,6 +284,8 @@ function App() {
         }
         const payload = (await response.json()) as ModelProfilesResponse;
         setModelProfiles(payload.profiles);
+        setModelProfile(payload.selected_profile);
+        window.localStorage.setItem("philosophyos:model-profile", payload.selected_profile);
       } catch (requestError) {
         if (requestError instanceof DOMException && requestError.name === "AbortError") {
           return;
@@ -238,9 +312,57 @@ function App() {
     setView(nextView);
   }
 
+  async function saveModelProfile(profile: ModelProfile, selected: boolean) {
+    const draft = modelProfileDrafts[profile];
+    if (!draft) {
+      return;
+    }
+    setSavingProfile(profile);
+    setModelProfileSaveMessages((current) => ({ ...current, [profile]: "正在保存到本机…" }));
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/v1/model-profiles/${profile}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          api_key: draft.apiKey.trim() || null,
+          model: draft.model.trim(),
+          base_url: draft.baseUrl.trim() || null,
+          api_style: draft.apiStyle,
+          selected,
+        }),
+      });
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
+        throw new Error(payload?.detail || `保存失败（${response.status}）`);
+      }
+      const payload = (await response.json()) as ModelProfilesResponse;
+      setModelProfiles(payload.profiles);
+      if (selected) {
+        setModelProfile(profile);
+        window.localStorage.setItem("philosophyos:model-profile", profile);
+      }
+      setModelProfileDrafts((current) => ({
+        ...current,
+        [profile]: { ...draft, apiKey: "" },
+      }));
+      setModelProfileSaveMessages((current) => ({
+        ...current,
+        [profile]: "已保存。Key 只保存在本机后端。",
+      }));
+    } catch (requestError) {
+      setModelProfileSaveMessages((current) => ({
+        ...current,
+        [profile]: requestError instanceof Error ? requestError.message : "保存失败，请稍后重试。",
+      }));
+    } finally {
+      setSavingProfile(null);
+    }
+  }
+
   function changeModelProfile(nextProfile: ModelProfile) {
     setModelProfile(nextProfile);
     window.localStorage.setItem("philosophyos:model-profile", nextProfile);
+    void saveModelProfile(nextProfile, true);
   }
 
   async function testModelProfileConnection(profile: ModelProfile) {
@@ -440,8 +562,8 @@ function App() {
             </article>
             <article>
               <span>隐私边界</span>
-              <strong>Key 不进前端</strong>
-              <p>浏览器只负责切换档位和展示状态，不保存 API Key。</p>
+              <strong>Key 不留在浏览器</strong>
+              <p>浏览器只负责提交，Key 由本机后端保存且不会再次回传。</p>
             </article>
           </section>
 
@@ -449,72 +571,109 @@ function App() {
             <div className="settings-section-heading">
               <span>01 / MODEL API</span>
               <h3 id="settings-model-title">模型与 API</h3>
-              <p>GPT、DeepSeek 由用户在后端填写 Key；免费模型可以作为默认体验入口。</p>
+              <p>在这里填写自己的 API。官方申请入口会标在每张卡片里，Key 只发送给本机后端保存。</p>
             </div>
-          <div className="model-profile-grid">
-            {orderedModelProfiles.map((profile) => {
-              const testState = modelProfileTests[profile.profile];
-              const selected = modelProfile === profile.profile;
-              return (
-                <article className={`model-profile-card${selected ? " selected" : ""}`} key={profile.profile}>
-                  <div className="model-card-heading">
-                    <div>
-                      <span className={profile.configured ? "profile-ready" : "profile-missing"}>
-                        {profile.configured ? "已配置" : "未配置"}
-                      </span>
-                      <h3>{profile.label}</h3>
+            <div className="model-profile-grid">
+              {orderedModelProfiles.map((profile) => {
+                const guide = modelProfileGuides[profile.profile];
+                const draft = modelProfileDrafts[profile.profile] ?? {
+                  apiKey: "",
+                  model: profile.model || guide.defaultModel,
+                  baseUrl: guide.defaultBaseUrl,
+                  apiStyle: guide.apiStyle,
+                };
+                const testState = modelProfileTests[profile.profile];
+                const selected = modelProfile === profile.profile;
+                const updateDraft = (changes: Partial<ModelProfileDraft>) => {
+                  setModelProfileDrafts((current) => ({
+                    ...current,
+                    [profile.profile]: { ...draft, ...changes },
+                  }));
+                };
+                return (
+                  <article className={`model-profile-card${selected ? " selected" : ""}`} key={profile.profile}>
+                    <div className="model-card-heading">
+                      <div>
+                        <span className={profile.configured ? "profile-ready" : "profile-missing"}>
+                          {profile.configured ? "已配置" : "未配置"}
+                        </span>
+                        <h3>{guide.name}</h3>
+                      </div>
+                      {selected ? <strong>当前使用</strong> : null}
                     </div>
-                    {selected ? <strong>当前使用</strong> : null}
-                  </div>
+                    <p className="model-card-description">{guide.description}</p>
+                    <a className="provider-link" href={guide.signupUrl} target="_blank" rel="noreferrer">
+                      {guide.signupLabel}<span aria-hidden="true">↗</span>
+                    </a>
+                    <div className="model-config-fields">
+                      <label>
+                        <span>API Key</span>
+                        <input
+                          type="password"
+                          autoComplete="new-password"
+                          value={draft.apiKey}
+                          placeholder={profile.configured ? "已保存，留空表示不更换" : "粘贴 API Key"}
+                          onChange={(event) => updateDraft({ apiKey: event.target.value })}
+                        />
+                      </label>
+                      <label>
+                        <span>Model</span>
+                        <input
+                          list={`${profile.profile}-models`}
+                          value={draft.model}
+                          onChange={(event) => updateDraft({ model: event.target.value })}
+                        />
+                        <datalist id={`${profile.profile}-models`}>
+                          {guide.modelOptions.map((option) => <option value={option} key={option} />)}
+                        </datalist>
+                      </label>
+                      <label>
+                        <span>Base URL</span>
+                        <input
+                          type="url"
+                          value={draft.baseUrl}
+                          onChange={(event) => updateDraft({ baseUrl: event.target.value })}
+                        />
+                      </label>
+                    </div>
 
-                  <dl>
-                    <div>
-                      <dt>模型</dt>
-                      <dd>{profile.model}</dd>
-                    </div>
-                    <div>
-                      <dt>服务</dt>
-                      <dd>{profile.base_url_host ?? "默认服务"}</dd>
-                    </div>
-                    <div>
-                      <dt>接口</dt>
-                      <dd>{profile.api_style === "responses" ? "Responses" : "Chat Completions"}</dd>
-                    </div>
-                  </dl>
+                    {modelProfileSaveMessages[profile.profile] ? (
+                      <p className="model-card-result" role="status">{modelProfileSaveMessages[profile.profile]}</p>
+                    ) : null}
+                    {testState ? (
+                      <p className={`model-card-result ${testState.status}`} role="status" aria-live="polite">
+                        {testState.message}
+                      </p>
+                    ) : null}
 
-                  {testState ? (
-                    <p className={`model-card-result ${testState.status}`} role="status" aria-live="polite">
-                      {testState.message}
-                    </p>
-                  ) : (
-                    <p className="model-card-hint">
-                      {profile.configured ? "可测试该模型是否能正常回答。" : "请先在后端 .env 中填写这一组 API Key。"}
-                    </p>
-                  )}
-
-                  <div className="model-card-actions">
-                    <button
-                      className="secondary-button"
-                      type="button"
-                      onClick={() => changeModelProfile(profile.profile)}
-                      disabled={selected}
-                    >
-                      {selected ? "已选择" : "切换到此模型"}
-                    </button>
-                    <button
-                      className="primary-button"
-                      type="button"
-                      onClick={() => void testModelProfileConnection(profile.profile)}
-                      disabled={!health || testState?.status === "testing"}
-                      aria-label={`测试${profile.label}连接`}
-                    >
-                      {testState?.status === "testing" ? "测试中" : "测试连接"}
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                    <div className="model-card-actions">
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={() => void saveModelProfile(profile.profile, selected)}
+                        disabled={savingProfile === profile.profile}
+                      >
+                        {savingProfile === profile.profile ? "保存中…" : "保存配置"}
+                      </button>
+                      <button
+                        className="primary-button"
+                        type="button"
+                        onClick={() => void testModelProfileConnection(profile.profile)}
+                        disabled={!health || testState?.status === "testing" || !profile.configured}
+                        aria-label={`测试${guide.name}连接`}
+                      >
+                        {testState?.status === "testing" ? "测试中" : "测试连接"}
+                      </button>
+                    </div>
+                    {!selected ? (
+                      <button className="model-select-link" type="button" onClick={() => changeModelProfile(profile.profile)}>
+                        使用这个模型
+                      </button>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
           </section>
 
           <section className="settings-section settings-archive-section" aria-labelledby="settings-archive-title">
@@ -547,9 +706,9 @@ function App() {
           </section>
 
           <footer>
-            <span>后端配置文件</span>
-            <strong>apps/api/.env</strong>
-            <p>如果用户更换设备或未来开启云同步，应再次确认 API、档案与分享权限。</p>
+            <span>本机私有配置</span>
+            <strong>SQLite</strong>
+            <p>更换设备时需要重新填写 API；当前 Key 不会进入浏览器存储或任何读取响应。</p>
           </footer>
         </section>
       </div>
