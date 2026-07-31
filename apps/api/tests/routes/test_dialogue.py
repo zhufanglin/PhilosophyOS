@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -9,6 +11,23 @@ from app.agent.orchestrator import DialogueOrchestrator
 from app.agent.providers import ProviderRequest, ProviderResponse
 from app.main import app
 from app.routes import dialogue as dialogue_routes
+from app.settings import PhilosophyOSSettings
+
+
+@pytest.fixture(autouse=True)
+def isolate_dialogue_storage(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Keep route tests out of the developer's local dialogue database."""
+
+    monkeypatch.setattr(
+        dialogue_routes,
+        "settings",
+        PhilosophyOSSettings(
+            thought_snapshots_path=str(tmp_path / "thought-snapshots.jsonl")
+        ),
+    )
 
 
 @pytest.mark.anyio
@@ -121,6 +140,94 @@ async def test_dialogue_turn_accepts_free_model_profile_choice() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["model_profile"] == "free"
+
+
+@pytest.mark.anyio
+async def test_dialogue_session_can_be_resumed_across_turns() -> None:
+    """Two turns share one id and restore the complete ordered transcript."""
+
+    initial_message = "Start with your first judgment."
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        first_response = await client.post(
+            "/api/v1/dialogue-turns",
+            json={
+                "user_message": "Honesty remains worthwhile.",
+                "current_mode": "socratic",
+                "requested_mode": "socratic",
+                "model_profile": "free",
+                "topic": "Honesty and consequences",
+                "turn_number": 1,
+                "initial_assistant_message": initial_message,
+            },
+        )
+        conversation_id = first_response.json()["conversation_id"]
+        second_response = await client.post(
+            "/api/v1/dialogue-turns",
+            json={
+                "conversation_id": conversation_id,
+                "user_message": "Because trust depends on it.",
+                "current_mode": "socratic",
+                "requested_mode": "reflect",
+                "model_profile": "deepseek",
+                "topic": "Honesty and consequences",
+                "turn_number": 2,
+            },
+        )
+        detail_response = await client.get(f"/api/v1/dialogue-sessions/{conversation_id}")
+        list_response = await client.get("/api/v1/dialogue-sessions?limit=8")
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert second_response.json()["conversation_id"] == conversation_id
+    assert detail_response.status_code == 200
+    detail = detail_response.json()
+    assert detail["turn_count"] == 2
+    assert detail["current_mode"] == "reflect"
+    assert detail["model_profile"] == "deepseek"
+    assert [message["role"] for message in detail["messages"]] == [
+        "assistant",
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+    ]
+    assert detail["messages"][0]["body"] == initial_message
+    assert list_response.status_code == 200
+    assert list_response.json()["items"][0]["conversation_id"] == conversation_id
+    assert list_response.json()["items"][0]["turn_count"] == 2
+
+
+@pytest.mark.anyio
+async def test_dialogue_session_turn_writes_are_idempotent() -> None:
+    """Retrying one completed turn does not duplicate persisted messages."""
+
+    payload = {
+        "user_message": "A stable claim.",
+        "current_mode": "socratic",
+        "requested_mode": "socratic",
+        "topic": "A stable topic",
+        "turn_number": 1,
+    }
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        first_response = await client.post("/api/v1/dialogue-turns", json=payload)
+        conversation_id = first_response.json()["conversation_id"]
+        payload["conversation_id"] = conversation_id
+        duplicate_response = await client.post("/api/v1/dialogue-turns", json=payload)
+        detail_response = await client.get(f"/api/v1/dialogue-sessions/{conversation_id}")
+
+    assert duplicate_response.status_code == 200
+    assert len(detail_response.json()["messages"]) == 2
+
+
+@pytest.mark.anyio
+async def test_missing_dialogue_session_returns_not_found() -> None:
+    """Unknown session ids have an explicit recoverable response."""
+
+    missing_id = "00000000-0000-0000-0000-000000000000"
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get(f"/api/v1/dialogue-sessions/{missing_id}")
+
+    assert response.status_code == 404
 
 
 class MockOpenAIProvider:

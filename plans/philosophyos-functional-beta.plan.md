@@ -63,7 +63,7 @@ flowchart LR
 - **Acceptance:** 旧演示快照全部可见；连续启动两次数据不重复；创建、更新和读取快照测试通过。
 - **Dependencies:** None
 
-### 1.2 [ ] 持久化对话会话并支持继续思考
+### 1.2 [x] 持久化对话会话并支持继续思考 *(completed 2026-07-31)*
 - **Files:** `apps/api/app/routes/dialogue.py`, `apps/api/app/schemas/dialogue.py`, `apps/api/app/services/`, `apps/web/src/pages/DialoguePage.tsx`
 - **What:** 为对话增加会话 ID、消息历史、列表和恢复接口；页面提供最近会话与新建会话入口，并在刷新后恢复当前内容。
 - **Acceptance:** 完成三轮对话后刷新页面，消息顺序、模型、模式和轮次保持一致；用户可明确新建会话。

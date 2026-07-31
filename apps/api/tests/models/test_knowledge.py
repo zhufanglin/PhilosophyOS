@@ -31,6 +31,8 @@ EXPECTED_TABLES = {
     "attributed_claims",
     "daily_questions",
     "dialogue_messages",
+    "dialogue_session_messages",
+    "dialogue_sessions",
     "philosophy_entities",
     "question_interactions",
     "reflection_snapshots",

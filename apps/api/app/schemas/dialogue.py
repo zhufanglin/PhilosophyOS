@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -37,6 +38,8 @@ class DialogueRequest(BaseModel):
     model_profile: ModelProfile | None = None
     topic: str | None = Field(default=None, max_length=300)
     turn_number: int = Field(default=1, ge=1)
+    conversation_id: UUID | None = None
+    initial_assistant_message: str | None = Field(default=None, max_length=4000)
 
     @field_validator("topic")
     @classmethod
@@ -62,3 +65,43 @@ class DialogueResponse(BaseModel):
     provider_model: str | None = None
     model_profile: ModelProfile = ModelProfile.FREE
     provider_fallback_reason: str | None = None
+    conversation_id: UUID | None = None
+
+
+class DialogueSessionMessage(BaseModel):
+    """One persisted message returned when a dialogue is restored."""
+
+    message_id: UUID
+    role: Literal["assistant", "user"]
+    body: str
+    turn_number: int
+    mode: DialogueMode | None = None
+    model_profile: ModelProfile | None = None
+    provider_model: str | None = None
+    created_at: str
+
+
+class DialogueSessionSummary(BaseModel):
+    """Compact metadata for the recent-dialogue picker."""
+
+    conversation_id: UUID
+    title: str
+    topic: str
+    current_mode: DialogueMode
+    model_profile: ModelProfile
+    turn_count: int
+    finished: bool
+    created_at: str
+    updated_at: str
+
+
+class DialogueSessionDetail(DialogueSessionSummary):
+    """A resumable dialogue with messages in chronological order."""
+
+    messages: list[DialogueSessionMessage]
+
+
+class DialogueSessionListResponse(BaseModel):
+    """Recent local dialogue sessions."""
+
+    items: list[DialogueSessionSummary]

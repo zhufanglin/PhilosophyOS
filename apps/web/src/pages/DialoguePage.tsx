@@ -5,6 +5,7 @@ import {
   GitCompareArrows,
   Lightbulb,
   ListTree,
+  Plus,
   RotateCcw,
   Send,
   Sparkles,
@@ -29,7 +30,7 @@ type DialoguePageProps = {
 };
 
 type Message = {
-  id: number;
+  id: string;
   role: "assistant" | "user";
   body: string;
   mode?: DialogueMode;
@@ -48,6 +49,31 @@ type DialogueTurnResponse = {
   assistant_message: string;
   model_profile: ModelProfile;
   provider_model: string | null;
+  conversation_id: string | null;
+};
+
+type DialogueSessionSummary = {
+  conversation_id: string;
+  title: string;
+  topic: string;
+  current_mode: DialogueMode;
+  model_profile: ModelProfile;
+  turn_count: number;
+  updated_at: string;
+};
+
+type DialogueSessionDetail = DialogueSessionSummary & {
+  finished: boolean;
+  messages: Array<{
+    message_id: string;
+    role: "assistant" | "user";
+    body: string;
+    mode: DialogueMode | null;
+  }>;
+};
+
+type DialogueSessionListResponse = {
+  items: DialogueSessionSummary[];
 };
 
 type PendingDialogueTurn = {
@@ -97,12 +123,32 @@ const sources: DialogueSource[] = [
   },
 ];
 
+const activeDialogueStorageKey = "philosophyos-active-dialogue-id";
+
+function openingMessage(question: DailyQuestionView) {
+  return `先给出你的直觉判断。面对“${question.tension}”，你目前更倾向哪一方？为什么？`;
+}
+
 function isDialogueTurnResponse(value: unknown): value is DialogueTurnResponse {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<DialogueTurnResponse>;
   return (
     typeof candidate.assistant_message === "string" &&
     modes.some((item) => item.id === candidate.mode)
+  );
+}
+
+function isDialogueSessionListResponse(value: unknown): value is DialogueSessionListResponse {
+  return Boolean(value && typeof value === "object" && Array.isArray((value as DialogueSessionListResponse).items));
+}
+
+function isDialogueSessionDetail(value: unknown): value is DialogueSessionDetail {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<DialogueSessionDetail>;
+  return (
+    typeof candidate.conversation_id === "string" &&
+    typeof candidate.topic === "string" &&
+    Array.isArray(candidate.messages)
   );
 }
 
@@ -117,12 +163,16 @@ export function DialoguePage({
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 1,
+      id: crypto.randomUUID(),
       role: "assistant",
       mode: "socratic",
-      body: `先给出你的直觉判断。面对“${question.tension}”，你目前更倾向哪一方？为什么？`,
+      body: openingMessage(question),
     },
   ]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [sessionQuestion, setSessionQuestion] = useState(question.prompt);
+  const [recentSessions, setRecentSessions] = useState<DialogueSessionSummary[]>([]);
+  const [restoringSession, setRestoringSession] = useState(true);
   const [thinking, setThinking] = useState(false);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -137,7 +187,76 @@ export function DialoguePage({
   const progressTimer = useRef<number | null>(null);
   const thinkingCopy = `${modelProfileLabels[thinkingProfile ?? modelProfile]} 正在思考中`;
 
-  useEffect(() => inputRef.current?.focus(), []);
+  async function loadRecentSessions() {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/v1/dialogue-sessions?limit=8`);
+      if (!response.ok) return;
+      const payload: unknown = await response.json();
+      if (isDialogueSessionListResponse(payload)) setRecentSessions(payload.items);
+    } catch {
+      // Dialogue remains usable when the recent-session index is temporarily unavailable.
+    }
+  }
+
+  async function restoreSession(id: string) {
+    setRestoringSession(true);
+    setFailedTurn(null);
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/v1/dialogue-sessions/${id}`);
+      if (!response.ok) throw new Error(`Dialogue session returned ${response.status}`);
+      const payload: unknown = await response.json();
+      if (!isDialogueSessionDetail(payload)) throw new Error("Invalid dialogue session");
+
+      setConversationId(payload.conversation_id);
+      setSessionQuestion(payload.topic);
+      setMessages(payload.messages.map((message) => ({
+        id: message.message_id,
+        role: message.role,
+        body: message.body,
+        mode: message.mode ?? undefined,
+      })));
+      setMode(payload.current_mode);
+      setFinished(payload.finished);
+      setReviewing(false);
+      onModelProfileChange(payload.model_profile);
+      window.localStorage.setItem(activeDialogueStorageKey, payload.conversation_id);
+    } catch {
+      window.localStorage.removeItem(activeDialogueStorageKey);
+      setConversationId(null);
+    } finally {
+      setRestoringSession(false);
+    }
+  }
+
+  function startNewDialogue() {
+    window.localStorage.removeItem(activeDialogueStorageKey);
+    setConversationId(null);
+    setSessionQuestion(question.prompt);
+    setMode("socratic");
+    setMessages([{
+      id: crypto.randomUUID(),
+      role: "assistant",
+      mode: "socratic",
+      body: openingMessage(question),
+    }]);
+    setDraft("");
+    setFinished(false);
+    setReviewing(false);
+    setFailedTurn(null);
+    setActiveContext(question.tension);
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
+  useEffect(() => {
+    void loadRecentSessions();
+    const savedConversationId = window.localStorage.getItem(activeDialogueStorageKey);
+    if (savedConversationId) {
+      void restoreSession(savedConversationId);
+    } else {
+      setRestoringSession(false);
+      inputRef.current?.focus();
+    }
+  }, []);
 
   useEffect(() => {
     setActiveContext(question.tension);
@@ -189,8 +308,10 @@ export function DialoguePage({
         current_mode: turn.mode,
         requested_mode: turn.mode,
         model_profile: turn.modelProfile,
-        topic: question.prompt,
+        topic: sessionQuestion,
         turn_number: turn.turnNumber,
+        conversation_id: conversationId,
+        initial_assistant_message: conversationId ? null : messages[0]?.body,
       }),
     });
     if (!response.ok) {
@@ -202,27 +323,36 @@ export function DialoguePage({
       throw new Error("Dialogue API returned an invalid response");
     }
 
-    setMessages((current) => {
-      const nextId = Math.max(...current.map((message) => message.id)) + 1;
-      return [
-        ...current,
-        { id: nextId, role: "assistant", body: payload.assistant_message, mode: payload.mode },
-      ];
-    });
+    setMessages((current) => [
+      ...current,
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        body: payload.assistant_message,
+        mode: payload.mode,
+      },
+    ]);
+    if (payload.conversation_id) {
+      setConversationId(payload.conversation_id);
+      window.localStorage.setItem(activeDialogueStorageKey, payload.conversation_id);
+    }
     setMode(payload.mode);
     setFailedTurn(null);
+    void loadRecentSessions();
   }
 
   async function submitAnswer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const answer = draft.trim();
-    if (!answer || thinking || finished) return;
+    if (!answer || thinking || restoringSession || finished) return;
 
-    const nextId = Math.max(...messages.map((message) => message.id)) + 1;
     const userTurns = messages.filter((message) => message.role === "user").length;
     const nextStepId = userTurns === 0 ? "reason" : userTurns === 1 ? "boundary" : "summary";
     const pendingTurn = { answer, mode, turnNumber: userTurns + 1, modelProfile };
-    setMessages((current) => [...current, { id: nextId, role: "user", body: answer }]);
+    setMessages((current) => [
+      ...current,
+      { id: crypto.randomUUID(), role: "user", body: answer },
+    ]);
     setDraft("");
     setFailedTurn(null);
     setThinkingProfile(modelProfile);
@@ -283,7 +413,7 @@ export function DialoguePage({
       <ReflectionReview
         apiBaseUrl={apiBaseUrl}
         modelProfile={modelProfile}
-        question={question.prompt}
+        question={sessionQuestion}
         userStatements={messages.filter((message) => message.role === "user").map((message) => message.body)}
         onBack={() => {
           setFinished(false);
@@ -303,10 +433,31 @@ export function DialoguePage({
           </button>
           <span>思考工作台</span>
           <div className="dialogue-header-actions">
+            <label className="dialogue-session-picker">
+              <span>最近会话</span>
+              <select
+                value={conversationId ?? ""}
+                onChange={(event) => {
+                  if (event.target.value) void restoreSession(event.target.value);
+                }}
+                disabled={restoringSession || thinking}
+                aria-label="恢复最近会话"
+              >
+                <option value="">当前新对话</option>
+                {recentSessions.map((session) => (
+                  <option value={session.conversation_id} key={session.conversation_id}>
+                    {session.title} · {session.turn_count} 轮
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button className="secondary-button new-dialogue-button" type="button" onClick={startNewDialogue} disabled={restoringSession || thinking}>
+              <Plus size={16} /> 新建
+            </button>
             <button className="secondary-button source-trigger" type="button" onClick={() => setSourcesOpen(true)}>
               <BookOpen size={17} /> 来源 <span>{sources.length}</span>
             </button>
-            <button className="secondary-button finish-button" type="button" onClick={finishDialogue} disabled={finished}>
+            <button className="secondary-button finish-button" type="button" onClick={finishDialogue} disabled={finished || restoringSession}>
               <Square size={15} /> {finished ? "已结束" : "结束"}
             </button>
           </div>
@@ -314,7 +465,7 @@ export function DialoguePage({
 
         <div className="dialogue-question-title">
           <span>{question.domain} · {question.difficulty}</span>
-          <h1>{question.prompt}</h1>
+          <h1>{sessionQuestion}</h1>
         </div>
 
         <div className="mode-bar" aria-label="对话模式">
@@ -342,6 +493,9 @@ export function DialoguePage({
         <DialogueOutline steps={outline} pulseStepId={pulseStepId} />
         <section className="conversation" aria-label="哲学对话" data-od-id="reasoning-conversation">
           <div className="message-list" aria-live="polite">
+            {restoringSession ? (
+              <div className="dialogue-restoring" role="status">正在恢复上次思考…</div>
+            ) : null}
             {messages.map((message) => (
               <article className={`message ${message.role}`} key={message.id}>
                 <div className="message-label">
@@ -393,13 +547,13 @@ export function DialoguePage({
               ref={inputRef}
               rows={3}
               value={draft}
-              disabled={finished}
+              disabled={finished || restoringSession}
               onChange={(event) => setDraft(event.target.value)}
               placeholder={finished ? "本轮对话已结束" : "写下你的判断或理由…"}
             />
             <div>
               <span>{draft.length}/2000</span>
-              <button ref={sendButtonRef} className="send-button" type="submit" disabled={!draft.trim() || thinking || finished} aria-label="发送回答" title="发送回答">
+              <button ref={sendButtonRef} className="send-button" type="submit" disabled={!draft.trim() || thinking || restoringSession || finished} aria-label="发送回答" title="发送回答">
                 <Send size={18} />
               </button>
             </div>
