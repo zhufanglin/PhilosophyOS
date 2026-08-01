@@ -308,6 +308,15 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
       const nextNodeId = childNodeIds[index + 1];
       if (nextNodeId) addGraphEdge(nodeId, nextNodeId, "共现");
     });
+    if (childNodeIds.length > 2) {
+      addGraphEdge(childNodeIds[childNodeIds.length - 1], childNodeIds[0], "共现闭环");
+    }
+    if (childNodeIds.length > 0) {
+      addGraphEdge(snapshotId, childNodeIds[0], "思想证据");
+      if (childNodeIds.length > 3) {
+        addGraphEdge(snapshotId, childNodeIds[Math.floor(childNodeIds.length / 2)], "思想证据");
+      }
+    }
     tensionIds.forEach((tensionId, index) => {
       const philosopherId = philosopherIds[index % Math.max(philosopherIds.length, 1)];
       if (philosopherId) addGraphEdge(tensionId, philosopherId, "张力参照");
@@ -318,6 +327,11 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
     });
   });
 
+  const degreeByNode = new Map<string, number>();
+  edges.forEach((edge) => {
+    degreeByNode.set(edge.source, (degreeByNode.get(edge.source) ?? 0) + 1);
+    degreeByNode.set(edge.target, (degreeByNode.get(edge.target) ?? 0) + 1);
+  });
   const sortedNodes = [...nodes.values()]
     .sort((first, second) => {
       const kindOrder: Record<GraphNodeKind, number> = {
@@ -327,9 +341,13 @@ function buildThoughtGraph(items: CompletedSnapshotItem[]) {
         philosopher: 3,
         tag: 4,
       };
-      return kindOrder[first.kind] - kindOrder[second.kind] || second.weight - first.weight;
+      return (
+        (degreeByNode.get(second.id) ?? 0) - (degreeByNode.get(first.id) ?? 0) ||
+        kindOrder[first.kind] - kindOrder[second.kind] ||
+        second.weight - first.weight
+      );
     })
-    .slice(0, 26);
+    .slice(0, 32);
   const allowedNodeIds = new Set(sortedNodes.map((node) => node.id));
   return {
     nodes: sortedNodes,
@@ -476,17 +494,18 @@ function buildInitialGraphPositions(
   const positions: Record<string, GraphPosition> = {};
   const clusters = buildGraphClusters(nodes, edges);
   const centers = buildClusterCenters(clusters.length);
-  const kindRadius: Record<GraphNodeKind, number> = {
-    topic: 8,
-    snapshot: 46,
-    tension: 74,
-    philosopher: 88,
-    tag: 104,
-  };
+  const degreeByNode = new Map<string, number>();
+  edges.forEach((edge) => {
+    degreeByNode.set(edge.source, (degreeByNode.get(edge.source) ?? 0) + 1);
+    degreeByNode.set(edge.target, (degreeByNode.get(edge.target) ?? 0) + 1);
+  });
 
   clusters.forEach((cluster, clusterIndex) => {
     const center = centers[clusterIndex] ?? { x: 480, y: 235 };
-    const clusterScale = Math.min(1.22, Math.max(0.78, 0.68 + cluster.length / 18));
+    const columns = Math.min(5, Math.max(2, Math.ceil(Math.sqrt(cluster.length * 1.18))));
+    const rows = Math.ceil(cluster.length / columns);
+    const gapX = cluster.length > 14 ? 94 : 108;
+    const gapY = cluster.length > 14 ? 68 : 82;
     const sortedCluster = [...cluster].sort((first, second) => {
       const kindOrder: Record<GraphNodeKind, number> = {
         topic: 0,
@@ -495,21 +514,28 @@ function buildInitialGraphPositions(
         philosopher: 3,
         tag: 4,
       };
-      return kindOrder[first.kind] - kindOrder[second.kind] || second.weight - first.weight;
+      return (
+        (degreeByNode.get(second.id) ?? 0) - (degreeByNode.get(first.id) ?? 0) ||
+        kindOrder[first.kind] - kindOrder[second.kind] ||
+        second.weight - first.weight
+      );
     });
 
     sortedCluster.forEach((node, nodeIndex) => {
       const seed = graphSeed(`${node.id}:${clusterIndex}`);
-      const angle =
-        (nodeIndex / Math.max(sortedCluster.length, 1)) * Math.PI * 2 +
-        seed * 0.95 +
-        clusterIndex * 0.42;
-      const baseRadius = kindRadius[node.kind] * clusterScale;
-      const organicOffset = (seed - 0.5) * 24;
-      const radius = Math.max(5, baseRadius + organicOffset);
+      const column = nodeIndex % columns;
+      const row = Math.floor(nodeIndex / columns);
+      const organicX = (seed - 0.5) * 16;
+      const organicY = (graphSeed(`${node.id}:y:${clusterIndex}`) - 0.5) * 12;
       positions[node.id] = {
-        x: Math.min(918, Math.max(42, center.x + Math.cos(angle) * radius)),
-        y: Math.min(428, Math.max(42, center.y + Math.sin(angle) * radius * 0.72)),
+        x: Math.min(
+          918,
+          Math.max(42, center.x + (column - (columns - 1) / 2) * gapX + organicX),
+        ),
+        y: Math.min(
+          428,
+          Math.max(42, center.y + (row - (rows - 1) / 2) * gapY + organicY),
+        ),
       };
     });
   });
@@ -522,16 +548,6 @@ function graphLabelFor(node: ThoughtGraphNode) {
   return characters.length > 10
     ? `${characters.slice(0, 9).join("")}…`
     : node.label;
-}
-
-function splitGraphLabel(label: string, maxCharacters = 12) {
-  const characters = Array.from(label);
-  if (characters.length <= maxCharacters) return [label];
-  const lines: string[] = [];
-  for (let index = 0; index < characters.length; index += maxCharacters) {
-    lines.push(characters.slice(index, index + maxCharacters).join(""));
-  }
-  return lines;
 }
 
 const snapshotDecisionLabels: Record<SnapshotDecision, string> = {
@@ -1482,18 +1498,20 @@ function ForceThoughtRelationGraph({
     linkForce?.distance?.((link) => {
       const source = nodeById.get(graphEndpointId(link.source));
       const target = nodeById.get(graphEndpointId(link.target));
+      if (link.relation === "共现闭环") return 74;
+      if (link.relation === "思想证据") return 68;
       if (source?.kind === "snapshot" || target?.kind === "snapshot") return 62;
-      if (source?.kind === "topic" || target?.kind === "topic") return 54;
-      return 48;
+      if (source?.kind === "topic" || target?.kind === "topic") return 64;
+      return 58;
     });
-    linkForce?.strength?.(0.34);
+    linkForce?.strength?.(0.38);
 
     const chargeForce = instance.d3Force("charge") as ConfigurableForce | undefined;
     chargeForce?.strength?.((nodeOrLink) => {
       const node = nodeOrLink as ForceThoughtNode;
-      if (node.kind === "topic") return -175;
-      if (node.kind === "snapshot") return -142;
-      return -112;
+      if (node.kind === "topic") return -158;
+      if (node.kind === "snapshot") return -146;
+      return -122;
     });
     chargeForce?.distanceMax?.(560);
     instance.d3ReheatSimulation();
@@ -1690,32 +1708,25 @@ function ForceThoughtRelationGraph({
       }
 
       const compactViewport = graphSize.width < 540;
-      const lines = splitGraphLabel(graphLabelFor(node), compactViewport ? 7 : 10);
-      const fontSize = 10.6 / scale;
-      const lineHeight = 13.2 / scale;
+      const lines = [graphLabelFor(node)];
+      const fontSize = (compactViewport ? 10.2 : 11.2) / scale;
+      const lineHeight = 13.4 / scale;
       context.font = `540 ${fontSize}px "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif`;
       const labelWidth = Math.max(...lines.map((line) => context.measureText(line).width));
       const labelHeight = lines.length * lineHeight;
-      const baseY = nodeY + radius + 3 / scale;
+      const baseY = nodeY + radius + 4 / scale;
       const horizontalSteps = compactViewport
-        ? [0, -0.32, 0.32, -0.64, 0.64]
-        : [0, -0.28, 0.28, -0.56, 0.56];
-      const rowCount = compactViewport ? 12 : 9;
-      const belowCandidates = Array.from({ length: rowCount }, (_, row) =>
+        ? [-0.52, -0.26, 0, 0.26, 0.52]
+        : [-0.62, -0.31, 0, 0.31, 0.62];
+      const rowCount = compactViewport ? 8 : 6;
+      const candidates = Array.from({ length: rowCount }, (_, row) =>
         horizontalSteps.map((step) => ({
-          x: step * Math.max(labelWidth, 48 / scale),
-          y: row * (labelHeight + 3 / scale),
+          x: step * Math.max(labelWidth, 52 / scale),
+          y: row * (labelHeight + 4 / scale),
         })),
       ).flat();
-      const aboveBaseOffset = -(radius * 2 + 6 / scale + labelHeight);
-      const aboveCandidates = Array.from({ length: rowCount }, (_, row) =>
-        horizontalSteps.map((step) => ({
-          x: step * Math.max(labelWidth, 48 / scale),
-          y: aboveBaseOffset - row * (labelHeight + 3 / scale),
-        })),
-      ).flat();
-      const candidates = [...belowCandidates, ...aboveCandidates];
       let placement = candidates[0];
+      let bestOverlapCount = Number.POSITIVE_INFINITY;
       for (const candidate of candidates) {
         const box: GraphLabelBox = {
           x: nodeX + candidate.x - labelWidth / 2,
@@ -1745,8 +1756,21 @@ function ForceThoughtRelationGraph({
             box.y + box.height + paddingY > placed.y,
         );
         if (outsideViewport) continue;
-        placement = candidate;
-        if (!overlaps) break;
+        const overlapCount = labelBoxesRef.current.filter(
+          (placed) =>
+            box.x < placed.x + placed.width + paddingX &&
+            box.x + box.width + paddingX > placed.x &&
+            box.y < placed.y + placed.height + paddingY &&
+            box.y + box.height + paddingY > placed.y,
+        ).length;
+        if (!overlaps) {
+          placement = candidate;
+          break;
+        }
+        if (overlapCount < bestOverlapCount) {
+          bestOverlapCount = overlapCount;
+          placement = candidate;
+        }
       }
       const finalScreenPosition = forceGraphRef.current?.graph2ScreenCoords(
         nodeX + placement.x,
@@ -1900,7 +1924,11 @@ function ForceThoughtRelationGraph({
           role="img"
           aria-label="可拖动、缩放和悬停查看信息的思想关系图谱"
         >
-          <div className="relation-force-graph-shell relation-graph-constellation" ref={graphViewportRef}>
+          <div
+            className={`relation-force-graph-shell relation-graph-constellation${graphPlaced ? " graph-page-settled" : " graph-page-arriving"}`}
+            onMouseLeave={clearNodePreview}
+            ref={graphViewportRef}
+          >
             <ForceGraph2D
               ref={forceGraphRef}
               width={graphSize.width}
@@ -1922,7 +1950,7 @@ function ForceThoughtRelationGraph({
               cooldownTicks={320}
               cooldownTime={9000}
               d3AlphaDecay={0.018}
-              d3VelocityDecay={0.26}
+              d3VelocityDecay={0.22}
               enableNodeDrag
               enablePanInteraction
               enableZoomInteraction

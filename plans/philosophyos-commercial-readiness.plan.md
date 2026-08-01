@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | in-progress |
+| Status | complete |
 | Started | 2026-08-01 |
 | Owner | Codex |
 
@@ -60,7 +60,7 @@ PhilosophyOS 已经完成 Beta 后的关键安全边界：模型 Key 不回传�
 - **What:** 继续补充西方哲学家资料、时代分组、核心思想标签与肖像展示。
 - **Acceptance:** 图鉴覆盖主要西方哲学传统；不混入非西方哲学家。
 
-### 3.2 [ ] 关系图谱继续打磨为网状群落
+### 3.2 [x] 关系图谱继续打磨为网状群落 *(completed 2026-08-01)*
 
 - **Files:** `apps/web/src/pages/ThoughtArchivePage.tsx`, `apps/web/src/styles.css`
 - **What:** 继续优化群落翻页、节点文字避让、交互状态恢复与缩放体验。
