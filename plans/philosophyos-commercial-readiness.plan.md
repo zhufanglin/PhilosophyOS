@@ -54,7 +54,7 @@ PhilosophyOS 已经完成 Beta 后的关键安全边界：模型 Key 不回传�
 
 ## Milestone 3: Product Polish
 
-### 3.1 [ ] 哲学家图鉴继续扩充西方哲学家
+### 3.1 [x] 哲学家图鉴继续扩充西方哲学家 *(completed 2026-08-01)*
 
 - **Files:** `apps/web/src/pages/PhilosopherAtlasPage.tsx`, `apps/web/src/styles.css`
 - **What:** 继续补充西方哲学家资料、时代分组、核心思想标签与肖像展示。
