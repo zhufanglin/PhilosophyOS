@@ -31,15 +31,46 @@ const eraOrder = [
 const unique = (values: string[]) =>
   [...new Set(values)].sort((a, b) => a.localeCompare(b, "zh-CN"));
 
+const atlasLenses = [
+  { id: "", label: "全部馆藏", hint: "完整西方思想谱系", keywords: [] },
+  { id: "ethics-politics", label: "伦理与政治", hint: "正义、自由、共同体", keywords: ["伦理", "政治", "正义", "自由", "权利", "国家", "共同体"] },
+  { id: "mind-psyche", label: "心灵与精神", hint: "意识、心理、精神分析", keywords: ["心灵", "心理", "精神", "意识", "无意识", "存在主义心理"] },
+  { id: "society-culture", label: "社会与文化", hint: "现代性、权力、媒介", keywords: ["社会", "文化", "批判", "权力", "媒介", "技术"] },
+  { id: "language-analysis", label: "语言与分析", hint: "逻辑、语言、意义", keywords: ["分析", "逻辑", "语言", "意义", "命名", "解释"] },
+  { id: "being-phenomena", label: "存在与现象", hint: "存在、身体、解释", keywords: ["存在", "现象", "诠释", "身体", "时间", "他者"] },
+  { id: "science-nature", label: "科学与自然", hint: "自然、科学、技术", keywords: ["自然", "科学", "技术", "实证", "进化", "原子"] },
+];
+
 export function PhilosopherAtlasPage() {
   const initialSearch = new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("search") ?? "";
   const [query, setQuery] = useState(initialSearch);
   const [era, setEra] = useState("");
   const [region, setRegion] = useState("");
   const [tradition, setTradition] = useState("");
+  const [lens, setLens] = useState("");
   const [selectedId, setSelectedId] = useState("socrates");
 
   const eras = useMemo(() => unique(philosophers.map((philosopher) => philosopher.era)), []);
+  const erasInOrder = useMemo(
+    () =>
+      eras.sort((first, second) => {
+        const firstIndex = eraOrder.indexOf(first);
+        const secondIndex = eraOrder.indexOf(second);
+        if (firstIndex === -1 && secondIndex === -1) return first.localeCompare(second, "zh-CN");
+        if (firstIndex === -1) return 1;
+        if (secondIndex === -1) return -1;
+        return firstIndex - secondIndex;
+      }),
+    [eras],
+  );
+  const eraCounts = useMemo(
+    () =>
+      philosophers.reduce<Record<string, number>>((counts, philosopher) => {
+        counts[philosopher.era] = (counts[philosopher.era] ?? 0) + 1;
+        return counts;
+      }, {}),
+    [],
+  );
   const regions = useMemo(() => unique(philosophers.map((philosopher) => philosopher.region)), []);
   const traditions = useMemo(
     () => unique(philosophers.flatMap((philosopher) => philosopher.traditions)),
@@ -51,21 +82,28 @@ export function PhilosopherAtlasPage() {
       const searchable = [
         philosopher.name,
         philosopher.englishName,
+        philosopher.era,
+        philosopher.region,
         philosopher.summary,
+        ...philosopher.traditions,
         ...philosopher.coreIdeas,
         ...philosopher.works,
       ]
         .join(" ")
         .toLocaleLowerCase("zh-CN");
+      const selectedLens = atlasLenses.find((item) => item.id === lens);
+      const lensMatched =
+        !selectedLens?.keywords.length || selectedLens.keywords.some((keyword) => searchable.includes(keyword));
 
       return (
         (!normalizedQuery || searchable.includes(normalizedQuery)) &&
         (!era || philosopher.era === era) &&
         (!region || philosopher.region === region) &&
-        (!tradition || philosopher.traditions.includes(tradition))
+        (!tradition || philosopher.traditions.includes(tradition)) &&
+        lensMatched
       );
     });
-  }, [query, era, region, tradition]);
+  }, [query, era, region, tradition, lens]);
 
   const grouped = useMemo(() => {
     const groups = new Map<string, Philosopher[]>();
@@ -94,6 +132,7 @@ export function PhilosopherAtlasPage() {
     setEra("");
     setRegion("");
     setTradition("");
+    setLens("");
   };
 
   return (
@@ -114,6 +153,43 @@ export function PhilosopherAtlasPage() {
           <span>西方哲学范围</span>
         </div>
       </header>
+
+      <nav className="atlas-era-timeline" aria-label="按时代浏览哲学家">
+        <button className={!era ? "active" : ""} type="button" onClick={() => setEra("")}>
+          <span>全部</span>
+          <strong>{philosophers.length}</strong>
+        </button>
+        {erasInOrder.map((value) => (
+          <button
+            className={era === value ? "active" : ""}
+            key={value}
+            type="button"
+            onClick={() => setEra(value)}
+          >
+            <span>{value}</span>
+            <strong>{eraCounts[value]}</strong>
+          </button>
+        ))}
+      </nav>
+
+      <section className="atlas-lens-shelf" aria-label="按研究视角浏览">
+        <div>
+          <span>研究视角</span>
+          <strong>{atlasLenses.find((item) => item.id === lens)?.hint}</strong>
+        </div>
+        <div>
+          {atlasLenses.map((item) => (
+            <button
+              className={lens === item.id ? "active" : ""}
+              key={item.id || "all"}
+              type="button"
+              onClick={() => setLens(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="atlas-filter-rail" aria-label="筛选哲学家图鉴">
         <label className="atlas-search">
@@ -154,7 +230,7 @@ export function PhilosopherAtlasPage() {
             ))}
           </select>
         </label>
-        {query || era || region || tradition ? (
+        {query || era || region || tradition || lens ? (
           <button type="button" onClick={clear}>
             <X size={15} />
             清除

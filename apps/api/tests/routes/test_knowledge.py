@@ -91,12 +91,28 @@ async def test_concept_question_uses_reviewed_rag_sources() -> None:
 
 
 @pytest.mark.anyio
-async def test_unknown_topic_returns_exploratory_model_guidance() -> None:
-    """Unsupported content returns model-guided exploration without fake citations."""
+async def test_atlas_seed_philosopher_returns_rag_supported_answer() -> None:
+    """Expanded atlas seeds now support broad philosopher lookup through RAG."""
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post(
             "/api/v1/knowledge-answers", json={"question": "德勒兹如何理解差异？"}
+        )
+
+    payload = response.json()
+    assert payload["status"] == "supported"
+    assert payload["citations"]
+    assert payload["claims"]
+    assert "德勒兹" in payload["answer"]
+
+
+@pytest.mark.anyio
+async def test_unknown_topic_returns_exploratory_model_guidance() -> None:
+    """Content outside the atlas still returns model-guided exploration without fake citations."""
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/knowledge-answers", json={"question": "火星殖民地的宪法应该如何设计？"}
         )
 
     payload = response.json()

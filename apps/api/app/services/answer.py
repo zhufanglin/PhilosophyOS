@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from enum import StrEnum
+from pathlib import Path
+from typing import Any
 from uuid import UUID, uuid5
 
 from app.agent.providers import ProviderRequest, select_dialogue_provider
@@ -94,6 +97,8 @@ class PhilosopherProfile:
     """Reviewed answer outline for one philosopher in the initial corpus."""
 
     slug: str
+    display_name: str
+    original_name: str
     entity_id: UUID
     aliases: tuple[str, ...]
     answer: str
@@ -138,7 +143,7 @@ class KnowledgeAnswerService:
                 question=question,
                 status=AnswerStatus.INSUFFICIENT,
                 answer=(
-                    f"当前关于{_display_name(profile.slug)}的材料可以支持谨慎转述，"
+                    f"当前关于{profile.display_name}的材料可以支持谨慎转述，"
                     "但没有同时满足具体版本、展示许可和逐字核对条件的直接引语。"
                 ),
                 evidence_note="已返回可核对的来源元数据，但不会用模型记忆补写原话或页码。",
@@ -317,11 +322,11 @@ class KnowledgeAnswerService:
             filters=RetrievalFilters(
                 tradition=Tradition.WESTERN,
                 entity_ids=frozenset({profile.entity_id}),
-                source_levels=frozenset({SourceLevel.S1, SourceLevel.S2}),
+                source_levels=frozenset(),
                 require_published=True,
             ),
         )
-        hits = self._retriever.search(query, limit=3)
+        hits = self._retriever.search(query, limit=4)
         return tuple(self._passages_by_chunk[hit.document.chunk_id].citation for hit in hits)
 
     def _wrong_work_attribution(self, question: str, profile: PhilosopherProfile) -> AnswerResult:
@@ -407,10 +412,73 @@ def _passage(
     return KnowledgePassage(citation=citation, document=document)
 
 
+def _atlas_rag_path() -> Path:
+    """Return the local full-atlas RAG seed path."""
+
+    return Path(__file__).resolve().parents[4] / "data" / "seed" / "philosopher_atlas_rag.json"
+
+
+def _load_atlas_records() -> tuple[dict[str, Any], ...]:
+    """Load broad philosopher atlas records used as local RAG seed passages."""
+
+    path = _atlas_rag_path()
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ()
+    if not isinstance(data, list):
+        return ()
+    return tuple(record for record in data if isinstance(record, dict) and record.get("id"))
+
+
+def _as_tuple(value: object) -> tuple[str, ...]:
+    """Normalize JSON list values into non-empty strings."""
+
+    if not isinstance(value, list):
+        return ()
+    return tuple(str(item).strip() for item in value if str(item).strip())
+
+
+def _atlas_passage(record: dict[str, Any]) -> KnowledgePassage:
+    """Build one non-quotable RAG passage from a philosopher atlas record."""
+
+    slug = str(record["id"])
+    name = str(record.get("name_zh") or slug)
+    original_name = str(record.get("name_original") or name)
+    era = str(record.get("era") or "未分期")
+    period = str(record.get("period") or "时期待考")
+    region = str(record.get("region") or "地域待考")
+    traditions = _as_tuple(record.get("traditions"))
+    core_ideas = _as_tuple(record.get("core_ideas"))
+    works = _as_tuple(record.get("works"))
+    related_ids = _as_tuple(record.get("related_ids"))
+    summary = str(record.get("summary") or "")
+    context = (
+        f"馆藏种子摘要：{name}（{original_name}），{period}，{era}，{region}。"
+        f"思想传统：{'、'.join(traditions) or '待补充'}。"
+        f"核心思想：{'、'.join(core_ideas) or '待补充'}。"
+        f"代表著作：{'、'.join(works) or '待补充'}。"
+        f"关系线索：{'、'.join(related_ids) or '待补充'}。"
+        f"{summary}"
+    )
+    return _passage(
+        citation_id=f"atlas-{slug}",
+        philosopher_slug=slug,
+        category=EvidenceCategory.RESEARCH,
+        title="PhilosophyOS Western Philosopher Atlas Seed",
+        author="PhilosophyOS curated seed",
+        source_level=SourceLevel.S4,
+        source_version="本地馆藏种子 2026-08-01",
+        location=f"{era} / {name}",
+        context=context,
+        canonical_url=None,
+    )
+
+
 def _build_passages() -> tuple[KnowledgePassage, ...]:
     """Create the reviewed, metadata-only corpus used by the local MVP."""
 
-    return (
+    curated = (
         _passage(
             citation_id="kant-critique-freedom",
             philosopher_slug="kant",
@@ -514,14 +582,25 @@ def _build_passages() -> tuple[KnowledgePassage, ...]:
             canonical_url=None,
         ),
     )
+    atlas_passages = tuple(_atlas_passage(record) for record in _load_atlas_records())
+    seen: set[str] = set()
+    merged: list[KnowledgePassage] = []
+    for passage in (*curated, *atlas_passages):
+        if passage.citation.citation_id in seen:
+            continue
+        seen.add(passage.citation.citation_id)
+        merged.append(passage)
+    return tuple(merged)
 
 
 def _build_profiles() -> tuple[PhilosopherProfile, ...]:
     """Create answer outlines whose claims point to reviewed citation ids."""
 
-    return (
+    curated = (
         PhilosopherProfile(
             slug="kant",
+            display_name="康德",
+            original_name="Immanuel Kant",
             entity_id=_stable_id("entity:kant"),
             aliases=("康德", "kant"),
             answer=(
@@ -552,6 +631,8 @@ def _build_profiles() -> tuple[PhilosopherProfile, ...]:
         ),
         PhilosopherProfile(
             slug="spinoza",
+            display_name="斯宾诺莎",
+            original_name="Baruch Spinoza",
             entity_id=_stable_id("entity:spinoza"),
             aliases=("斯宾诺莎", "spinoza"),
             answer=(
@@ -582,6 +663,8 @@ def _build_profiles() -> tuple[PhilosopherProfile, ...]:
         ),
         PhilosopherProfile(
             slug="nietzsche",
+            display_name="尼采",
+            original_name="Friedrich Nietzsche",
             entity_id=_stable_id("entity:nietzsche"),
             aliases=("尼采", "nietzsche"),
             answer=(
@@ -611,24 +694,80 @@ def _build_profiles() -> tuple[PhilosopherProfile, ...]:
             ),
         ),
     )
+    generic = tuple(
+        _atlas_profile(record)
+        for record in _load_atlas_records()
+        if str(record.get("id")) not in {profile.slug for profile in curated}
+    )
+    return (*curated, *generic)
+
+
+def _atlas_profile(record: dict[str, Any]) -> PhilosopherProfile:
+    """Build a broad deterministic answer profile from an atlas seed record."""
+
+    slug = str(record["id"])
+    name = str(record.get("name_zh") or slug)
+    original_name = str(record.get("name_original") or name)
+    era = str(record.get("era") or "未分期")
+    period = str(record.get("period") or "时期待考")
+    region = str(record.get("region") or "地域待考")
+    traditions = _as_tuple(record.get("traditions"))
+    core_ideas = _as_tuple(record.get("core_ideas"))
+    works = _as_tuple(record.get("works"))
+    summary = str(record.get("summary") or "")
+    citation_id = f"atlas-{slug}"
+    name_aliases = [name, original_name, slug, slug.replace("_", "-"), slug.replace("_", " ")]
+    for separator in ("·", "・", "路", "·"):
+        if separator in name:
+            name_aliases.append(name.rsplit(separator, 1)[-1])
+    if " " in original_name:
+        name_aliases.append(original_name.rsplit(" ", 1)[-1])
+    aliases = tuple(
+        dict.fromkeys(
+            alias.casefold()
+            for alias in name_aliases
+            if alias
+        )
+    )
+    answer = (
+        f"{name}（{original_name}）属于{era}的西方思想人物，时间定位为{period}，"
+        f"主要地域线索是{region}。"
+        f"可以先从{'、'.join(core_ideas[:4]) or '核心问题'}进入："
+        f"{summary}"
+        f" 代表著作线索包括：{'、'.join(works[:3]) or '待继续补充'}。"
+    )
+    return PhilosopherProfile(
+        slug=slug,
+        display_name=name,
+        original_name=original_name,
+        entity_id=_stable_id(f"entity:{slug}"),
+        aliases=aliases,
+        answer=answer,
+        claims=(
+            EvidenceClaim(
+                text=f"{name}的基础定位是：{era}、{period}、{region}。",
+                category=EvidenceCategory.RESEARCH,
+                citation_ids=(citation_id,),
+            ),
+            EvidenceClaim(
+                text=f"可优先从{'、'.join(core_ideas[:3]) or '其核心思想'}理解{name}。",
+                category=EvidenceCategory.AI_INFERENCE,
+                citation_ids=(citation_id,),
+            ),
+            EvidenceClaim(
+                text=f"{name}的思想传统线索包括：{'、'.join(traditions[:3]) or '待补充'}。",
+                category=EvidenceCategory.RESEARCH,
+                citation_ids=(citation_id,),
+            ),
+        ),
+    )
 
 
 def _profile_embedding(slug: str) -> tuple[float, ...]:
-    """Return deterministic spike embeddings for the supported corpus."""
+    """Return a deterministic lightweight embedding for local seed retrieval."""
 
-    embeddings = {
-        "kant": (1.0, 0.0, 0.0, 0.0),
-        "spinoza": (0.0, 1.0, 0.0, 0.0),
-        "nietzsche": (0.0, 0.0, 1.0, 0.0),
-        "heidegger": (0.0, 0.0, 0.0, 1.0),
-    }
-    return embeddings[slug]
-
-
-def _display_name(slug: str) -> str:
-    """Return the Chinese display name for a supported profile."""
-
-    return {"kant": "康德", "spinoza": "斯宾诺莎", "nietzsche": "尼采"}[slug]
+    seed = uuid5(KNOWLEDGE_NAMESPACE, f"embedding:{slug}").bytes
+    return tuple((value - 127.5) / 127.5 for value in seed)
 
 
 knowledge_answer_service = KnowledgeAnswerService()

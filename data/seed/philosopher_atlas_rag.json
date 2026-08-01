@@ -1,0 +1,4237 @@
+[
+  {
+    "id": "abelard",
+    "atlas_id": "abelard",
+    "name_zh": "阿伯拉尔",
+    "name_original": "Peter Abelard",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "1079—1142",
+    "region": "欧洲",
+    "level": "L2",
+    "domains": [
+      "意向",
+      "辩证法",
+      "普遍问题"
+    ],
+    "traditions": [
+      "经院哲学",
+      "伦理学"
+    ],
+    "core_ideas": [
+      "意向",
+      "辩证法",
+      "普遍问题"
+    ],
+    "works": [
+      "《是与否》",
+      "《伦理学》"
+    ],
+    "related_ids": [
+      "anselm",
+      "ockham"
+    ],
+    "summary": "以辩证法处理神学争议，并把伦理责任放在行动意向上理解。",
+    "status": "seed"
+  },
+  {
+    "id": "adorno",
+    "atlas_id": "adorno",
+    "name_zh": "阿多诺",
+    "name_original": "Theodor Adorno",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1903–1969",
+    "region": "德国",
+    "level": "L1",
+    "domains": [
+      "否定辩证法",
+      "文化工业"
+    ],
+    "traditions": [
+      "批判理论"
+    ],
+    "core_ideas": [
+      "否定辩证法",
+      "文化工业"
+    ],
+    "works": [
+      "《否定辩证法》",
+      "《启蒙辩证法》"
+    ],
+    "related_ids": [
+      "benjamin",
+      "habermas"
+    ],
+    "summary": "批判同一性思维和文化工业。",
+    "status": "seed"
+  },
+  {
+    "id": "agamben",
+    "atlas_id": "agamben",
+    "name_zh": "阿甘本",
+    "name_original": "Giorgio Agamben",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1942—",
+    "region": "意大利",
+    "level": "L2",
+    "domains": [
+      "赤裸生命",
+      "例外状态",
+      "生命政治"
+    ],
+    "traditions": [
+      "政治哲学"
+    ],
+    "core_ideas": [
+      "赤裸生命",
+      "例外状态",
+      "生命政治"
+    ],
+    "works": [
+      "《神圣人》"
+    ],
+    "related_ids": [
+      "carl_schmitt",
+      "foucault"
+    ],
+    "summary": "从例外状态和生命政治分析现代主权如何把生命纳入法律与权力结构。",
+    "status": "seed"
+  },
+  {
+    "id": "alfred_adler",
+    "atlas_id": "alfred-adler",
+    "name_zh": "阿德勒",
+    "name_original": "Alfred Adler",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1870—1937",
+    "region": "奥地利",
+    "level": "L2",
+    "domains": [
+      "自卑感",
+      "生活风格",
+      "社会兴趣"
+    ],
+    "traditions": [
+      "个体心理学"
+    ],
+    "core_ideas": [
+      "自卑感",
+      "生活风格",
+      "社会兴趣"
+    ],
+    "works": [
+      "《理解人性》"
+    ],
+    "related_ids": [
+      "sigmund_freud",
+      "erich_fromm"
+    ],
+    "summary": "把人格发展放在自卑、补偿和社会兴趣中理解。",
+    "status": "seed"
+  },
+  {
+    "id": "althusser",
+    "atlas_id": "althusser",
+    "name_zh": "阿尔都塞",
+    "name_original": "Louis Althusser",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1918—1990",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "意识形态",
+      "召唤",
+      "结构因果"
+    ],
+    "traditions": [
+      "马克思主义",
+      "结构主义"
+    ],
+    "core_ideas": [
+      "意识形态",
+      "召唤",
+      "结构因果"
+    ],
+    "works": [
+      "《保卫马克思》",
+      "《意识形态与意识形态国家机器》"
+    ],
+    "related_ids": [
+      "marx",
+      "foucault"
+    ],
+    "summary": "以结构主义方式重读马克思，分析意识形态如何生产主体。",
+    "status": "seed"
+  },
+  {
+    "id": "anselm",
+    "atlas_id": "anselm",
+    "name_zh": "安瑟伦",
+    "name_original": "Anselm of Canterbury",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "1033—1109",
+    "region": "欧洲",
+    "level": "L1",
+    "domains": [
+      "本体论证明",
+      "信仰寻求理解"
+    ],
+    "traditions": [
+      "经院哲学"
+    ],
+    "core_ideas": [
+      "本体论证明",
+      "信仰寻求理解"
+    ],
+    "works": [
+      "《宣讲》",
+      "《为什么神成为人》"
+    ],
+    "related_ids": [
+      "augustine",
+      "aquinas"
+    ],
+    "summary": "提出上帝存在的本体论证明，代表信仰与理性结合的经院传统。",
+    "status": "seed"
+  },
+  {
+    "id": "aquinas",
+    "atlas_id": "aquinas",
+    "name_zh": "托马斯·阿奎那",
+    "name_original": "Thomas Aquinas",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "1224/25–1274",
+    "region": "欧洲",
+    "level": "L2",
+    "domains": [
+      "自然法",
+      "存在类比",
+      "五路"
+    ],
+    "traditions": [
+      "经院哲学"
+    ],
+    "core_ideas": [
+      "自然法",
+      "存在类比",
+      "五路"
+    ],
+    "works": [
+      "《神学大全》"
+    ],
+    "related_ids": [
+      "aristotle",
+      "ockham"
+    ],
+    "summary": "综合亚里士多德哲学与基督教神学。",
+    "status": "seed"
+  },
+  {
+    "id": "arendt",
+    "atlas_id": "arendt",
+    "name_zh": "阿伦特",
+    "name_original": "Hannah Arendt",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1906–1975",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "行动",
+      "公共领域",
+      "平庸之恶"
+    ],
+    "traditions": [
+      "政治哲学"
+    ],
+    "core_ideas": [
+      "行动",
+      "公共领域",
+      "平庸之恶"
+    ],
+    "works": [
+      "《人的境况》",
+      "《极权主义的起源》"
+    ],
+    "related_ids": [
+      "heidegger",
+      "benjamin",
+      "marx"
+    ],
+    "summary": "从行动、判断与公共世界思考政治自由。",
+    "status": "seed"
+  },
+  {
+    "id": "aristotle",
+    "atlas_id": "aristotle",
+    "name_zh": "亚里士多德",
+    "name_original": "Aristotle",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "384–322 BC",
+    "region": "希腊",
+    "level": "L3",
+    "domains": [
+      "实体",
+      "四因",
+      "德性伦理"
+    ],
+    "traditions": [
+      "亚里士多德主义"
+    ],
+    "core_ideas": [
+      "实体",
+      "四因",
+      "德性伦理"
+    ],
+    "works": [
+      "《形而上学》",
+      "《尼各马可伦理学》"
+    ],
+    "related_ids": [
+      "plato",
+      "aquinas"
+    ],
+    "summary": "系统研究存在、推理、自然、政治与人的繁荣。",
+    "status": "seed"
+  },
+  {
+    "id": "augustine",
+    "atlas_id": "augustine",
+    "name_zh": "奥古斯丁",
+    "name_original": "Augustine of Hippo",
+    "tradition": "western",
+    "era": "教父时代",
+    "period": "354–430",
+    "region": "北非",
+    "level": "L2",
+    "domains": [
+      "时间",
+      "意志",
+      "恩典"
+    ],
+    "traditions": [
+      "基督教哲学"
+    ],
+    "core_ideas": [
+      "时间",
+      "意志",
+      "恩典"
+    ],
+    "works": [
+      "《忏悔录》",
+      "《上帝之城》"
+    ],
+    "related_ids": [
+      "plotinus",
+      "aquinas"
+    ],
+    "summary": "融合基督教与柏拉图传统，深究时间、恶与意志。",
+    "status": "seed"
+  },
+  {
+    "id": "averroes",
+    "atlas_id": "averroes",
+    "name_zh": "阿威罗伊",
+    "name_original": "Averroes",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "1126—1198",
+    "region": "安达卢斯",
+    "level": "L2",
+    "domains": [
+      "理性",
+      "哲学与启示",
+      "主动理智"
+    ],
+    "traditions": [
+      "伊斯兰哲学",
+      "亚里士多德注释"
+    ],
+    "core_ideas": [
+      "理性",
+      "哲学与启示",
+      "主动理智"
+    ],
+    "works": [
+      "《矛盾的矛盾》"
+    ],
+    "related_ids": [
+      "aristotle",
+      "aquinas"
+    ],
+    "summary": "以亚里士多德注释影响拉丁经院哲学，推动理性与启示关系的争论。",
+    "status": "seed"
+  },
+  {
+    "id": "avicenna",
+    "atlas_id": "avicenna",
+    "name_zh": "阿维森纳",
+    "name_original": "Avicenna",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "980—1037",
+    "region": "波斯",
+    "level": "L2",
+    "domains": [
+      "存在与本质",
+      "灵魂",
+      "必然存在者"
+    ],
+    "traditions": [
+      "伊斯兰哲学"
+    ],
+    "core_ideas": [
+      "存在与本质",
+      "灵魂",
+      "必然存在者"
+    ],
+    "works": [
+      "《治疗论》",
+      "《救赎论》"
+    ],
+    "related_ids": [
+      "aristotle",
+      "aquinas"
+    ],
+    "summary": "区分存在与本质，并以必然存在者论证深刻影响中世纪形而上学。",
+    "status": "seed"
+  },
+  {
+    "id": "bacon",
+    "atlas_id": "bacon",
+    "name_zh": "弗朗西斯·培根",
+    "name_original": "Francis Bacon",
+    "tradition": "western",
+    "era": "近代早期",
+    "period": "1561–1626",
+    "region": "英格兰",
+    "level": "L2",
+    "domains": [
+      "归纳法",
+      "四假象",
+      "知识即力量"
+    ],
+    "traditions": [
+      "经验主义"
+    ],
+    "core_ideas": [
+      "归纳法",
+      "四假象",
+      "知识即力量"
+    ],
+    "works": [
+      "《新工具》"
+    ],
+    "related_ids": [
+      "locke",
+      "descartes"
+    ],
+    "summary": "倡导实验与归纳，批判心智假象。",
+    "status": "seed"
+  },
+  {
+    "id": "beauvoir",
+    "atlas_id": "beauvoir",
+    "name_zh": "波伏瓦",
+    "name_original": "Simone de Beauvoir",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1908–1986",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "他者",
+      "处境自由",
+      "成为女人"
+    ],
+    "traditions": [
+      "存在主义",
+      "女性主义"
+    ],
+    "core_ideas": [
+      "他者",
+      "处境自由",
+      "成为女人"
+    ],
+    "works": [
+      "《第二性》"
+    ],
+    "related_ids": [
+      "sartre",
+      "butler"
+    ],
+    "summary": "以处境和他者化分析性别、自由与伦理。",
+    "status": "seed"
+  },
+  {
+    "id": "benjamin",
+    "atlas_id": "benjamin",
+    "name_zh": "本雅明",
+    "name_original": "Walter Benjamin",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1892–1940",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "灵韵",
+      "历史天使",
+      "机械复制"
+    ],
+    "traditions": [
+      "批判理论"
+    ],
+    "core_ideas": [
+      "灵韵",
+      "历史天使",
+      "机械复制"
+    ],
+    "works": [
+      "《机械复制时代的艺术作品》"
+    ],
+    "related_ids": [
+      "marx",
+      "arendt",
+      "adorno"
+    ],
+    "summary": "连接历史、艺术、技术和记忆。",
+    "status": "seed"
+  },
+  {
+    "id": "bentham",
+    "atlas_id": "bentham",
+    "name_zh": "边沁",
+    "name_original": "Jeremy Bentham",
+    "tradition": "western",
+    "era": "现代早期",
+    "period": "1748–1832",
+    "region": "英格兰",
+    "level": "L1",
+    "domains": [
+      "最大幸福",
+      "效用计算"
+    ],
+    "traditions": [
+      "功利主义"
+    ],
+    "core_ideas": [
+      "最大幸福",
+      "效用计算"
+    ],
+    "works": [
+      "《道德与立法原理导论》"
+    ],
+    "related_ids": [
+      "mill",
+      "rawls"
+    ],
+    "summary": "以最大多数人的最大幸福评价制度与行动。",
+    "status": "seed"
+  },
+  {
+    "id": "berkeley",
+    "atlas_id": "berkeley",
+    "name_zh": "贝克莱",
+    "name_original": "George Berkeley",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1685–1753",
+    "region": "爱尔兰",
+    "level": "L2",
+    "domains": [
+      "存在即被感知",
+      "观念"
+    ],
+    "traditions": [
+      "经验主义",
+      "唯心主义"
+    ],
+    "core_ideas": [
+      "存在即被感知",
+      "观念"
+    ],
+    "works": [
+      "《人类知识原理》"
+    ],
+    "related_ids": [
+      "locke",
+      "hume"
+    ],
+    "summary": "以经验主义批判物质实体。",
+    "status": "seed"
+  },
+  {
+    "id": "boethius",
+    "atlas_id": "boethius",
+    "name_zh": "波爱修斯",
+    "name_original": "Boethius",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "约 480—524",
+    "region": "欧洲",
+    "level": "L2",
+    "domains": [
+      "命运",
+      "慰藉",
+      "神意"
+    ],
+    "traditions": [
+      "晚期古典",
+      "基督教哲学"
+    ],
+    "core_ideas": [
+      "命运",
+      "慰藉",
+      "神意"
+    ],
+    "works": [
+      "《哲学的慰藉》"
+    ],
+    "related_ids": [
+      "augustine",
+      "aquinas"
+    ],
+    "summary": "在古典哲学与中世纪基督教思想之间架桥，思考命运、自由和神意。",
+    "status": "seed"
+  },
+  {
+    "id": "bruno_latour",
+    "atlas_id": "bruno-latour",
+    "name_zh": "拉图尔",
+    "name_original": "Bruno Latour",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1947—2022",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "行动者网络",
+      "现代性批判",
+      "科学实践"
+    ],
+    "traditions": [
+      "科学技术研究",
+      "社会理论"
+    ],
+    "core_ideas": [
+      "行动者网络",
+      "现代性批判",
+      "科学实践"
+    ],
+    "works": [
+      "《我们从未现代过》"
+    ],
+    "related_ids": [
+      "kuhn",
+      "haraway"
+    ],
+    "summary": "以行动者网络理论重新理解科学、技术、社会和非人行动者。",
+    "status": "seed"
+  },
+  {
+    "id": "butler",
+    "atlas_id": "butler",
+    "name_zh": "朱迪斯·巴特勒",
+    "name_original": "Judith Butler",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1956–",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "性别操演",
+      "脆弱性",
+      "承认"
+    ],
+    "traditions": [
+      "女性主义",
+      "酷儿理论"
+    ],
+    "core_ideas": [
+      "性别操演",
+      "脆弱性",
+      "承认"
+    ],
+    "works": [
+      "《性别麻烦》"
+    ],
+    "related_ids": [
+      "beauvoir",
+      "foucault",
+      "derrida"
+    ],
+    "summary": "以操演性分析性别规范与承认。",
+    "status": "seed"
+  },
+  {
+    "id": "camus",
+    "atlas_id": "camus",
+    "name_zh": "加缪",
+    "name_original": "Albert Camus",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1913–1960",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "荒诞",
+      "反抗",
+      "限度"
+    ],
+    "traditions": [
+      "荒诞哲学"
+    ],
+    "core_ideas": [
+      "荒诞",
+      "反抗",
+      "限度"
+    ],
+    "works": [
+      "《西西弗神话》",
+      "《反抗者》"
+    ],
+    "related_ids": [
+      "sartre",
+      "nietzsche"
+    ],
+    "summary": "在无终极保证的世界中以反抗维护尊严。",
+    "status": "seed"
+  },
+  {
+    "id": "carl_jung",
+    "atlas_id": "carl-jung",
+    "name_zh": "荣格",
+    "name_original": "Carl Gustav Jung",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1875—1961",
+    "region": "瑞士",
+    "level": "L2",
+    "domains": [
+      "集体无意识",
+      "原型",
+      "个体化"
+    ],
+    "traditions": [
+      "分析心理学",
+      "心理哲学"
+    ],
+    "core_ideas": [
+      "集体无意识",
+      "原型",
+      "个体化"
+    ],
+    "works": [
+      "《心理类型》",
+      "《原型与集体无意识》"
+    ],
+    "related_ids": [
+      "sigmund_freud",
+      "erich_fromm"
+    ],
+    "summary": "以原型、象征和个体化理论扩展现代心理学与意义研究。",
+    "status": "seed"
+  },
+  {
+    "id": "carl_schmitt",
+    "atlas_id": "carl-schmitt",
+    "name_zh": "施米特",
+    "name_original": "Carl Schmitt",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1888—1985",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "主权",
+      "例外状态",
+      "敌友区分"
+    ],
+    "traditions": [
+      "政治神学",
+      "法哲学"
+    ],
+    "core_ideas": [
+      "主权",
+      "例外状态",
+      "敌友区分"
+    ],
+    "works": [
+      "《政治的神学》",
+      "《政治的概念》"
+    ],
+    "related_ids": [
+      "hobbes",
+      "agamben"
+    ],
+    "summary": "以主权和例外状态问题影响当代政治哲学与法哲学。",
+    "status": "seed"
+  },
+  {
+    "id": "charles_taylor",
+    "atlas_id": "charles-taylor",
+    "name_zh": "查尔斯·泰勒",
+    "name_original": "Charles Taylor",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1931—",
+    "region": "加拿大",
+    "level": "L2",
+    "domains": [
+      "承认",
+      "世俗化",
+      "自我"
+    ],
+    "traditions": [
+      "政治哲学",
+      "诠释学"
+    ],
+    "core_ideas": [
+      "承认",
+      "世俗化",
+      "自我"
+    ],
+    "works": [
+      "《自我的根源》",
+      "《世俗时代》"
+    ],
+    "related_ids": [
+      "hegel",
+      "macintyre"
+    ],
+    "summary": "研究现代自我、承认政治和世俗化，是当代共同体主义重要人物。",
+    "status": "seed"
+  },
+  {
+    "id": "cicero",
+    "atlas_id": "cicero",
+    "name_zh": "西塞罗",
+    "name_original": "Cicero",
+    "tradition": "western",
+    "era": "罗马时代",
+    "period": "106—43 BC",
+    "region": "罗马",
+    "level": "L2",
+    "domains": [
+      "共和国",
+      "义务",
+      "自然法"
+    ],
+    "traditions": [
+      "罗马哲学",
+      "自然法"
+    ],
+    "core_ideas": [
+      "共和国",
+      "义务",
+      "自然法"
+    ],
+    "works": [
+      "《论义务》",
+      "《论国家》"
+    ],
+    "related_ids": [
+      "seneca",
+      "aquinas"
+    ],
+    "summary": "把希腊哲学翻译进罗马政治与修辞传统，影响自然法和共和主义。",
+    "status": "seed"
+  },
+  {
+    "id": "comte",
+    "atlas_id": "comte",
+    "name_zh": "孔德",
+    "name_original": "Auguste Comte",
+    "tradition": "western",
+    "era": "19世纪",
+    "period": "1798—1857",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "实证科学",
+      "社会秩序",
+      "三阶段法则"
+    ],
+    "traditions": [
+      "实证主义",
+      "社会哲学"
+    ],
+    "core_ideas": [
+      "实证科学",
+      "社会秩序",
+      "三阶段法则"
+    ],
+    "works": [
+      "《实证哲学教程》"
+    ],
+    "related_ids": [
+      "emile_durkheim",
+      "mill"
+    ],
+    "summary": "提出实证主义和社会学构想，把人类知识发展理解为由神学、形而上学走向实证科学。",
+    "status": "seed"
+  },
+  {
+    "id": "darwin",
+    "atlas_id": "darwin",
+    "name_zh": "达尔文",
+    "name_original": "Charles Darwin",
+    "tradition": "western",
+    "era": "19世纪",
+    "period": "1809—1882",
+    "region": "英国",
+    "level": "L2",
+    "domains": [
+      "进化",
+      "自然选择",
+      "人类起源"
+    ],
+    "traditions": [
+      "科学思想",
+      "自然主义"
+    ],
+    "core_ideas": [
+      "进化",
+      "自然选择",
+      "人类起源"
+    ],
+    "works": [
+      "《物种起源》",
+      "《人类的由来》"
+    ],
+    "related_ids": [
+      "hume",
+      "nietzsche",
+      "sigmund_freud"
+    ],
+    "summary": "以进化论改变人类自我理解，深刻影响伦理、心理和宗教哲学。",
+    "status": "seed"
+  },
+  {
+    "id": "deleuze",
+    "atlas_id": "deleuze",
+    "name_zh": "德勒兹",
+    "name_original": "Gilles Deleuze",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1925–1995",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "差异与重复",
+      "生成",
+      "根茎"
+    ],
+    "traditions": [
+      "差异哲学"
+    ],
+    "core_ideas": [
+      "差异与重复",
+      "生成",
+      "根茎"
+    ],
+    "works": [
+      "《差异与重复》",
+      "《千高原》"
+    ],
+    "related_ids": [
+      "spinoza",
+      "nietzsche",
+      "foucault"
+    ],
+    "summary": "以差异、生成与多样体反对同一性中心。",
+    "status": "seed"
+  },
+  {
+    "id": "democritus",
+    "atlas_id": "democritus",
+    "name_zh": "德谟克利特",
+    "name_original": "Democritus",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "约 460—370 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "原子",
+      "虚空",
+      "因果"
+    ],
+    "traditions": [
+      "前苏格拉底",
+      "原子论"
+    ],
+    "core_ideas": [
+      "原子",
+      "虚空",
+      "因果"
+    ],
+    "works": [
+      "残篇传统"
+    ],
+    "related_ids": [
+      "epicurus",
+      "lucretius"
+    ],
+    "summary": "用原子和虚空解释自然变化，是西方唯物论与自然哲学的重要源头。",
+    "status": "seed"
+  },
+  {
+    "id": "derek_parfit",
+    "atlas_id": "derek-parfit",
+    "name_zh": "帕菲特",
+    "name_original": "Derek Parfit",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1942—2017",
+    "region": "英国",
+    "level": "L2",
+    "domains": [
+      "人格同一性",
+      "理由",
+      "后果主义"
+    ],
+    "traditions": [
+      "伦理学",
+      "人格同一性"
+    ],
+    "core_ideas": [
+      "人格同一性",
+      "理由",
+      "后果主义"
+    ],
+    "works": [
+      "《理由与人格》",
+      "《论重要之事》"
+    ],
+    "related_ids": [
+      "hume",
+      "rawls",
+      "thomas_nagel"
+    ],
+    "summary": "以思想实验重构人格同一性、理性和道德理由。",
+    "status": "seed"
+  },
+  {
+    "id": "derrida",
+    "atlas_id": "derrida",
+    "name_zh": "德里达",
+    "name_original": "Jacques Derrida",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1930–2004",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "延异",
+      "痕迹",
+      "解构"
+    ],
+    "traditions": [
+      "解构"
+    ],
+    "core_ideas": [
+      "延异",
+      "痕迹",
+      "解构"
+    ],
+    "works": [
+      "《论文字学》"
+    ],
+    "related_ids": [
+      "heidegger",
+      "foucault",
+      "butler"
+    ],
+    "summary": "揭示文本与概念对立中的差异和不稳定性。",
+    "status": "seed"
+  },
+  {
+    "id": "descartes",
+    "atlas_id": "descartes",
+    "name_zh": "笛卡尔",
+    "name_original": "Rene Descartes",
+    "tradition": "western",
+    "era": "近代早期",
+    "period": "1596–1650",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "方法怀疑",
+      "我思",
+      "心物二元"
+    ],
+    "traditions": [
+      "理性主义"
+    ],
+    "core_ideas": [
+      "方法怀疑",
+      "我思",
+      "心物二元"
+    ],
+    "works": [
+      "《第一哲学沉思集》"
+    ],
+    "related_ids": [
+      "montaigne",
+      "spinoza",
+      "leibniz"
+    ],
+    "summary": "从方法怀疑重建知识确定性与主体哲学。",
+    "status": "seed"
+  },
+  {
+    "id": "dewey",
+    "atlas_id": "dewey",
+    "name_zh": "杜威",
+    "name_original": "John Dewey",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1859–1952",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "经验",
+      "民主",
+      "教育"
+    ],
+    "traditions": [
+      "实用主义"
+    ],
+    "core_ideas": [
+      "经验",
+      "民主",
+      "教育"
+    ],
+    "works": [
+      "《民主与教育》"
+    ],
+    "related_ids": [
+      "peirce",
+      "william_james"
+    ],
+    "summary": "把思考视为解决问题的实践。",
+    "status": "seed"
+  },
+  {
+    "id": "diderot",
+    "atlas_id": "diderot",
+    "name_zh": "狄德罗",
+    "name_original": "Denis Diderot",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1713—1784",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "百科全书",
+      "感性",
+      "自然主义"
+    ],
+    "traditions": [
+      "百科全书派",
+      "唯物论"
+    ],
+    "core_ideas": [
+      "百科全书",
+      "感性",
+      "自然主义"
+    ],
+    "works": [
+      "《拉摩的侄儿》",
+      "《百科全书》"
+    ],
+    "related_ids": [
+      "voltaire",
+      "rousseau"
+    ],
+    "summary": "通过《百科全书》组织启蒙知识，并探索唯物论、人性与艺术判断。",
+    "status": "seed"
+  },
+  {
+    "id": "diogenes",
+    "atlas_id": "diogenes",
+    "name_zh": "第欧根尼",
+    "name_original": "Diogenes of Sinope",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "约 412—323 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "简朴生活",
+      "反习俗",
+      "自足"
+    ],
+    "traditions": [
+      "犬儒主义"
+    ],
+    "core_ideas": [
+      "简朴生活",
+      "反习俗",
+      "自足"
+    ],
+    "works": [
+      "轶事与残篇传统"
+    ],
+    "related_ids": [
+      "socrates",
+      "epictetus"
+    ],
+    "summary": "以激烈的生活实践批判财富、名望和社会习俗，强调无需外物的自由。",
+    "status": "seed"
+  },
+  {
+    "id": "donald_davidson",
+    "atlas_id": "donald-davidson",
+    "name_zh": "戴维森",
+    "name_original": "Donald Davidson",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1917—2003",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "解释",
+      "行动理由",
+      "真理条件"
+    ],
+    "traditions": [
+      "分析哲学"
+    ],
+    "core_ideas": [
+      "解释",
+      "行动理由",
+      "真理条件"
+    ],
+    "works": [
+      "《行动与事件》"
+    ],
+    "related_ids": [
+      "quine",
+      "rorty"
+    ],
+    "summary": "用解释理论、真理条件和行动理由重塑语言、心灵与行动哲学。",
+    "status": "seed"
+  },
+  {
+    "id": "duns_scotus",
+    "atlas_id": "duns-scotus",
+    "name_zh": "邓斯·司各脱",
+    "name_original": "John Duns Scotus",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "约 1266—1308",
+    "region": "欧洲",
+    "level": "L2",
+    "domains": [
+      "存在单义性",
+      "个体性",
+      "意志"
+    ],
+    "traditions": [
+      "经院哲学"
+    ],
+    "core_ideas": [
+      "存在单义性",
+      "个体性",
+      "意志"
+    ],
+    "works": [
+      "《牛津评注》"
+    ],
+    "related_ids": [
+      "aquinas",
+      "ockham"
+    ],
+    "summary": "强调存在的单义性和个体性，重塑中世纪晚期形而上学与意志论。",
+    "status": "seed"
+  },
+  {
+    "id": "emile_durkheim",
+    "atlas_id": "emile-durkheim",
+    "name_zh": "涂尔干",
+    "name_original": "Emile Durkheim",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1858—1917",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "社会事实",
+      "集体意识",
+      "宗教"
+    ],
+    "traditions": [
+      "社会理论"
+    ],
+    "core_ideas": [
+      "社会事实",
+      "集体意识",
+      "宗教"
+    ],
+    "works": [
+      "《社会分工论》",
+      "《宗教生活的基本形式》"
+    ],
+    "related_ids": [
+      "comte",
+      "max_weber"
+    ],
+    "summary": "把社会事实作为独立对象研究，分析现代秩序、宗教和集体意识。",
+    "status": "seed"
+  },
+  {
+    "id": "epictetus",
+    "atlas_id": "epictetus",
+    "name_zh": "爱比克泰德",
+    "name_original": "Epictetus",
+    "tradition": "western",
+    "era": "罗马时代",
+    "period": "约50–135",
+    "region": "罗马",
+    "level": "L1",
+    "domains": [
+      "控制二分",
+      "内在自由"
+    ],
+    "traditions": [
+      "斯多葛主义"
+    ],
+    "core_ideas": [
+      "控制二分",
+      "内在自由"
+    ],
+    "works": [
+      "《手册》",
+      "《语录》"
+    ],
+    "related_ids": [
+      "seneca",
+      "marcus_aurelius"
+    ],
+    "summary": "区分可控与不可控之事，以判断训练自由。",
+    "status": "seed"
+  },
+  {
+    "id": "epicurus",
+    "atlas_id": "epicurus",
+    "name_zh": "伊壁鸠鲁",
+    "name_original": "Epicurus",
+    "tradition": "western",
+    "era": "希腊化时代",
+    "period": "341–270 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "快乐",
+      "无扰",
+      "原子论"
+    ],
+    "traditions": [
+      "伊壁鸠鲁主义"
+    ],
+    "core_ideas": [
+      "快乐",
+      "无扰",
+      "原子论"
+    ],
+    "works": [
+      "《致美诺寇斯书》"
+    ],
+    "related_ids": [
+      "lucretius",
+      "pyrrho"
+    ],
+    "summary": "把节制的快乐、友谊和免于恐惧视为好生活。",
+    "status": "seed"
+  },
+  {
+    "id": "erich_fromm",
+    "atlas_id": "erich-fromm",
+    "name_zh": "弗洛姆",
+    "name_original": "Erich Fromm",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1900—1980",
+    "region": "德国—美国",
+    "level": "L2",
+    "domains": [
+      "逃避自由",
+      "爱",
+      "异化"
+    ],
+    "traditions": [
+      "精神分析",
+      "社会哲学"
+    ],
+    "core_ideas": [
+      "逃避自由",
+      "爱",
+      "异化"
+    ],
+    "works": [
+      "《逃避自由》",
+      "《爱的艺术》"
+    ],
+    "related_ids": [
+      "sigmund_freud",
+      "marx",
+      "marcuse"
+    ],
+    "summary": "结合精神分析与马克思主义，分析现代人的自由焦虑、异化和爱的能力。",
+    "status": "seed"
+  },
+  {
+    "id": "feuerbach",
+    "atlas_id": "feuerbach",
+    "name_zh": "费尔巴哈",
+    "name_original": "Ludwig Feuerbach",
+    "tradition": "western",
+    "era": "19世纪",
+    "period": "1804—1872",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "投射",
+      "人本学",
+      "宗教批判"
+    ],
+    "traditions": [
+      "人本主义",
+      "宗教批判"
+    ],
+    "core_ideas": [
+      "投射",
+      "人本学",
+      "宗教批判"
+    ],
+    "works": [
+      "《基督教的本质》"
+    ],
+    "related_ids": [
+      "hegel",
+      "marx"
+    ],
+    "summary": "把神学解释为人的本质投射，对马克思和现代宗教批判影响深远。",
+    "status": "seed"
+  },
+  {
+    "id": "feyerabend",
+    "atlas_id": "feyerabend",
+    "name_zh": "费耶阿本德",
+    "name_original": "Paul Feyerabend",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1924–1994",
+    "region": "美国",
+    "level": "L1",
+    "domains": [
+      "方法论多元",
+      "反对方法"
+    ],
+    "traditions": [
+      "科学哲学"
+    ],
+    "core_ideas": [
+      "方法论多元",
+      "反对方法"
+    ],
+    "works": [
+      "《反对方法》"
+    ],
+    "related_ids": [
+      "popper",
+      "kuhn"
+    ],
+    "summary": "以科学史挑战单一方法论。",
+    "status": "seed"
+  },
+  {
+    "id": "fichte",
+    "atlas_id": "fichte",
+    "name_zh": "费希特",
+    "name_original": "Johann Gottlieb Fichte",
+    "tradition": "western",
+    "era": "德国古典",
+    "period": "1762—1814",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "自我",
+      "行动",
+      "自由"
+    ],
+    "traditions": [
+      "德国观念论"
+    ],
+    "core_ideas": [
+      "自我",
+      "行动",
+      "自由"
+    ],
+    "works": [
+      "《全部知识学的基础》"
+    ],
+    "related_ids": [
+      "kant",
+      "schelling",
+      "hegel"
+    ],
+    "summary": "把自我活动置于哲学中心，强调主体行动和自由的生成。",
+    "status": "seed"
+  },
+  {
+    "id": "foucault",
+    "atlas_id": "foucault",
+    "name_zh": "福柯",
+    "name_original": "Michel Foucault",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1926–1984",
+    "region": "法国",
+    "level": "L3",
+    "domains": [
+      "权力—知识",
+      "规训",
+      "主体化"
+    ],
+    "traditions": [
+      "谱系学",
+      "后结构主义"
+    ],
+    "core_ideas": [
+      "权力—知识",
+      "规训",
+      "主体化"
+    ],
+    "works": [
+      "《规训与惩罚》",
+      "《性史》"
+    ],
+    "related_ids": [
+      "nietzsche",
+      "deleuze",
+      "butler"
+    ],
+    "summary": "分析知识、权力和主体的历史形成。",
+    "status": "seed"
+  },
+  {
+    "id": "frege",
+    "atlas_id": "frege",
+    "name_zh": "弗雷格",
+    "name_original": "Gottlob Frege",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1848–1925",
+    "region": "德国",
+    "level": "L1",
+    "domains": [
+      "意义与指称",
+      "现代逻辑"
+    ],
+    "traditions": [
+      "分析哲学"
+    ],
+    "core_ideas": [
+      "意义与指称",
+      "现代逻辑"
+    ],
+    "works": [
+      "《概念文字》",
+      "《论意义和指称》"
+    ],
+    "related_ids": [
+      "russell",
+      "wittgenstein"
+    ],
+    "summary": "奠定现代逻辑并区分意义与指称。",
+    "status": "seed"
+  },
+  {
+    "id": "g_e_moore",
+    "atlas_id": "g-e-moore",
+    "name_zh": "摩尔",
+    "name_original": "G. E. Moore",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1873—1958",
+    "region": "英国",
+    "level": "L2",
+    "domains": [
+      "常识",
+      "善",
+      "自然主义谬误"
+    ],
+    "traditions": [
+      "分析哲学"
+    ],
+    "core_ideas": [
+      "常识",
+      "善",
+      "自然主义谬误"
+    ],
+    "works": [
+      "《伦理学原理》"
+    ],
+    "related_ids": [
+      "russell",
+      "wittgenstein"
+    ],
+    "summary": "以常识和概念分析反对观念论，并提出自然主义谬误。",
+    "status": "seed"
+  },
+  {
+    "id": "gadamer",
+    "atlas_id": "gadamer",
+    "name_zh": "伽达默尔",
+    "name_original": "Hans-Georg Gadamer",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1900—2002",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "视域融合",
+      "效果历史",
+      "理解"
+    ],
+    "traditions": [
+      "诠释学"
+    ],
+    "core_ideas": [
+      "视域融合",
+      "效果历史",
+      "理解"
+    ],
+    "works": [
+      "《真理与方法》"
+    ],
+    "related_ids": [
+      "heidegger",
+      "ricoeur"
+    ],
+    "summary": "把理解视为历史处境中的对话过程，强调传统、语言和视域融合在解释中的作用。",
+    "status": "seed"
+  },
+  {
+    "id": "georg_simmel",
+    "atlas_id": "georg-simmel",
+    "name_zh": "齐美尔",
+    "name_original": "Georg Simmel",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1858—1918",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "形式社会学",
+      "货币",
+      "都市"
+    ],
+    "traditions": [
+      "社会理论",
+      "文化哲学"
+    ],
+    "core_ideas": [
+      "形式社会学",
+      "货币",
+      "都市"
+    ],
+    "works": [
+      "《货币哲学》"
+    ],
+    "related_ids": [
+      "max_weber",
+      "benjamin"
+    ],
+    "summary": "从货币、都市和互动形式分析现代生活的距离感与个体化。",
+    "status": "seed"
+  },
+  {
+    "id": "giordano_bruno",
+    "atlas_id": "giordano-bruno",
+    "name_zh": "布鲁诺",
+    "name_original": "Giordano Bruno",
+    "tradition": "western",
+    "era": "文艺复兴",
+    "period": "1548—1600",
+    "region": "意大利",
+    "level": "L2",
+    "domains": [
+      "无限宇宙",
+      "单子",
+      "自然神性"
+    ],
+    "traditions": [
+      "文艺复兴思想",
+      "宇宙论"
+    ],
+    "core_ideas": [
+      "无限宇宙",
+      "单子",
+      "自然神性"
+    ],
+    "works": [
+      "《论无限、宇宙和诸世界》"
+    ],
+    "related_ids": [
+      "plotinus",
+      "spinoza"
+    ],
+    "summary": "把无限宇宙和自然神性联系起来，是近代宇宙想象与自由思想的重要人物。",
+    "status": "seed"
+  },
+  {
+    "id": "gramsci",
+    "atlas_id": "gramsci",
+    "name_zh": "葛兰西",
+    "name_original": "Antonio Gramsci",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1891–1937",
+    "region": "意大利",
+    "level": "L2",
+    "domains": [
+      "文化霸权",
+      "常识",
+      "阵地战"
+    ],
+    "traditions": [
+      "马克思主义",
+      "文化理论"
+    ],
+    "core_ideas": [
+      "文化霸权",
+      "常识",
+      "阵地战"
+    ],
+    "works": [
+      "《狱中札记》"
+    ],
+    "related_ids": [
+      "marx",
+      "adorno",
+      "arendt"
+    ],
+    "summary": "以文化霸权分析权力如何进入日常常识与社会组织。",
+    "status": "seed"
+  },
+  {
+    "id": "habermas",
+    "atlas_id": "habermas",
+    "name_zh": "哈贝马斯",
+    "name_original": "Jurgen Habermas",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1929–",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "交往理性",
+      "公共领域",
+      "话语伦理"
+    ],
+    "traditions": [
+      "批判理论"
+    ],
+    "core_ideas": [
+      "交往理性",
+      "公共领域",
+      "话语伦理"
+    ],
+    "works": [
+      "《交往行为理论》"
+    ],
+    "related_ids": [
+      "adorno",
+      "rawls"
+    ],
+    "summary": "以交往理性重建民主的规范基础。",
+    "status": "seed"
+  },
+  {
+    "id": "haraway",
+    "atlas_id": "haraway",
+    "name_zh": "唐娜·哈拉维",
+    "name_original": "Donna Haraway",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1944—",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "赛博格",
+      "情境知识",
+      "伴侣物种"
+    ],
+    "traditions": [
+      "科技哲学",
+      "女性主义理论"
+    ],
+    "core_ideas": [
+      "赛博格",
+      "情境知识",
+      "伴侣物种"
+    ],
+    "works": [
+      "《赛博格宣言》"
+    ],
+    "related_ids": [
+      "bruno_latour",
+      "foucault"
+    ],
+    "summary": "用赛博格和情境知识批判性别、本质主义和科学客观性，连接技术、身体与生态政治。",
+    "status": "seed"
+  },
+  {
+    "id": "hayek",
+    "atlas_id": "hayek",
+    "name_zh": "哈耶克",
+    "name_original": "Friedrich Hayek",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1899—1992",
+    "region": "奥地利—英国",
+    "level": "L2",
+    "domains": [
+      "自发秩序",
+      "自由",
+      "知识问题"
+    ],
+    "traditions": [
+      "政治哲学",
+      "经济思想"
+    ],
+    "core_ideas": [
+      "自发秩序",
+      "自由",
+      "知识问题"
+    ],
+    "works": [
+      "《通往奴役之路》",
+      "《自由宪章》"
+    ],
+    "related_ids": [
+      "popper",
+      "nozick"
+    ],
+    "summary": "以知识分散和自发秩序捍卫自由社会与有限政府。",
+    "status": "seed"
+  },
+  {
+    "id": "hegel",
+    "atlas_id": "hegel",
+    "name_zh": "黑格尔",
+    "name_original": "Georg Wilhelm Friedrich Hegel",
+    "tradition": "western",
+    "era": "德国古典",
+    "period": "1770–1831",
+    "region": "德国",
+    "level": "L3",
+    "domains": [
+      "辩证法",
+      "承认",
+      "历史"
+    ],
+    "traditions": [
+      "德国唯心主义"
+    ],
+    "core_ideas": [
+      "辩证法",
+      "承认",
+      "历史"
+    ],
+    "works": [
+      "《精神现象学》",
+      "《逻辑学》"
+    ],
+    "related_ids": [
+      "kant",
+      "marx",
+      "kierkegaard"
+    ],
+    "summary": "把自由理解为精神在历史与制度中的展开。",
+    "status": "seed"
+  },
+  {
+    "id": "heidegger",
+    "atlas_id": "heidegger",
+    "name_zh": "海德格尔",
+    "name_original": "Martin Heidegger",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1889–1976",
+    "region": "德国",
+    "level": "L3",
+    "domains": [
+      "此在",
+      "在世存在",
+      "技术"
+    ],
+    "traditions": [
+      "现象学",
+      "存在论"
+    ],
+    "core_ideas": [
+      "此在",
+      "在世存在",
+      "技术"
+    ],
+    "works": [
+      "《存在与时间》"
+    ],
+    "related_ids": [
+      "husserl",
+      "sartre"
+    ],
+    "summary": "重提存在问题，分析此在、时间性与技术。",
+    "status": "seed"
+  },
+  {
+    "id": "heraclitus",
+    "atlas_id": "heraclitus",
+    "name_zh": "赫拉克利特",
+    "name_original": "Heraclitus",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "约540–480 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "流变",
+      "逻各斯",
+      "对立统一"
+    ],
+    "traditions": [
+      "前苏格拉底"
+    ],
+    "core_ideas": [
+      "流变",
+      "逻各斯",
+      "对立统一"
+    ],
+    "works": [
+      "《论自然》残篇"
+    ],
+    "related_ids": [
+      "parmenides",
+      "plato"
+    ],
+    "summary": "从流变与对立关系理解世界秩序。",
+    "status": "seed"
+  },
+  {
+    "id": "hilary_putnam",
+    "atlas_id": "hilary-putnam",
+    "name_zh": "普特南",
+    "name_original": "Hilary Putnam",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1926—2016",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "功能主义",
+      "内在实在论",
+      "意义"
+    ],
+    "traditions": [
+      "分析哲学"
+    ],
+    "core_ideas": [
+      "功能主义",
+      "内在实在论",
+      "意义"
+    ],
+    "works": [
+      "《理性、真理与历史》"
+    ],
+    "related_ids": [
+      "quine",
+      "saul_kripke"
+    ],
+    "summary": "跨越心灵哲学、语言哲学和科学哲学，批判简单实在论与还原论。",
+    "status": "seed"
+  },
+  {
+    "id": "hobbes",
+    "atlas_id": "hobbes",
+    "name_zh": "霍布斯",
+    "name_original": "Thomas Hobbes",
+    "tradition": "western",
+    "era": "近代早期",
+    "period": "1588–1679",
+    "region": "英格兰",
+    "level": "L2",
+    "domains": [
+      "自然状态",
+      "主权",
+      "机械论"
+    ],
+    "traditions": [
+      "契约论",
+      "唯物主义"
+    ],
+    "core_ideas": [
+      "自然状态",
+      "主权",
+      "机械论"
+    ],
+    "works": [
+      "《利维坦》"
+    ],
+    "related_ids": [
+      "machiavelli",
+      "locke",
+      "rousseau"
+    ],
+    "summary": "以自然状态和契约论证统一主权。",
+    "status": "seed"
+  },
+  {
+    "id": "horkheimer",
+    "atlas_id": "horkheimer",
+    "name_zh": "霍克海默",
+    "name_original": "Max Horkheimer",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1895—1973",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "工具理性",
+      "启蒙批判",
+      "社会研究"
+    ],
+    "traditions": [
+      "批判理论"
+    ],
+    "core_ideas": [
+      "工具理性",
+      "启蒙批判",
+      "社会研究"
+    ],
+    "works": [
+      "《启蒙辩证法》",
+      "《工具理性批判》"
+    ],
+    "related_ids": [
+      "adorno",
+      "marx",
+      "habermas"
+    ],
+    "summary": "与法兰克福学派共同批判工具理性、资本主义文化和现代统治。",
+    "status": "seed"
+  },
+  {
+    "id": "hume",
+    "atlas_id": "hume",
+    "name_zh": "休谟",
+    "name_original": "David Hume",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1711–1776",
+    "region": "苏格兰",
+    "level": "L2",
+    "domains": [
+      "因果习惯",
+      "自我束",
+      "情感主义"
+    ],
+    "traditions": [
+      "经验主义",
+      "怀疑主义"
+    ],
+    "core_ideas": [
+      "因果习惯",
+      "自我束",
+      "情感主义"
+    ],
+    "works": [
+      "《人性论》"
+    ],
+    "related_ids": [
+      "locke",
+      "berkeley",
+      "kant"
+    ],
+    "summary": "以经验与习惯分析因果、自我和道德。",
+    "status": "seed"
+  },
+  {
+    "id": "husserl",
+    "atlas_id": "husserl",
+    "name_zh": "胡塞尔",
+    "name_original": "Edmund Husserl",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1859–1938",
+    "region": "中欧",
+    "level": "L2",
+    "domains": [
+      "意向性",
+      "悬置",
+      "生活世界"
+    ],
+    "traditions": [
+      "现象学"
+    ],
+    "core_ideas": [
+      "意向性",
+      "悬置",
+      "生活世界"
+    ],
+    "works": [
+      "《逻辑研究》",
+      "《欧洲科学的危机》"
+    ],
+    "related_ids": [
+      "heidegger",
+      "sartre"
+    ],
+    "summary": "描述意识如何给予世界意义。",
+    "status": "seed"
+  },
+  {
+    "id": "jacques_lacan",
+    "atlas_id": "jacques-lacan",
+    "name_zh": "拉康",
+    "name_original": "Jacques Lacan",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1901—1981",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "镜像阶段",
+      "象征界",
+      "大他者"
+    ],
+    "traditions": [
+      "精神分析",
+      "结构主义"
+    ],
+    "core_ideas": [
+      "镜像阶段",
+      "象征界",
+      "大他者"
+    ],
+    "works": [
+      "《文集》",
+      "《研讨班》"
+    ],
+    "related_ids": [
+      "sigmund_freud",
+      "derrida",
+      "althusser"
+    ],
+    "summary": "以语言和结构主义重读弗洛伊德，影响后结构主义和主体理论。",
+    "status": "seed"
+  },
+  {
+    "id": "jaspers",
+    "atlas_id": "jaspers",
+    "name_zh": "雅斯贝尔斯",
+    "name_original": "Karl Jaspers",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1883—1969",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "边界处境",
+      "交往",
+      "轴心时代"
+    ],
+    "traditions": [
+      "存在哲学"
+    ],
+    "core_ideas": [
+      "边界处境",
+      "交往",
+      "轴心时代"
+    ],
+    "works": [
+      "《哲学》",
+      "《历史的起源与目标》"
+    ],
+    "related_ids": [
+      "kierkegaard",
+      "heidegger"
+    ],
+    "summary": "从边界处境、沟通和超越思考存在哲学与历史意识。",
+    "status": "seed"
+  },
+  {
+    "id": "jean_baudrillard",
+    "atlas_id": "jean-baudrillard",
+    "name_zh": "鲍德里亚",
+    "name_original": "Jean Baudrillard",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1929—2007",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "拟像",
+      "消费社会",
+      "超真实"
+    ],
+    "traditions": [
+      "社会理论",
+      "后现代思想"
+    ],
+    "core_ideas": [
+      "拟像",
+      "消费社会",
+      "超真实"
+    ],
+    "works": [
+      "《消费社会》",
+      "《拟像与仿真》"
+    ],
+    "related_ids": [
+      "marx",
+      "foucault"
+    ],
+    "summary": "分析消费、符号和媒介如何生产超真实的社会经验。",
+    "status": "seed"
+  },
+  {
+    "id": "jean_piaget",
+    "atlas_id": "jean-piaget",
+    "name_zh": "皮亚杰",
+    "name_original": "Jean Piaget",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1896—1980",
+    "region": "瑞士",
+    "level": "L2",
+    "domains": [
+      "认知发展",
+      "图式",
+      "建构"
+    ],
+    "traditions": [
+      "发生认识论",
+      "发展心理学"
+    ],
+    "core_ideas": [
+      "认知发展",
+      "图式",
+      "建构"
+    ],
+    "works": [
+      "《儿童的世界概念》"
+    ],
+    "related_ids": [
+      "kant",
+      "lev_vygotsky"
+    ],
+    "summary": "研究儿童认知结构的形成，把认识论问题带入发展心理学。",
+    "status": "seed"
+  },
+  {
+    "id": "kant",
+    "atlas_id": "kant",
+    "name_zh": "康德",
+    "name_original": "Immanuel Kant",
+    "tradition": "western",
+    "era": "德国古典",
+    "period": "1724–1804",
+    "region": "德国",
+    "level": "L3",
+    "domains": [
+      "先验条件",
+      "自律",
+      "目的王国"
+    ],
+    "traditions": [
+      "先验哲学"
+    ],
+    "core_ideas": [
+      "先验条件",
+      "自律",
+      "目的王国"
+    ],
+    "works": [
+      "《纯粹理性批判》",
+      "《实践理性批判》"
+    ],
+    "related_ids": [
+      "hume",
+      "rousseau",
+      "hegel"
+    ],
+    "summary": "规定理性边界，并以自律重建知识与道德。",
+    "status": "seed"
+  },
+  {
+    "id": "kierkegaard",
+    "atlas_id": "kierkegaard",
+    "name_zh": "克尔凯郭尔",
+    "name_original": "Soren Kierkegaard",
+    "tradition": "western",
+    "era": "19世纪",
+    "period": "1813–1855",
+    "region": "丹麦",
+    "level": "L2",
+    "domains": [
+      "选择",
+      "焦虑",
+      "信仰跃进"
+    ],
+    "traditions": [
+      "存在主义先驱"
+    ],
+    "core_ideas": [
+      "选择",
+      "焦虑",
+      "信仰跃进"
+    ],
+    "works": [
+      "《非此即彼》",
+      "《恐惧与战栗》"
+    ],
+    "related_ids": [
+      "hegel",
+      "nietzsche",
+      "sartre"
+    ],
+    "summary": "以单独个体和选择反对抽象体系。",
+    "status": "seed"
+  },
+  {
+    "id": "kuhn",
+    "atlas_id": "kuhn",
+    "name_zh": "库恩",
+    "name_original": "Thomas Kuhn",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1922–1996",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "范式",
+      "科学革命",
+      "不可通约"
+    ],
+    "traditions": [
+      "科学哲学"
+    ],
+    "core_ideas": [
+      "范式",
+      "科学革命",
+      "不可通约"
+    ],
+    "works": [
+      "《科学革命的结构》"
+    ],
+    "related_ids": [
+      "popper",
+      "feyerabend"
+    ],
+    "summary": "以范式转换解释常规科学与革命。",
+    "status": "seed"
+  },
+  {
+    "id": "leibniz",
+    "atlas_id": "leibniz",
+    "name_zh": "莱布尼茨",
+    "name_original": "Gottfried Wilhelm Leibniz",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1646–1716",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "单子",
+      "充足理由",
+      "可能世界"
+    ],
+    "traditions": [
+      "理性主义"
+    ],
+    "core_ideas": [
+      "单子",
+      "充足理由",
+      "可能世界"
+    ],
+    "works": [
+      "《单子论》"
+    ],
+    "related_ids": [
+      "descartes",
+      "spinoza",
+      "kant"
+    ],
+    "summary": "以单子和充足理由构造多元而协调的世界。",
+    "status": "seed"
+  },
+  {
+    "id": "lev_vygotsky",
+    "atlas_id": "lev-vygotsky",
+    "name_zh": "维果茨基",
+    "name_original": "Lev Vygotsky",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1896—1934",
+    "region": "俄国",
+    "level": "L2",
+    "domains": [
+      "语言",
+      "内化",
+      "最近发展区"
+    ],
+    "traditions": [
+      "文化历史心理学"
+    ],
+    "core_ideas": [
+      "语言",
+      "内化",
+      "最近发展区"
+    ],
+    "works": [
+      "《思维与语言》"
+    ],
+    "related_ids": [
+      "jean_piaget",
+      "marx"
+    ],
+    "summary": "强调语言、社会互动和文化工具对思维发展的塑造作用。",
+    "status": "seed"
+  },
+  {
+    "id": "levinas",
+    "atlas_id": "levinas",
+    "name_zh": "列维纳斯",
+    "name_original": "Emmanuel Levinas",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1906—1995",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "他者",
+      "面容",
+      "责任"
+    ],
+    "traditions": [
+      "现象学",
+      "伦理学"
+    ],
+    "core_ideas": [
+      "他者",
+      "面容",
+      "责任"
+    ],
+    "works": [
+      "《总体与无限》"
+    ],
+    "related_ids": [
+      "husserl",
+      "heidegger",
+      "derrida"
+    ],
+    "summary": "把对他者的责任置于第一哲学位置，重写伦理学的起点。",
+    "status": "seed"
+  },
+  {
+    "id": "locke",
+    "atlas_id": "locke",
+    "name_zh": "洛克",
+    "name_original": "John Locke",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1632–1704",
+    "region": "英格兰",
+    "level": "L2",
+    "domains": [
+      "经验",
+      "人格同一性",
+      "权利"
+    ],
+    "traditions": [
+      "经验主义",
+      "自由主义"
+    ],
+    "core_ideas": [
+      "经验",
+      "人格同一性",
+      "权利"
+    ],
+    "works": [
+      "《人类理解论》",
+      "《政府论》"
+    ],
+    "related_ids": [
+      "hobbes",
+      "hume",
+      "rousseau"
+    ],
+    "summary": "从经验论到自然权利塑造现代自由主义。",
+    "status": "seed"
+  },
+  {
+    "id": "lucretius",
+    "atlas_id": "lucretius",
+    "name_zh": "卢克莱修",
+    "name_original": "Lucretius",
+    "tradition": "western",
+    "era": "罗马时代",
+    "period": "约99–55 BC",
+    "region": "罗马",
+    "level": "L2",
+    "domains": [
+      "原子论",
+      "自然",
+      "无惧死亡"
+    ],
+    "traditions": [
+      "伊壁鸠鲁主义"
+    ],
+    "core_ideas": [
+      "原子论",
+      "自然",
+      "无惧死亡"
+    ],
+    "works": [
+      "《物性论》"
+    ],
+    "related_ids": [
+      "epicurus",
+      "seneca"
+    ],
+    "summary": "以诗歌重述伊壁鸠鲁自然哲学，解除对神与死亡的恐惧。",
+    "status": "seed"
+  },
+  {
+    "id": "machiavelli",
+    "atlas_id": "machiavelli",
+    "name_zh": "马基雅维利",
+    "name_original": "Niccolo Machiavelli",
+    "tradition": "western",
+    "era": "文艺复兴",
+    "period": "1469–1527",
+    "region": "意大利",
+    "level": "L2",
+    "domains": [
+      "德性与命运",
+      "权力",
+      "共和"
+    ],
+    "traditions": [
+      "政治现实主义"
+    ],
+    "core_ideas": [
+      "德性与命运",
+      "权力",
+      "共和"
+    ],
+    "works": [
+      "《君主论》",
+      "《论李维》"
+    ],
+    "related_ids": [
+      "hobbes"
+    ],
+    "summary": "从权力、冲突与制度现实理解政治行动。",
+    "status": "seed"
+  },
+  {
+    "id": "macintyre",
+    "atlas_id": "macintyre",
+    "name_zh": "麦金太尔",
+    "name_original": "Alasdair MacIntyre",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1929—",
+    "region": "英国—美国",
+    "level": "L2",
+    "domains": [
+      "德性",
+      "传统",
+      "实践"
+    ],
+    "traditions": [
+      "德性伦理学",
+      "共同体主义"
+    ],
+    "core_ideas": [
+      "德性",
+      "传统",
+      "实践"
+    ],
+    "works": [
+      "《追寻美德》"
+    ],
+    "related_ids": [
+      "aristotle",
+      "charles_taylor"
+    ],
+    "summary": "批判现代道德话语的碎片化，主张在实践、传统和共同体中重新理解德性。",
+    "status": "seed"
+  },
+  {
+    "id": "maimonides",
+    "atlas_id": "maimonides",
+    "name_zh": "迈蒙尼德",
+    "name_original": "Maimonides",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "1138—1204",
+    "region": "地中海",
+    "level": "L2",
+    "domains": [
+      "否定神学",
+      "律法",
+      "理性"
+    ],
+    "traditions": [
+      "犹太哲学",
+      "亚里士多德主义"
+    ],
+    "core_ideas": [
+      "否定神学",
+      "律法",
+      "理性"
+    ],
+    "works": [
+      "《迷途指津》"
+    ],
+    "related_ids": [
+      "aristotle",
+      "aquinas"
+    ],
+    "summary": "在犹太思想与亚里士多德哲学之间建立理性解释传统。",
+    "status": "seed"
+  },
+  {
+    "id": "marcus_aurelius",
+    "atlas_id": "marcus-aurelius",
+    "name_zh": "马可·奥勒留",
+    "name_original": "Marcus Aurelius",
+    "tradition": "western",
+    "era": "罗马时代",
+    "period": "121–180",
+    "region": "罗马",
+    "level": "L2",
+    "domains": [
+      "自省",
+      "责任",
+      "宇宙公民"
+    ],
+    "traditions": [
+      "斯多葛主义"
+    ],
+    "core_ideas": [
+      "自省",
+      "责任",
+      "宇宙公民"
+    ],
+    "works": [
+      "《沉思录》"
+    ],
+    "related_ids": [
+      "epictetus",
+      "seneca"
+    ],
+    "summary": "以私人札记实践克制、责任与共同体意识。",
+    "status": "seed"
+  },
+  {
+    "id": "marcuse",
+    "atlas_id": "marcuse",
+    "name_zh": "马尔库塞",
+    "name_original": "Herbert Marcuse",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1898—1979",
+    "region": "德国—美国",
+    "level": "L2",
+    "domains": [
+      "单向度人",
+      "解放",
+      "欲望"
+    ],
+    "traditions": [
+      "批判理论"
+    ],
+    "core_ideas": [
+      "单向度人",
+      "解放",
+      "欲望"
+    ],
+    "works": [
+      "《单向度的人》",
+      "《爱欲与文明》"
+    ],
+    "related_ids": [
+      "sigmund_freud",
+      "marx",
+      "adorno"
+    ],
+    "summary": "把马克思与弗洛伊德结合，批判消费社会和压抑性文明。",
+    "status": "seed"
+  },
+  {
+    "id": "martha_nussbaum",
+    "atlas_id": "martha-nussbaum",
+    "name_zh": "玛莎·努斯鲍姆",
+    "name_original": "Martha Nussbaum",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1947—",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "能力方法",
+      "情感",
+      "尊严"
+    ],
+    "traditions": [
+      "伦理学",
+      "政治哲学"
+    ],
+    "core_ideas": [
+      "能力方法",
+      "情感",
+      "尊严"
+    ],
+    "works": [
+      "《善的脆弱性》",
+      "《创造能力》"
+    ],
+    "related_ids": [
+      "aristotle",
+      "rawls",
+      "sen"
+    ],
+    "summary": "把古典伦理、情感理论和能力方法结合，讨论尊严、正义与人类发展。",
+    "status": "seed"
+  },
+  {
+    "id": "marx",
+    "atlas_id": "marx",
+    "name_zh": "马克思",
+    "name_original": "Karl Marx",
+    "tradition": "western",
+    "era": "19世纪",
+    "period": "1818–1883",
+    "region": "德国—欧洲",
+    "level": "L3",
+    "domains": [
+      "异化",
+      "历史唯物主义",
+      "资本"
+    ],
+    "traditions": [
+      "马克思主义"
+    ],
+    "core_ideas": [
+      "异化",
+      "历史唯物主义",
+      "资本"
+    ],
+    "works": [
+      "《资本论》",
+      "《德意志意识形态》"
+    ],
+    "related_ids": [
+      "hegel",
+      "arendt",
+      "gramsci"
+    ],
+    "summary": "从生产关系与阶级冲突分析现代社会。",
+    "status": "seed"
+  },
+  {
+    "id": "max_weber",
+    "atlas_id": "max-weber",
+    "name_zh": "韦伯",
+    "name_original": "Max Weber",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1864—1920",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "理性化",
+      "合法性",
+      "新教伦理"
+    ],
+    "traditions": [
+      "社会理论"
+    ],
+    "core_ideas": [
+      "理性化",
+      "合法性",
+      "新教伦理"
+    ],
+    "works": [
+      "《新教伦理与资本主义精神》"
+    ],
+    "related_ids": [
+      "marx",
+      "nietzsche"
+    ],
+    "summary": "以理性化、合法性和宗教伦理分析现代社会的制度命运。",
+    "status": "seed"
+  },
+  {
+    "id": "merleau_ponty",
+    "atlas_id": "merleau-ponty",
+    "name_zh": "梅洛-庞蒂",
+    "name_original": "Maurice Merleau-Ponty",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1908—1961",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "身体",
+      "知觉",
+      "可见与不可见"
+    ],
+    "traditions": [
+      "现象学"
+    ],
+    "core_ideas": [
+      "身体",
+      "知觉",
+      "可见与不可见"
+    ],
+    "works": [
+      "《知觉现象学》"
+    ],
+    "related_ids": [
+      "husserl",
+      "sartre"
+    ],
+    "summary": "把身体和知觉置于主体与世界关系的中心。",
+    "status": "seed"
+  },
+  {
+    "id": "mill",
+    "atlas_id": "mill",
+    "name_zh": "约翰·斯图亚特·密尔",
+    "name_original": "John Stuart Mill",
+    "tradition": "western",
+    "era": "19世纪",
+    "period": "1806–1873",
+    "region": "英格兰",
+    "level": "L2",
+    "domains": [
+      "伤害原则",
+      "个性",
+      "效用"
+    ],
+    "traditions": [
+      "功利主义",
+      "自由主义"
+    ],
+    "core_ideas": [
+      "伤害原则",
+      "个性",
+      "效用"
+    ],
+    "works": [
+      "《论自由》",
+      "《功利主义》"
+    ],
+    "related_ids": [
+      "bentham",
+      "rawls"
+    ],
+    "summary": "修正功利主义并捍卫个性、言论与平等。",
+    "status": "seed"
+  },
+  {
+    "id": "montaigne",
+    "atlas_id": "montaigne",
+    "name_zh": "蒙田",
+    "name_original": "Michel de Montaigne",
+    "tradition": "western",
+    "era": "文艺复兴",
+    "period": "1533–1592",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "自我观察",
+      "习俗",
+      "怀疑"
+    ],
+    "traditions": [
+      "怀疑主义",
+      "人文主义"
+    ],
+    "core_ideas": [
+      "自我观察",
+      "习俗",
+      "怀疑"
+    ],
+    "works": [
+      "《随笔集》"
+    ],
+    "related_ids": [
+      "pyrrho",
+      "descartes"
+    ],
+    "summary": "把具体自我当作实验场，检验习俗与确定性。",
+    "status": "seed"
+  },
+  {
+    "id": "montesquieu",
+    "atlas_id": "montesquieu",
+    "name_zh": "孟德斯鸠",
+    "name_original": "Montesquieu",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1689—1755",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "权力分立",
+      "法的精神",
+      "政体"
+    ],
+    "traditions": [
+      "政治哲学"
+    ],
+    "core_ideas": [
+      "权力分立",
+      "法的精神",
+      "政体"
+    ],
+    "works": [
+      "《论法的精神》"
+    ],
+    "related_ids": [
+      "locke",
+      "rousseau"
+    ],
+    "summary": "以制度结构和权力制衡分析自由，是现代宪政思想核心来源。",
+    "status": "seed"
+  },
+  {
+    "id": "nietzsche",
+    "atlas_id": "nietzsche",
+    "name_zh": "尼采",
+    "name_original": "Friedrich Nietzsche",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1844–1900",
+    "region": "德国",
+    "level": "L3",
+    "domains": [
+      "价值重估",
+      "权力意志",
+      "永恒回归"
+    ],
+    "traditions": [
+      "生命哲学",
+      "谱系学"
+    ],
+    "core_ideas": [
+      "价值重估",
+      "权力意志",
+      "永恒回归"
+    ],
+    "works": [
+      "《查拉图斯特拉如是说》",
+      "《道德谱系学》"
+    ],
+    "related_ids": [
+      "schopenhauer",
+      "foucault",
+      "deleuze"
+    ],
+    "summary": "以谱系批判既定价值，要求重估生命尺度。",
+    "status": "seed"
+  },
+  {
+    "id": "nozick",
+    "atlas_id": "nozick",
+    "name_zh": "诺齐克",
+    "name_original": "Robert Nozick",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1938–2002",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "权利",
+      "最小国家",
+      "持有正义"
+    ],
+    "traditions": [
+      "自由意志主义"
+    ],
+    "core_ideas": [
+      "权利",
+      "最小国家",
+      "持有正义"
+    ],
+    "works": [
+      "《无政府、国家与乌托邦》"
+    ],
+    "related_ids": [
+      "rawls",
+      "locke"
+    ],
+    "summary": "以个人权利和持有正义批评再分配国家。",
+    "status": "seed"
+  },
+  {
+    "id": "ockham",
+    "atlas_id": "ockham",
+    "name_zh": "奥卡姆",
+    "name_original": "William of Ockham",
+    "tradition": "western",
+    "era": "中世纪",
+    "period": "约1287–1347",
+    "region": "欧洲",
+    "level": "L1",
+    "domains": [
+      "奥卡姆剃刀",
+      "唯名论"
+    ],
+    "traditions": [
+      "唯名论"
+    ],
+    "core_ideas": [
+      "奥卡姆剃刀",
+      "唯名论"
+    ],
+    "works": [
+      "《逻辑大全》"
+    ],
+    "related_ids": [
+      "aquinas",
+      "hume"
+    ],
+    "summary": "以唯名论和简约原则限制形而上学实体。",
+    "status": "seed"
+  },
+  {
+    "id": "parmenides",
+    "atlas_id": "parmenides",
+    "name_zh": "巴门尼德",
+    "name_original": "Parmenides",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "约515–450 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "存在",
+      "不变",
+      "理性之路"
+    ],
+    "traditions": [
+      "前苏格拉底"
+    ],
+    "core_ideas": [
+      "存在",
+      "不变",
+      "理性之路"
+    ],
+    "works": [
+      "《论自然》"
+    ],
+    "related_ids": [
+      "heraclitus",
+      "plato"
+    ],
+    "summary": "区分意见与真理，坚持存在不可生成。",
+    "status": "seed"
+  },
+  {
+    "id": "pascal",
+    "atlas_id": "pascal",
+    "name_zh": "帕斯卡",
+    "name_original": "Blaise Pascal",
+    "tradition": "western",
+    "era": "近代早期",
+    "period": "1623—1662",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "脆弱性",
+      "赌注",
+      "心灵理由"
+    ],
+    "traditions": [
+      "基督教思想",
+      "怀疑主义"
+    ],
+    "core_ideas": [
+      "脆弱性",
+      "赌注",
+      "心灵理由"
+    ],
+    "works": [
+      "《思想录》"
+    ],
+    "related_ids": [
+      "montaigne",
+      "descartes"
+    ],
+    "summary": "在理性、信仰和人的脆弱之间思考现代主体的不安。",
+    "status": "seed"
+  },
+  {
+    "id": "peirce",
+    "atlas_id": "peirce",
+    "name_zh": "皮尔士",
+    "name_original": "Charles Sanders Peirce",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1839–1914",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "探究共同体",
+      "符号学",
+      "可错论"
+    ],
+    "traditions": [
+      "实用主义"
+    ],
+    "core_ideas": [
+      "探究共同体",
+      "符号学",
+      "可错论"
+    ],
+    "works": [
+      "《如何使我们的观念清楚》"
+    ],
+    "related_ids": [
+      "william_james",
+      "dewey"
+    ],
+    "summary": "以实践后果、可错论和符号过程理解真理。",
+    "status": "seed"
+  },
+  {
+    "id": "pierre_bourdieu",
+    "atlas_id": "pierre-bourdieu",
+    "name_zh": "布迪厄",
+    "name_original": "Pierre Bourdieu",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1930—2002",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "惯习",
+      "场域",
+      "资本"
+    ],
+    "traditions": [
+      "社会理论"
+    ],
+    "core_ideas": [
+      "惯习",
+      "场域",
+      "资本"
+    ],
+    "works": [
+      "《区分》",
+      "《实践感》"
+    ],
+    "related_ids": [
+      "marx",
+      "foucault"
+    ],
+    "summary": "以惯习、场域和资本解释文化、权力和社会再生产。",
+    "status": "seed"
+  },
+  {
+    "id": "plato",
+    "atlas_id": "plato",
+    "name_zh": "柏拉图",
+    "name_original": "Plato",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "428/427–348/347 BC",
+    "region": "希腊",
+    "level": "L3",
+    "domains": [
+      "理念",
+      "灵魂",
+      "正义"
+    ],
+    "traditions": [
+      "柏拉图主义"
+    ],
+    "core_ideas": [
+      "理念",
+      "灵魂",
+      "正义"
+    ],
+    "works": [
+      "《理想国》",
+      "《斐多》"
+    ],
+    "related_ids": [
+      "socrates",
+      "aristotle",
+      "plotinus"
+    ],
+    "summary": "以理念论和对话体追问知识、正义与灵魂。",
+    "status": "seed"
+  },
+  {
+    "id": "plotinus",
+    "atlas_id": "plotinus",
+    "name_zh": "普罗提诺",
+    "name_original": "Plotinus",
+    "tradition": "western",
+    "era": "晚期古典",
+    "period": "204/205–270",
+    "region": "地中海",
+    "level": "L2",
+    "domains": [
+      "太一",
+      "流溢",
+      "回归"
+    ],
+    "traditions": [
+      "新柏拉图主义"
+    ],
+    "core_ideas": [
+      "太一",
+      "流溢",
+      "回归"
+    ],
+    "works": [
+      "《九章集》"
+    ],
+    "related_ids": [
+      "plato",
+      "augustine"
+    ],
+    "summary": "以太一、心智与灵魂构造存在层级。",
+    "status": "seed"
+  },
+  {
+    "id": "popper",
+    "atlas_id": "popper",
+    "name_zh": "波普尔",
+    "name_original": "Karl Popper",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1902–1994",
+    "region": "英国",
+    "level": "L1",
+    "domains": [
+      "可证伪性",
+      "开放社会"
+    ],
+    "traditions": [
+      "科学哲学"
+    ],
+    "core_ideas": [
+      "可证伪性",
+      "开放社会"
+    ],
+    "works": [
+      "《科学发现的逻辑》"
+    ],
+    "related_ids": [
+      "kuhn",
+      "feyerabend"
+    ],
+    "summary": "以可证伪性区分科学并捍卫开放社会。",
+    "status": "seed"
+  },
+  {
+    "id": "protagoras",
+    "atlas_id": "protagoras",
+    "name_zh": "普罗泰戈拉",
+    "name_original": "Protagoras",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "约490–420 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "人是尺度",
+      "相对主义",
+      "修辞"
+    ],
+    "traditions": [
+      "诡辩传统"
+    ],
+    "core_ideas": [
+      "人是尺度",
+      "相对主义",
+      "修辞"
+    ],
+    "works": [
+      "残篇与后世见证"
+    ],
+    "related_ids": [
+      "socrates",
+      "plato"
+    ],
+    "summary": "以“人是尺度”挑战绝对知识，并把论证带入公共生活。",
+    "status": "seed"
+  },
+  {
+    "id": "pyrrho",
+    "atlas_id": "pyrrho",
+    "name_zh": "皮浪",
+    "name_original": "Pyrrho",
+    "tradition": "western",
+    "era": "希腊化时代",
+    "period": "约360–270 BC",
+    "region": "希腊",
+    "level": "L1",
+    "domains": [
+      "悬置判断",
+      "宁静"
+    ],
+    "traditions": [
+      "怀疑主义"
+    ],
+    "core_ideas": [
+      "悬置判断",
+      "宁静"
+    ],
+    "works": [
+      "后世见证"
+    ],
+    "related_ids": [
+      "hume",
+      "montaigne"
+    ],
+    "summary": "通过悬置判断避免教条，寻求心灵宁静。",
+    "status": "seed"
+  },
+  {
+    "id": "pythagoras",
+    "atlas_id": "pythagoras",
+    "name_zh": "毕达哥拉斯",
+    "name_original": "Pythagoras",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "约 570—495 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "数与宇宙",
+      "灵魂轮回",
+      "和谐"
+    ],
+    "traditions": [
+      "前苏格拉底",
+      "数学哲学"
+    ],
+    "core_ideas": [
+      "数与宇宙",
+      "灵魂轮回",
+      "和谐"
+    ],
+    "works": [
+      "毕达哥拉斯传统"
+    ],
+    "related_ids": [
+      "thales",
+      "plato"
+    ],
+    "summary": "把数、比例与宇宙秩序联系起来，影响柏拉图主义和后世数学化自然观。",
+    "status": "seed"
+  },
+  {
+    "id": "quine",
+    "atlas_id": "quine",
+    "name_zh": "蒯因",
+    "name_original": "Willard Van Orman Quine",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1908—2000",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "整体论",
+      "翻译不确定性",
+      "自然化认识论"
+    ],
+    "traditions": [
+      "分析哲学"
+    ],
+    "core_ideas": [
+      "整体论",
+      "翻译不确定性",
+      "自然化认识论"
+    ],
+    "works": [
+      "《从逻辑的观点看》"
+    ],
+    "related_ids": [
+      "russell",
+      "donald_davidson",
+      "hilary_putnam"
+    ],
+    "summary": "以经验整体论和自然化认识论挑战分析与综合的区分，深刻影响语言哲学和科学哲学。",
+    "status": "seed"
+  },
+  {
+    "id": "rawls",
+    "atlas_id": "rawls",
+    "name_zh": "罗尔斯",
+    "name_original": "John Rawls",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1921–2002",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "原初状态",
+      "差别原则",
+      "公平正义"
+    ],
+    "traditions": [
+      "政治自由主义"
+    ],
+    "core_ideas": [
+      "原初状态",
+      "差别原则",
+      "公平正义"
+    ],
+    "works": [
+      "《正义论》"
+    ],
+    "related_ids": [
+      "kant",
+      "mill",
+      "nozick"
+    ],
+    "summary": "以无知之幕构造公平合作的正义原则。",
+    "status": "seed"
+  },
+  {
+    "id": "ricoeur",
+    "atlas_id": "ricoeur",
+    "name_zh": "利科",
+    "name_original": "Paul Ricoeur",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1913—2005",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "叙事身份",
+      "解释",
+      "记忆"
+    ],
+    "traditions": [
+      "解释学"
+    ],
+    "core_ideas": [
+      "叙事身份",
+      "解释",
+      "记忆"
+    ],
+    "works": [
+      "《时间与叙事》",
+      "《作为他者的自身》"
+    ],
+    "related_ids": [
+      "gadamer",
+      "levinas"
+    ],
+    "summary": "通过叙事、解释和记忆理解自我与历史经验。",
+    "status": "seed"
+  },
+  {
+    "id": "rorty",
+    "atlas_id": "rorty",
+    "name_zh": "罗蒂",
+    "name_original": "Richard Rorty",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1931—2007",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "反基础主义",
+      "偶然性",
+      "自由主义讽刺家"
+    ],
+    "traditions": [
+      "新实用主义"
+    ],
+    "core_ideas": [
+      "反基础主义",
+      "偶然性",
+      "自由主义讽刺家"
+    ],
+    "works": [
+      "《哲学与自然之镜》"
+    ],
+    "related_ids": [
+      "dewey",
+      "donald_davidson",
+      "quine"
+    ],
+    "summary": "把哲学从追求终极基础转向文化对话和公共希望，延续并改造美国实用主义。",
+    "status": "seed"
+  },
+  {
+    "id": "rousseau",
+    "atlas_id": "rousseau",
+    "name_zh": "卢梭",
+    "name_original": "Jean-Jacques Rousseau",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1712–1778",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "公意",
+      "不平等",
+      "自由"
+    ],
+    "traditions": [
+      "契约论",
+      "共和主义"
+    ],
+    "core_ideas": [
+      "公意",
+      "不平等",
+      "自由"
+    ],
+    "works": [
+      "《社会契约论》"
+    ],
+    "related_ids": [
+      "hobbes",
+      "locke",
+      "kant"
+    ],
+    "summary": "追问共同体如何保存自由。",
+    "status": "seed"
+  },
+  {
+    "id": "russell",
+    "atlas_id": "russell",
+    "name_zh": "罗素",
+    "name_original": "Bertrand Russell",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1872–1970",
+    "region": "英国",
+    "level": "L1",
+    "domains": [
+      "逻辑原子主义",
+      "摹状词"
+    ],
+    "traditions": [
+      "分析哲学"
+    ],
+    "core_ideas": [
+      "逻辑原子主义",
+      "摹状词"
+    ],
+    "works": [
+      "《数学原理》",
+      "《论指称》"
+    ],
+    "related_ids": [
+      "frege",
+      "wittgenstein"
+    ],
+    "summary": "以逻辑分析澄清语言、知识和数学基础。",
+    "status": "seed"
+  },
+  {
+    "id": "sartre",
+    "atlas_id": "sartre",
+    "name_zh": "萨特",
+    "name_original": "Jean-Paul Sartre",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1905–1980",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "存在先于本质",
+      "自由",
+      "自欺"
+    ],
+    "traditions": [
+      "存在主义"
+    ],
+    "core_ideas": [
+      "存在先于本质",
+      "自由",
+      "自欺"
+    ],
+    "works": [
+      "《存在与虚无》"
+    ],
+    "related_ids": [
+      "heidegger",
+      "beauvoir",
+      "camus"
+    ],
+    "summary": "人必须在处境中选择并承担自由。",
+    "status": "seed"
+  },
+  {
+    "id": "saul_kripke",
+    "atlas_id": "saul-kripke",
+    "name_zh": "克里普克",
+    "name_original": "Saul Kripke",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1940—2022",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "命名",
+      "必然性",
+      "可能世界"
+    ],
+    "traditions": [
+      "分析哲学",
+      "语言哲学"
+    ],
+    "core_ideas": [
+      "命名",
+      "必然性",
+      "可能世界"
+    ],
+    "works": [
+      "《命名与必然性》"
+    ],
+    "related_ids": [
+      "wittgenstein",
+      "quine"
+    ],
+    "summary": "以命名和必然性的分析改变语言哲学、形而上学与心灵哲学。",
+    "status": "seed"
+  },
+  {
+    "id": "scheler",
+    "atlas_id": "scheler",
+    "name_zh": "舍勒",
+    "name_original": "Max Scheler",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1874—1928",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "价值",
+      "情感",
+      "人格"
+    ],
+    "traditions": [
+      "现象学",
+      "价值伦理学"
+    ],
+    "core_ideas": [
+      "价值",
+      "情感",
+      "人格"
+    ],
+    "works": [
+      "《伦理学中的形式主义》"
+    ],
+    "related_ids": [
+      "husserl",
+      "heidegger"
+    ],
+    "summary": "以现象学分析价值、情感和人格，影响伦理学与哲学人类学。",
+    "status": "seed"
+  },
+  {
+    "id": "schelling",
+    "atlas_id": "schelling",
+    "name_zh": "谢林",
+    "name_original": "Friedrich Wilhelm Joseph Schelling",
+    "tradition": "western",
+    "era": "德国古典",
+    "period": "1775—1854",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "自然哲学",
+      "同一哲学",
+      "自由"
+    ],
+    "traditions": [
+      "德国观念论",
+      "自然哲学"
+    ],
+    "core_ideas": [
+      "自然哲学",
+      "同一哲学",
+      "自由"
+    ],
+    "works": [
+      "《先验唯心论体系》"
+    ],
+    "related_ids": [
+      "fichte",
+      "hegel"
+    ],
+    "summary": "试图统一自然与精神，发展自由、艺术和自然的观念论哲学。",
+    "status": "seed"
+  },
+  {
+    "id": "schopenhauer",
+    "atlas_id": "schopenhauer",
+    "name_zh": "叔本华",
+    "name_original": "Arthur Schopenhauer",
+    "tradition": "western",
+    "era": "19世纪",
+    "period": "1788–1860",
+    "region": "德国",
+    "level": "L2",
+    "domains": [
+      "意志",
+      "表象",
+      "同情"
+    ],
+    "traditions": [
+      "意志哲学"
+    ],
+    "core_ideas": [
+      "意志",
+      "表象",
+      "同情"
+    ],
+    "works": [
+      "《作为意志和表象的世界》"
+    ],
+    "related_ids": [
+      "kant",
+      "nietzsche"
+    ],
+    "summary": "把世界理解为表象背后的盲目意志。",
+    "status": "seed"
+  },
+  {
+    "id": "sen",
+    "atlas_id": "sen",
+    "name_zh": "阿马蒂亚·森",
+    "name_original": "Amartya Sen",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1933—",
+    "region": "印度—英国",
+    "level": "L2",
+    "domains": [
+      "能力方法",
+      "正义",
+      "公共理性"
+    ],
+    "traditions": [
+      "政治哲学",
+      "福利经济学"
+    ],
+    "core_ideas": [
+      "能力方法",
+      "正义",
+      "公共理性"
+    ],
+    "works": [
+      "《以自由看待发展》"
+    ],
+    "related_ids": [
+      "rawls",
+      "martha_nussbaum"
+    ],
+    "summary": "以能力方法重新定义发展、自由与正义，对政治哲学和福利经济学产生重要影响。",
+    "status": "seed"
+  },
+  {
+    "id": "seneca",
+    "atlas_id": "seneca",
+    "name_zh": "塞涅卡",
+    "name_original": "Seneca",
+    "tradition": "western",
+    "era": "罗马时代",
+    "period": "约4 BC–65",
+    "region": "罗马",
+    "level": "L2",
+    "domains": [
+      "德性",
+      "时间",
+      "逆境"
+    ],
+    "traditions": [
+      "斯多葛主义"
+    ],
+    "core_ideas": [
+      "德性",
+      "时间",
+      "逆境"
+    ],
+    "works": [
+      "《道德书简》"
+    ],
+    "related_ids": [
+      "epictetus",
+      "marcus_aurelius"
+    ],
+    "summary": "把斯多葛训练落实到时间、愤怒与逆境生活。",
+    "status": "seed"
+  },
+  {
+    "id": "sigmund_freud",
+    "atlas_id": "sigmund-freud",
+    "name_zh": "弗洛伊德",
+    "name_original": "Sigmund Freud",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1856—1939",
+    "region": "奥地利",
+    "level": "L2",
+    "domains": [
+      "无意识",
+      "欲望",
+      "梦",
+      "压抑"
+    ],
+    "traditions": [
+      "精神分析",
+      "心理哲学"
+    ],
+    "core_ideas": [
+      "无意识",
+      "欲望",
+      "梦",
+      "压抑"
+    ],
+    "works": [
+      "《梦的解析》",
+      "《精神分析引论》"
+    ],
+    "related_ids": [
+      "nietzsche",
+      "carl_jung",
+      "jacques_lacan"
+    ],
+    "summary": "把无意识、欲望和压抑带入现代自我理解，深刻影响哲学、文学和社会理论。",
+    "status": "seed"
+  },
+  {
+    "id": "socrates",
+    "atlas_id": "socrates",
+    "name_zh": "苏格拉底",
+    "name_original": "Socrates",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "470–399 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "自知",
+      "诘问法",
+      "德性"
+    ],
+    "traditions": [
+      "苏格拉底传统"
+    ],
+    "core_ideas": [
+      "自知",
+      "诘问法",
+      "德性"
+    ],
+    "works": [
+      "柏拉图早期对话录"
+    ],
+    "related_ids": [
+      "plato",
+      "protagoras"
+    ],
+    "summary": "以持续诘问检验未经审视的信念与生活。",
+    "status": "seed"
+  },
+  {
+    "id": "spinoza",
+    "atlas_id": "spinoza",
+    "name_zh": "斯宾诺莎",
+    "name_original": "Baruch Spinoza",
+    "tradition": "western",
+    "era": "近代早期",
+    "period": "1632–1677",
+    "region": "荷兰",
+    "level": "L2",
+    "domains": [
+      "实体一元论",
+      "必然性",
+      "自由"
+    ],
+    "traditions": [
+      "理性主义"
+    ],
+    "core_ideas": [
+      "实体一元论",
+      "必然性",
+      "自由"
+    ],
+    "works": [
+      "《伦理学》"
+    ],
+    "related_ids": [
+      "descartes",
+      "leibniz",
+      "deleuze"
+    ],
+    "summary": "以唯一实体和必然性重释情感与自由。",
+    "status": "seed"
+  },
+  {
+    "id": "thales",
+    "atlas_id": "thales",
+    "name_zh": "泰勒斯",
+    "name_original": "Thales",
+    "tradition": "western",
+    "era": "古典时代",
+    "period": "约624–546 BC",
+    "region": "希腊",
+    "level": "L1",
+    "domains": [
+      "自然本原",
+      "理性解释"
+    ],
+    "traditions": [
+      "前苏格拉底"
+    ],
+    "core_ideas": [
+      "自然本原",
+      "理性解释"
+    ],
+    "works": [
+      "残篇传统"
+    ],
+    "related_ids": [
+      "heraclitus",
+      "parmenides"
+    ],
+    "summary": "以自然原则而非神话解释世界。",
+    "status": "seed"
+  },
+  {
+    "id": "thomas_nagel",
+    "atlas_id": "thomas-nagel",
+    "name_zh": "托马斯·内格尔",
+    "name_original": "Thomas Nagel",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1937—",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "主观性",
+      "蝙蝠问题",
+      "无处之见"
+    ],
+    "traditions": [
+      "心灵哲学",
+      "伦理学"
+    ],
+    "core_ideas": [
+      "主观性",
+      "蝙蝠问题",
+      "无处之见"
+    ],
+    "works": [
+      "《成为一只蝙蝠可能是什么样》"
+    ],
+    "related_ids": [
+      "derek_parfit",
+      "rawls"
+    ],
+    "summary": "以主观经验和客观视角的张力讨论心灵、伦理和理性的边界。",
+    "status": "seed"
+  },
+  {
+    "id": "tocqueville",
+    "atlas_id": "tocqueville",
+    "name_zh": "托克维尔",
+    "name_original": "Alexis de Tocqueville",
+    "tradition": "western",
+    "era": "19世纪",
+    "period": "1805—1859",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "民主",
+      "平等",
+      "多数暴政"
+    ],
+    "traditions": [
+      "政治哲学",
+      "社会理论"
+    ],
+    "core_ideas": [
+      "民主",
+      "平等",
+      "多数暴政"
+    ],
+    "works": [
+      "《论美国的民主》"
+    ],
+    "related_ids": [
+      "montesquieu",
+      "mill"
+    ],
+    "summary": "分析民主社会的自由、平等和多数权力，是现代政治社会学重要源头。",
+    "status": "seed"
+  },
+  {
+    "id": "vico",
+    "atlas_id": "vico",
+    "name_zh": "维柯",
+    "name_original": "Giambattista Vico",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1668—1744",
+    "region": "意大利",
+    "level": "L2",
+    "domains": [
+      "诗性智慧",
+      "历史循环",
+      "民族精神"
+    ],
+    "traditions": [
+      "历史哲学"
+    ],
+    "core_ideas": [
+      "诗性智慧",
+      "历史循环",
+      "民族精神"
+    ],
+    "works": [
+      "《新科学》"
+    ],
+    "related_ids": [
+      "hegel",
+      "rousseau"
+    ],
+    "summary": "强调人类只能真正理解自己创造的历史世界，开启现代历史哲学。",
+    "status": "seed"
+  },
+  {
+    "id": "viktor_frankl",
+    "atlas_id": "viktor-frankl",
+    "name_zh": "弗兰克尔",
+    "name_original": "Viktor Frankl",
+    "tradition": "western",
+    "era": "当代",
+    "period": "1905—1997",
+    "region": "奥地利",
+    "level": "L2",
+    "domains": [
+      "意义意志",
+      "苦难",
+      "责任"
+    ],
+    "traditions": [
+      "存在主义心理学"
+    ],
+    "core_ideas": [
+      "意义意志",
+      "苦难",
+      "责任"
+    ],
+    "works": [
+      "《活出生命的意义》"
+    ],
+    "related_ids": [
+      "jaspers",
+      "camus"
+    ],
+    "summary": "以意义疗法强调人在苦难中仍能承担态度和意义选择。",
+    "status": "seed"
+  },
+  {
+    "id": "voltaire",
+    "atlas_id": "voltaire",
+    "name_zh": "伏尔泰",
+    "name_original": "Voltaire",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1694—1778",
+    "region": "法国",
+    "level": "L2",
+    "domains": [
+      "宽容",
+      "反教权",
+      "理性批判"
+    ],
+    "traditions": [
+      "启蒙思想"
+    ],
+    "core_ideas": [
+      "宽容",
+      "反教权",
+      "理性批判"
+    ],
+    "works": [
+      "《哲学通信》",
+      "《老实人》"
+    ],
+    "related_ids": [
+      "rousseau",
+      "diderot"
+    ],
+    "summary": "以讽刺和公共写作推动宗教宽容、理性批判与启蒙公共性。",
+    "status": "seed"
+  },
+  {
+    "id": "william_james",
+    "atlas_id": "william-james",
+    "name_zh": "威廉·詹姆斯",
+    "name_original": "William James",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1842–1910",
+    "region": "美国",
+    "level": "L2",
+    "domains": [
+      "经验流",
+      "信念意志",
+      "宗教经验"
+    ],
+    "traditions": [
+      "实用主义",
+      "心理哲学"
+    ],
+    "core_ideas": [
+      "经验流",
+      "信念意志",
+      "宗教经验"
+    ],
+    "works": [
+      "《实用主义》",
+      "《宗教经验之种种》"
+    ],
+    "related_ids": [
+      "peirce",
+      "dewey"
+    ],
+    "summary": "以经验流和实践后果阐释信念、真理与宗教经验。",
+    "status": "seed"
+  },
+  {
+    "id": "wittgenstein",
+    "atlas_id": "wittgenstein",
+    "name_zh": "维特根斯坦",
+    "name_original": "Ludwig Wittgenstein",
+    "tradition": "western",
+    "era": "现代",
+    "period": "1889–1951",
+    "region": "英国",
+    "level": "L3",
+    "domains": [
+      "语言游戏",
+      "生活形式",
+      "可说界限"
+    ],
+    "traditions": [
+      "分析哲学"
+    ],
+    "core_ideas": [
+      "语言游戏",
+      "生活形式",
+      "可说界限"
+    ],
+    "works": [
+      "《逻辑哲学论》",
+      "《哲学研究》"
+    ],
+    "related_ids": [
+      "frege",
+      "russell"
+    ],
+    "summary": "从逻辑图像转向语言游戏，以使用消解困惑。",
+    "status": "seed"
+  },
+  {
+    "id": "wollstonecraft",
+    "atlas_id": "wollstonecraft",
+    "name_zh": "玛丽·沃斯通克拉夫特",
+    "name_original": "Mary Wollstonecraft",
+    "tradition": "western",
+    "era": "启蒙时代",
+    "period": "1759—1797",
+    "region": "英国",
+    "level": "L2",
+    "domains": [
+      "女性权利",
+      "教育",
+      "平等"
+    ],
+    "traditions": [
+      "女性主义",
+      "政治哲学"
+    ],
+    "core_ideas": [
+      "女性权利",
+      "教育",
+      "平等"
+    ],
+    "works": [
+      "《女权辩护》"
+    ],
+    "related_ids": [
+      "rousseau",
+      "mill",
+      "beauvoir"
+    ],
+    "summary": "从教育、理性和平等角度批判性别从属，是现代女性主义思想先声。",
+    "status": "seed"
+  },
+  {
+    "id": "zeno",
+    "atlas_id": "zeno",
+    "name_zh": "芝诺",
+    "name_original": "Zeno of Citium",
+    "tradition": "western",
+    "era": "希腊化时代",
+    "period": "约334–262 BC",
+    "region": "希腊",
+    "level": "L2",
+    "domains": [
+      "依自然而活",
+      "德性",
+      "逻各斯"
+    ],
+    "traditions": [
+      "斯多葛主义"
+    ],
+    "core_ideas": [
+      "依自然而活",
+      "德性",
+      "逻各斯"
+    ],
+    "works": [
+      "《共和国》残篇"
+    ],
+    "related_ids": [
+      "epictetus",
+      "seneca",
+      "marcus_aurelius"
+    ],
+    "summary": "奠定斯多葛学派，以德性和理性秩序论自由。",
+    "status": "seed"
+  }
+]
