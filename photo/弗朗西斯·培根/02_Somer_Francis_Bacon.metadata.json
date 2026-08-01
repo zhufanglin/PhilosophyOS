@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "bacon",
+    "name_zh": "弗朗西斯·培根",
+    "name_original": "Francis Bacon",
+    "era": "近代早期",
+    "period": "1561–1626"
+  },
+  "asset": {
+    "title": "File:Somer Francis Bacon.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Somer_Francis_Bacon.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Somer_Francis_Bacon.jpg/1280px-Somer_Francis_Bacon.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1228,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Paul van Somer I / Formerly attributed to Frans Pourbus the Younger",
+    "credit": "pl.pinterest.com",
+    "description": "",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

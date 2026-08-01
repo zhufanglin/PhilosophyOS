@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "dewey",
+    "name_zh": "杜威",
+    "name_original": "John Dewey",
+    "era": "现代",
+    "period": "1859–1952"
+  },
+  "asset": {
+    "title": "File:John Dewey cph.3a51565.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:John_Dewey_cph.3a51565.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/e/ef/John_Dewey_cph.3a51565.jpg",
+    "mime": "image/jpeg",
+    "width": 1081,
+    "height": 1476,
+    "score": 20
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Underwood &amp; Underwood",
+    "credit": "This image  is available from the United States Library of Congress's Prints and Photographs division under the digital ID cph.3a51565.This tag does not indicate the copyright status of the attached work. A normal copyright tag is still required. See Commons:Licensing.",
+    "description": "John Dewey, bust portrait",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

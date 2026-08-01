@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "aristotle",
+    "name_zh": "亚里士多德",
+    "name_original": "Aristotle",
+    "era": "古典时代",
+    "period": "384–322 BC"
+  },
+  "asset": {
+    "title": "File:Portrait of Aristotle, set on a restored bust, Colosseum.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Portrait_of_Aristotle,_set_on_a_restored_bust,_Colosseum.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Portrait_of_Aristotle%2C_set_on_a_restored_bust%2C_Colosseum.jpg/1280px-Portrait_of_Aristotle%2C_set_on_a_restored_bust%2C_Colosseum.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1462,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown authorUnknown author",
+    "credit": "Photo by Szilas, 2013-03-04",
+    "description": "",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

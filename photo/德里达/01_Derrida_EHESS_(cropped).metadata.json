@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "derrida",
+    "name_zh": "德里达",
+    "name_original": "Jacques Derrida",
+    "era": "当代",
+    "period": "1930–2004"
+  },
+  "asset": {
+    "title": "File:Derrida EHESS (cropped).png",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Derrida_EHESS_(cropped).png",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Derrida_EHESS_%28cropped%29.png",
+    "mime": "image/png",
+    "width": 881,
+    "height": 1174,
+    "score": 13
+  },
+  "rights": {
+    "license_short": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0",
+    "artist": "Auto-épreuve",
+    "credit": "File:Derrida_EHESS.jpg",
+    "description": "Jacques Derrida",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "althusser",
+    "name_zh": "阿尔都塞",
+    "name_original": "Louis Althusser",
+    "era": "当代",
+    "period": "1918—1990"
+  },
+  "asset": {
+    "title": "File:Louis Althusser line drawing (8421995478).jpg",
+    "source": "wikidata-commons-category:Category:Louis Althusser",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Louis_Althusser_line_drawing_(8421995478).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Louis_Althusser_line_drawing_%288421995478%29.jpg/1280px-Louis_Althusser_line_drawing_%288421995478%29.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1390,
+    "score": 15
+  },
+  "rights": {
+    "license_short": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "artist": "Arturo Espinosa from barcelona, Cataluña (España)",
+    "credit": "Louis Althusser for PIFAL",
+    "description": "Pen on canson.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "epicurus",
+    "name_zh": "伊壁鸠鲁",
+    "name_original": "Epicurus",
+    "era": "希腊化时代",
+    "period": "341–270 BC"
+  },
+  "asset": {
+    "title": "File:Epikouros BM 1843.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Epikouros_BM_1843.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Epikouros_BM_1843.jpg/1280px-Epikouros_BM_1843.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1500,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown artistUnknown artist",
+    "credit": "Marie-Lan Nguyen (2011)",
+    "description": "Portrait of Epicurus, founder of the Epicurean school. Roman copy after a lost Hellenistic original.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

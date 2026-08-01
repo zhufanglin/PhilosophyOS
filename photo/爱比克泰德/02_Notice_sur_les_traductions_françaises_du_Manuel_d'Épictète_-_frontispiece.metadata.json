@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "epictetus",
+    "name_zh": "爱比克泰德",
+    "name_original": "Epictetus",
+    "era": "罗马时代",
+    "period": "约50–135"
+  },
+  "asset": {
+    "title": "File:Notice sur les traductions françaises du Manuel d'Épictète - frontispiece.png",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Notice_sur_les_traductions_fran%C3%A7aises_du_Manuel_d%27%C3%89pict%C3%A8te_-_frontispiece.png",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/05/Notice_sur_les_traductions_fran%C3%A7aises_du_Manuel_d%27%C3%89pict%C3%A8te_-_frontispiece.png",
+    "mime": "image/png",
+    "width": 799,
+    "height": 1200,
+    "score": 4
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "\"A.C.\"",
+    "credit": "https://books.google.co.uk/books?id=mwte77ZlgOIC",
+    "description": "Frontispiece to Notice sur les traductions françaises du Manuel d'Épictète. Published 1826.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

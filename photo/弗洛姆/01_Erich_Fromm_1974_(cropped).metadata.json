@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "erich_fromm",
+    "name_zh": "弗洛姆",
+    "name_original": "Erich Fromm",
+    "era": "当代",
+    "period": "1900—1980"
+  },
+  "asset": {
+    "title": "File:Erich Fromm 1974 (cropped).jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Erich_Fromm_1974_(cropped).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Erich_Fromm_1974_%28cropped%29.jpg/1280px-Erich_Fromm_1974_%28cropped%29.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1221,
+    "score": 13
+  },
+  "rights": {
+    "license_short": "CC BY-SA 3.0 de",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0/de/deed.en",
+    "artist": "Müller-May",
+    "credit": "Rainer Funk",
+    "description": "Erich Fromm",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "fichte",
+    "name_zh": "费希特",
+    "name_original": "Johann Gottlieb Fichte",
+    "era": "德国古典",
+    "period": "1762—1814"
+  },
+  "asset": {
+    "title": "File:Die Gartenlaube (1862) b 157.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Die_Gartenlaube_(1862)_b_157.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Die_Gartenlaube_%281862%29_b_157.jpg/1280px-Die_Gartenlaube_%281862%29_b_157.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 820,
+    "score": 4
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "various",
+    "credit": "Scan from the original work",
+    "description": "This image has been extracted from another file",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "emile_durkheim",
+    "name_zh": "涂尔干",
+    "name_original": "Emile Durkheim",
+    "era": "现代",
+    "period": "1858—1917"
+  },
+  "asset": {
+    "title": "File:Émile Durkheim.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:%C3%89mile_Durkheim.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/23/%C3%89mile_Durkheim.jpg",
+    "mime": "image/jpeg",
+    "width": 1059,
+    "height": 1440,
+    "score": 6
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown authorUnknown author",
+    "credit": "https://www.clicksociologico.com/2017/03/emile-durkheim.html",
+    "description": "Émile Durkheim",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

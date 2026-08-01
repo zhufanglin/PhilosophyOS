@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "abelard",
+    "name_zh": "阿伯拉尔",
+    "name_original": "Peter Abelard",
+    "era": "中世纪",
+    "period": "1079—1142"
+  },
+  "asset": {
+    "title": "File:Abélard façade Louvre.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Ab%C3%A9lard_fa%C3%A7ade_Louvre.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Ab%C3%A9lard_fa%C3%A7ade_Louvre.jpg/1280px-Ab%C3%A9lard_fa%C3%A7ade_Louvre.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1395,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "artist": "Jebulon",
+    "credit": "Own work",
+    "description": "Statue of Peter Abelard, by Jules Cavelier (Ca.1853) Louvre Palace facade, Napoléon courtyard. Paris, France.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

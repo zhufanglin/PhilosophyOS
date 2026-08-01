@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "agamben",
+    "name_zh": "阿甘本",
+    "name_original": "Giorgio Agamben",
+    "era": "当代",
+    "period": "1942—"
+  },
+  "asset": {
+    "title": "File:Giorgio Agamben, Herrschaft und Herrlichkeit 2010.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Giorgio_Agamben,_Herrschaft_und_Herrlichkeit_2010.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Giorgio_Agamben%2C_Herrschaft_und_Herrlichkeit_2010.jpg/1280px-Giorgio_Agamben%2C_Herrschaft_und_Herrlichkeit_2010.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1640,
+    "score": 14
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown authorUnknown author",
+    "credit": "Deutsche Nationalbibliothek",
+    "description": "book cover of: Herrschaft und Herrlichkeit",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

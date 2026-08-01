@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "cicero",
+    "name_zh": "西塞罗",
+    "name_original": "Cicero",
+    "era": "罗马时代",
+    "period": "106—43 BC"
+  },
+  "asset": {
+    "title": "File:Bust of Cicero (1st-cent. BC) - Palazzo Nuovo - Musei Capitolini - Rome 2016.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Bust_of_Cicero_(1st-cent._BC)_-_Palazzo_Nuovo_-_Musei_Capitolini_-_Rome_2016.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Bust_of_Cicero_%281st-cent._BC%29_-_Palazzo_Nuovo_-_Musei_Capitolini_-_Rome_2016.jpg/1280px-Bust_of_Cicero_%281st-cent._BC%29_-_Palazzo_Nuovo_-_Musei_Capitolini_-_Rome_2016.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1500,
+    "score": 11
+  },
+  "rights": {
+    "license_short": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "José Luiz",
+    "credit": "Own work",
+    "description": "Palazzo Nuovo - Capitoline Museums - Rome",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

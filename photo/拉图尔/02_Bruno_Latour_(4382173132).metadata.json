@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "bruno_latour",
+    "name_zh": "拉图尔",
+    "name_original": "Bruno Latour",
+    "era": "当代",
+    "period": "1947—2022"
+  },
+  "asset": {
+    "title": "File:Bruno Latour (4382173132).jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Bruno_Latour_(4382173132).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/1/18/Bruno_Latour_%284382173132%29.jpg",
+    "mime": "image/jpeg",
+    "width": 640,
+    "height": 480,
+    "score": 13
+  },
+  "rights": {
+    "license_short": "CC BY-SA 2.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+    "artist": "jeanbaptisteparis from Cambridge, MA, USA",
+    "credit": "Bruno Latour",
+    "description": "Metanoiac composer...\n\nBruno Latour seminar in 2010",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

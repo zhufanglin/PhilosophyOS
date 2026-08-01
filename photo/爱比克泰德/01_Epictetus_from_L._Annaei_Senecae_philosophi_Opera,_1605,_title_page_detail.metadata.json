@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "epictetus",
+    "name_zh": "爱比克泰德",
+    "name_original": "Epictetus",
+    "era": "罗马时代",
+    "period": "约50–135"
+  },
+  "asset": {
+    "title": "File:Epictetus from L. Annaei Senecae philosophi Opera, 1605, title page detail.png",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Epictetus_from_L._Annaei_Senecae_philosophi_Opera,_1605,_title_page_detail.png",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/3/39/Epictetus_from_L._Annaei_Senecae_philosophi_Opera%2C_1605%2C_title_page_detail.png",
+    "mime": "image/png",
+    "width": 750,
+    "height": 1000,
+    "score": 14
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Theodoor Galle",
+    "credit": "https://www.britishmuseum.org/collection/object/P_1857-0314-12",
+    "description": "Detail of the of the philosopher Epictetus from the title page of L. Annaei Senecae philosophi Opera, quae exstant omnia, a Iusto Lipsio emendata, et scholijs illustrata. Engraved by Theodoor Galle from a design by Peter Paul Rubens.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

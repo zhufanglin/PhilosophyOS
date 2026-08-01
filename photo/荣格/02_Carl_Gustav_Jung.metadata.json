@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "carl_jung",
+    "name_zh": "荣格",
+    "name_original": "Carl Gustav Jung",
+    "era": "现代",
+    "period": "1875—1961"
+  },
+  "asset": {
+    "title": "File:Carl Gustav Jung.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Carl_Gustav_Jung.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Carl_Gustav_Jung.jpg",
+    "mime": "image/jpeg",
+    "width": 493,
+    "height": 768,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown authorUnknown author",
+    "credit": "Psych Art",
+    "description": "Carl Gustav Jung",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "feyerabend",
+    "name_zh": "费耶阿本德",
+    "name_original": "Paul Feyerabend",
+    "era": "当代",
+    "period": "1924–1994"
+  },
+  "asset": {
+    "title": "File:Kim Schlotmann, Paul Feyerabends Formel „Anything goes“ 2013.jpg",
+    "source": "wikidata-commons-category:Category:Paul Feyerabend",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Kim_Schlotmann,_Paul_Feyerabends_Formel_%E2%80%9EAnything_goes%E2%80%9C_2013.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Kim_Schlotmann%2C_Paul_Feyerabends_Formel_%E2%80%9EAnything_goes%E2%80%9C_2013.jpg/1280px-Kim_Schlotmann%2C_Paul_Feyerabends_Formel_%E2%80%9EAnything_goes%E2%80%9C_2013.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1415,
+    "score": 14
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown authorUnknown author",
+    "credit": "Grin",
+    "description": "book cover of Paul Feyerabends Formel „Anything goes“",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

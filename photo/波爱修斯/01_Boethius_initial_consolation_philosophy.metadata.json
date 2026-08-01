@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "boethius",
+    "name_zh": "波爱修斯",
+    "name_original": "Boethius",
+    "era": "中世纪",
+    "period": "约 480—524"
+  },
+  "asset": {
+    "title": "File:Boethius initial consolation philosophy.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Boethius_initial_consolation_philosophy.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Boethius_initial_consolation_philosophy.jpg/1280px-Boethius_initial_consolation_philosophy.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 764,
+    "score": 14
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "",
+    "credit": "http://special.lib.gla.ac.uk/exhibns/treasures/boethius.html",
+    "description": "Initial depicting Boethius teaching his students from folio 4r of a manuscript of the Consolation of Philosophy  (Italy?, 1385)",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

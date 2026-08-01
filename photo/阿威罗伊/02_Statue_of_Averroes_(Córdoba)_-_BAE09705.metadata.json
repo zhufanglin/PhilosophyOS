@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "averroes",
+    "name_zh": "阿威罗伊",
+    "name_original": "Averroes",
+    "era": "中世纪",
+    "period": "1126—1198"
+  },
+  "asset": {
+    "title": "File:Statue of Averroes (Córdoba) - BAE09705.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Statue_of_Averroes_(C%C3%B3rdoba)_-_BAE09705.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/05/Statue_of_Averroes_%28C%C3%B3rdoba%29_-_BAE09705.jpg",
+    "mime": "image/jpeg",
+    "width": 540,
+    "height": 768,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "",
+    "credit": "",
+    "description": "",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "augustine",
+    "name_zh": "奥古斯丁",
+    "name_original": "Augustine of Hippo",
+    "era": "教父时代",
+    "period": "354–430"
+  },
+  "asset": {
+    "title": "File:Cappella Palatina (Palermo) 16 07 2019 14.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Cappella_Palatina_(Palermo)_16_07_2019_14.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/60/Cappella_Palatina_%28Palermo%29_16_07_2019_14.jpg",
+    "mime": "image/jpeg",
+    "width": 1080,
+    "height": 1920,
+    "score": 1
+  },
+  "rights": {
+    "license_short": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "Effems",
+    "credit": "Own work",
+    "description": "Sant'Agostino.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

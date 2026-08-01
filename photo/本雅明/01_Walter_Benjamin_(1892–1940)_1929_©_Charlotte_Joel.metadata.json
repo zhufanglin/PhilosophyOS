@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "benjamin",
+    "name_zh": "本雅明",
+    "name_original": "Walter Benjamin",
+    "era": "现代",
+    "period": "1892–1940"
+  },
+  "asset": {
+    "title": "File:Walter Benjamin (1892–1940) 1929 © Charlotte Joel.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Walter_Benjamin_(1892%E2%80%931940)_1929_%C2%A9_Charlotte_Joel.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Walter_Benjamin_%281892%E2%80%931940%29_1929_%C2%A9_Charlotte_Joel.jpg",
+    "mime": "image/jpeg",
+    "width": 890,
+    "height": 1280,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Charlotte Joël",
+    "credit": "Adorno Archiv at the Institute for Social Research at the Goethe University Frankfurt",
+    "description": "Walter Benjamin (1892–1940), German Jewish philosopher, cultural critic and essayist.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

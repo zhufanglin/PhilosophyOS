@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "avicenna",
+    "name_zh": "阿维森纳",
+    "name_original": "Avicenna",
+    "era": "中世纪",
+    "period": "980—1037"
+  },
+  "asset": {
+    "title": "File:Pursina.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Pursina.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Pursina.jpg",
+    "mime": "image/jpeg",
+    "width": 213,
+    "height": 280,
+    "score": 15
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Original work: Abolhassan Sadighi\n\nDepiction: User:Ehsan 1987",
+    "credit": "This image has been extracted from another file",
+    "description": "Portrait of Avicenna by Abolhassan Sadighi drawn with a black pen on a paper in 1945",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

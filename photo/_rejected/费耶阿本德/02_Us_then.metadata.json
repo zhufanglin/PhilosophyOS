@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "feyerabend",
+    "name_zh": "费耶阿本德",
+    "name_original": "Paul Feyerabend",
+    "era": "当代",
+    "period": "1924–1994"
+  },
+  "asset": {
+    "title": "File:Us then.jpg",
+    "source": "wikidata-commons-category:Category:Paul Feyerabend",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Us_then.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Us_then.jpg/1280px-Us_then.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 697,
+    "score": 13
+  },
+  "rights": {
+    "license_short": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "Gbfoverlake2023",
+    "credit": "Own work",
+    "description": "Paul Feyerabend and Grazia Borrini Feyerabend (Crete,1980s)",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "aquinas",
+    "name_zh": "托马斯·阿奎那",
+    "name_original": "Thomas Aquinas",
+    "era": "中世纪",
+    "period": "1224/25–1274"
+  },
+  "asset": {
+    "title": "File:S. Thomas Aquinas, PA04801.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:S._Thomas_Aquinas,_PA04801.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/b/b2/S._Thomas_Aquinas%2C_PA04801.jpg",
+    "mime": "image/jpeg",
+    "width": 1271,
+    "height": 1753,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Galle, Cornelius II (Flemish engraver, 1615-1678) (artist) (or Cornelius Galle I)",
+    "credit": "https://libis-kul.primo.exlibrisgroup.com/discovery/collectionDiscovery?vid=32KUL_KUL:KULeuven&amp;collectionId=81531994540001488&amp;lang=en&amp;sortItemsBy=date_a&amp;query=any,contains,PA04801",
+    "description": "TitleS. Thomas AquinasContributorThomas Aquinas, O.P. (c. 1225-1274) (depicted)Galle, Cornelius II (Flemish engraver, 1615-1678) (artist) (or Cornelius Galle I)Dates.dPublisher(1635-1700)GenrePortraitsExtentvoorstelling: 120 x 90 mm plaatrand: 132 x 95 mm.GraphicBrown ;LanguageDutchTypographical detailsetching(s)Additional infoInscriptions: S. THOMAS AQVINAS./ C. Galle (buiten de voorstelling: onderaan, centraal)SourceLibrary CatalogSource IDlbsn9983147090101471",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

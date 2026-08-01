@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "alfred_adler",
+    "name_zh": "阿德勒",
+    "name_original": "Alfred Adler",
+    "era": "现代",
+    "period": "1870—1937"
+  },
+  "asset": {
+    "title": "File:Mariahilferstr 208 Wien SIK 01-010482.jpg",
+    "source": "wikidata-commons-category:Category:Alfred Adler",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Mariahilferstr_208_Wien_SIK_01-010482.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Mariahilferstr_208_Wien_SIK_01-010482.jpg/1280px-Mariahilferstr_208_Wien_SIK_01-010482.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1530,
+    "score": 13
+  },
+  "rights": {
+    "license_short": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "Bildcode:\nBildcode:\nSIK_01-010482\nFotograf:\nBärtschi, Hans-Peter\nTitel:\nWien, Mariahilfer Strasse 208 (Alfred Adlers Geburtshaus)\nDatierung:\n31.8.1979\nEnthalten in:\nWien, 1979. Reportage mit 102 Bildern (alle digitalisiert)\nBildnachweis:\n\nETH-Bibliothek Zürich, Bildarchiv / Fotograf: Bärtschi, Hans-Peter / SIK_01-010482 / CC BY-SA 4.0",
+    "credit": "DOI Link:\n\nhttp://doi.org/10.3932/ethz-a-000509696",
+    "description": "Das Geburtshaus des Individualpsychologen Alfred Adler in der Mariahilfer Straße 208 in Rudolfsheim Fünfhaus, Wien.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

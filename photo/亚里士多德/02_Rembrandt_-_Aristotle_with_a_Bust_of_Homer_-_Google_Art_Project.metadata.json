@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "aristotle",
+    "name_zh": "亚里士多德",
+    "name_original": "Aristotle",
+    "era": "古典时代",
+    "period": "384–322 BC"
+  },
+  "asset": {
+    "title": "File:Rembrandt - Aristotle with a Bust of Homer - Google Art Project.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Rembrandt_-_Aristotle_with_a_Bust_of_Homer_-_Google_Art_Project.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Rembrandt_-_Aristotle_with_a_Bust_of_Homer_-_Google_Art_Project.jpg/1280px-Rembrandt_-_Aristotle_with_a_Bust_of_Homer_-_Google_Art_Project.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1047,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Rembrandt",
+    "credit": "Google Arts &amp; Culture  — lwEkk2dA5kBGjg",
+    "description": "Part of a series of seven paintings, which also included Homer by Rembrandt (File:Rembrandt Harmensz. van Rijn 061.jpg), Alexander the Great by Rembrandt (lost), The Cosmographer by Guercino (lost), Dionysius of Syracuse by Matia Preti (lost), The Philosopher Archita Tarantino by Salvator Rosa (lost) and The Philosopher or Jerome by Giacinto Brandi (lost).",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

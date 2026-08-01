@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "beauvoir",
+    "name_zh": "波伏瓦",
+    "name_original": "Simone de Beauvoir",
+    "era": "当代",
+    "period": "1908–1986"
+  },
+  "asset": {
+    "title": "File:Simone de Beauvoir in 1955 (colorized and upscaled).png",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Simone_de_Beauvoir_in_1955_(colorized_and_upscaled).png",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/66/Simone_de_Beauvoir_in_1955_%28colorized_and_upscaled%29.png",
+    "mime": "image/png",
+    "width": 800,
+    "height": 1000,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "刘东鳌(Liu Dong'ao)",
+    "credit": "Xinhua News Agency; Larger 1024 x 1199, 183.3 KB version from https://www.delo.si/images/slike/2018/12/17/o_416925_1024.jpg as displayed by https://www.delo.si/kultura/knjiga/ko-se-je-sartre-spogledoval-z-jastogi-124490.html",
+    "description": "Crop of File:Simone de Beauvoir &amp; Jean-Paul Sartre in Beijing 1955.jpg, Simone de Beauvoir and Jean-Paul Sartre attending the ceremony of 6th Anniversary of Founding of Communist China in Beijing on 1 October 1955 in Tiananmen square in colors",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

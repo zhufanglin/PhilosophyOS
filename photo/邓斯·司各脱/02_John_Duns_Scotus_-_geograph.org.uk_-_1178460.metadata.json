@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "duns_scotus",
+    "name_zh": "邓斯·司各脱",
+    "name_original": "John Duns Scotus",
+    "era": "中世纪",
+    "period": "约 1266—1308"
+  },
+  "asset": {
+    "title": "File:John Duns Scotus - geograph.org.uk - 1178460.jpg",
+    "source": "wikidata-commons-category:Category:John Duns Scotus bust, Duns",
+    "page_url": "https://commons.wikimedia.org/wiki/File:John_Duns_Scotus_-_geograph.org.uk_-_1178460.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/73/John_Duns_Scotus_-_geograph.org.uk_-_1178460.jpg",
+    "mime": "image/jpeg",
+    "width": 480,
+    "height": 640,
+    "score": 17
+  },
+  "rights": {
+    "license_short": "CC BY-SA 2.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+    "artist": "james denham",
+    "credit": "From geograph.org.uk",
+    "description": "John Duns Scotus One of Scotland's greatest men and arguably the most forward thinking man of the 13th century. John of Dunse (as it was then spelt) was so controversial because of his forward thinking, many thought he was mad. Hence the word dunse or dunce for a poor scholar. He was educated at the Franciscan Grammar school in Haddington and though he never joined the Franciscan brotherhood,he is revered within that order. There are Duns Scotus colleges on the Continent. This statue stands in the public park of his home town, Duns in Berwickshire.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

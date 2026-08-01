@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "deleuze",
+    "name_zh": "德勒兹",
+    "name_original": "Gilles Deleuze",
+    "era": "当代",
+    "period": "1925–1995"
+  },
+  "asset": {
+    "title": "File:AVT Gilles-Deleuze 6342.webp",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:AVT_Gilles-Deleuze_6342.webp",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/0e/AVT_Gilles-Deleuze_6342.webp",
+    "mime": "image/webp",
+    "width": 495,
+    "height": 630,
+    "score": 5
+  },
+  "rights": {
+    "license_short": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "Tintinades",
+    "credit": "Own work",
+    "description": "promis c'est libre de droit",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "diogenes",
+    "name_zh": "第欧根尼",
+    "name_original": "Diogenes of Sinope",
+    "era": "古典时代",
+    "period": "约 412—323 BC"
+  },
+  "asset": {
+    "title": "File:Diogenes - Drawing Villa Albani.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Diogenes_-_Drawing_Villa_Albani.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Diogenes_-_Drawing_Villa_Albani.jpg",
+    "mime": "image/jpeg",
+    "width": 509,
+    "height": 640,
+    "score": 20
+  },
+  "rights": {
+    "license_short": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "artist": "Unknown authorUnknown author",
+    "credit": "https://nypl.getarchive.net/media/diogene-db2fe5",
+    "description": "1848 drawing based on a marble bas relief from the Villa Albani depicting Diogenes of Sinope. New York Public Library.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

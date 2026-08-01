@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "arendt",
+    "name_zh": "阿伦特",
+    "name_original": "Hannah Arendt",
+    "era": "当代",
+    "period": "1906–1975"
+  },
+  "asset": {
+    "title": "File:Arendt and McCarthy (cropped).jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Arendt_and_McCarthy_(cropped).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Arendt_and_McCarthy_%28cropped%29.jpg",
+    "mime": "image/jpeg",
+    "width": 360,
+    "height": 480,
+    "score": 17
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown authorUnknown author",
+    "credit": "Young-Bruehl, Elisabeth        Hannah Arendt: For Love of the World, Yale University Press  ISBN:  978-0-300-10588-9.",
+    "description": "Portrait of Hannah Arendt with Mary McCarthy",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

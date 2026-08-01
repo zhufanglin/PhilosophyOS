@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "averroes",
+    "name_zh": "阿威罗伊",
+    "name_original": "Averroes",
+    "era": "中世纪",
+    "period": "1126—1198"
+  },
+  "asset": {
+    "title": "File:Close up shot of Averroes statue in Córdoba, Spain.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Close_up_shot_of_Averroes_statue_in_C%C3%B3rdoba,_Spain.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Close_up_shot_of_Averroes_statue_in_C%C3%B3rdoba%2C_Spain.jpg/1280px-Close_up_shot_of_Averroes_statue_in_C%C3%B3rdoba%2C_Spain.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1500,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "artist": "AbdullahAlhariri0",
+    "credit": "Own work",
+    "description": "Close up shot of Averroes statue in Córdoba, Spain taken on 12 December 2025 at 13:36 with Canon EOS R100",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

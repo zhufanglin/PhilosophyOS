@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "alfred_adler",
+    "name_zh": "阿德勒",
+    "name_original": "Alfred Adler",
+    "era": "现代",
+    "period": "1870—1937"
+  },
+  "asset": {
+    "title": "File:Alfred Adler Znajomosc czlowieka 1948.jpg",
+    "source": "wikidata-commons-category:Category:Alfred Adler",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Alfred_Adler_Znajomosc_czlowieka_1948.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Alfred_Adler_Znajomosc_czlowieka_1948.jpg/1280px-Alfred_Adler_Znajomosc_czlowieka_1948.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 800,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "nn",
+    "credit": "Tygodnik Powszechny, 23 maja 1948 r.",
+    "description": "Alfred Adler - \"Znajomość człowieka\", reklama w Tygodniku Powszechnym z 1948 r.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

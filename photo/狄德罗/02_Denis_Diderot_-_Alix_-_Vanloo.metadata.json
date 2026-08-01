@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "diderot",
+    "name_zh": "狄德罗",
+    "name_original": "Denis Diderot",
+    "era": "启蒙时代",
+    "period": "1713—1784"
+  },
+  "asset": {
+    "title": "File:Denis Diderot - Alix - Vanloo.png",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Denis_Diderot_-_Alix_-_Vanloo.png",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Denis_Diderot_-_Alix_-_Vanloo.png/1280px-Denis_Diderot_-_Alix_-_Vanloo.png",
+    "mime": "image/png",
+    "width": 1000,
+    "height": 1200,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Pierre-Michel Alix",
+    "credit": "Aquatinta von Pierre-Marie Alix nach Lou-Michel Vanloo",
+    "description": "Denis Diderot",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

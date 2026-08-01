@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "augustine",
+    "name_zh": "奥古斯丁",
+    "name_original": "Augustine of Hippo",
+    "era": "教父时代",
+    "period": "354–430"
+  },
+  "asset": {
+    "title": "File:Saint Augustine by Philippe de Champaigne.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Saint_Augustine_by_Philippe_de_Champaigne.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Saint_Augustine_by_Philippe_de_Champaigne.jpg/1280px-Saint_Augustine_by_Philippe_de_Champaigne.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1276,
+    "score": 6
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Philippe de Champaigne",
+    "credit": "Los Angeles County Museum of Art:  online database:  entry  171584",
+    "description": "",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

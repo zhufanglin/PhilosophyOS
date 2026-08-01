@@ -1,0 +1,126 @@
+﻿id,name_zh,name_original,count,status
+abelard,阿伯拉尔,Peter Abelard,2,ok
+adorno,阿多诺,Theodor Adorno,2,ok
+agamben,阿甘本,Giorgio Agamben,0,missing
+alfred_adler,阿德勒,Alfred Adler,0,missing
+althusser,阿尔都塞,Louis Althusser,0,missing
+anselm,安瑟伦,Anselm of Canterbury,1,partial
+aquinas,托马斯·阿奎那,Thomas Aquinas,2,ok
+arendt,阿伦特,Hannah Arendt,2,ok
+aristotle,亚里士多德,Aristotle,2,ok
+augustine,奥古斯丁,Augustine of Hippo,2,ok
+averroes,阿威罗伊,Averroes,2,ok
+avicenna,阿维森纳,Avicenna,2,ok
+bacon,弗朗西斯·培根,Francis Bacon,1,partial
+beauvoir,波伏瓦,Simone de Beauvoir,2,ok
+benjamin,本雅明,Walter Benjamin,2,ok
+bentham,边沁,Jeremy Bentham,2,ok
+berkeley,贝克莱,George Berkeley,2,ok
+boethius,波爱修斯,Boethius,1,partial
+bruno_latour,拉图尔,Bruno Latour,2,ok
+butler,朱迪斯·巴特勒,Judith Butler,0,missing
+camus,加缪,Albert Camus,1,partial
+carl_jung,荣格,Carl Gustav Jung,2,ok
+carl_schmitt,施米特,Carl Schmitt,2,ok
+charles_taylor,查尔斯·泰勒,Charles Taylor,2,ok
+cicero,西塞罗,Cicero,1,partial
+comte,孔德,Auguste Comte,2,ok
+darwin,达尔文,Charles Darwin,2,ok
+deleuze,德勒兹,Gilles Deleuze,1,partial
+democritus,德谟克利特,Democritus,2,ok
+derek_parfit,帕菲特,Derek Parfit,2,ok
+derrida,德里达,Jacques Derrida,2,ok
+descartes,笛卡尔,Rene Descartes,1,partial
+dewey,杜威,John Dewey,2,ok
+diderot,狄德罗,Denis Diderot,2,ok
+diogenes,第欧根尼,Diogenes of Sinope,2,ok
+donald_davidson,戴维森,Donald Davidson,2,ok
+duns_scotus,邓斯·司各脱,John Duns Scotus,2,ok
+emile_durkheim,涂尔干,Emile Durkheim,1,partial
+epictetus,爱比克泰德,Epictetus,1,partial
+epicurus,伊壁鸠鲁,Epicurus,2,ok
+erich_fromm,弗洛姆,Erich Fromm,2,ok
+feuerbach,费尔巴哈,Ludwig Feuerbach,0,missing
+feyerabend,费耶阿本德,Paul Feyerabend,0,missing
+fichte,费希特,Johann Gottlieb Fichte,2,ok
+foucault,福柯,Michel Foucault,0,missing
+frege,弗雷格,Gottlob Frege,0,missing
+g_e_moore,摩尔,G. E. Moore,0,missing
+gadamer,伽达默尔,Hans-Georg Gadamer,0,missing
+georg_simmel,齐美尔,Georg Simmel,0,missing
+giordano_bruno,布鲁诺,Giordano Bruno,0,missing
+gramsci,葛兰西,Antonio Gramsci,0,missing
+habermas,哈贝马斯,Jurgen Habermas,0,missing
+haraway,唐娜·哈拉维,Donna Haraway,0,missing
+hayek,哈耶克,Friedrich Hayek,0,missing
+hegel,黑格尔,Georg Wilhelm Friedrich Hegel,0,missing
+heidegger,海德格尔,Martin Heidegger,0,missing
+heraclitus,赫拉克利特,Heraclitus,0,missing
+hilary_putnam,普特南,Hilary Putnam,0,missing
+hobbes,霍布斯,Thomas Hobbes,0,missing
+horkheimer,霍克海默,Max Horkheimer,0,missing
+hume,休谟,David Hume,0,missing
+husserl,胡塞尔,Edmund Husserl,0,missing
+jacques_lacan,拉康,Jacques Lacan,0,missing
+jaspers,雅斯贝尔斯,Karl Jaspers,0,missing
+jean_baudrillard,鲍德里亚,Jean Baudrillard,0,missing
+jean_piaget,皮亚杰,Jean Piaget,0,missing
+kant,康德,Immanuel Kant,0,missing
+kierkegaard,克尔凯郭尔,Soren Kierkegaard,0,missing
+kuhn,库恩,Thomas Kuhn,0,missing
+leibniz,莱布尼茨,Gottfried Wilhelm Leibniz,0,missing
+lev_vygotsky,维果茨基,Lev Vygotsky,0,missing
+levinas,列维纳斯,Emmanuel Levinas,0,missing
+locke,洛克,John Locke,0,missing
+lucretius,卢克莱修,Lucretius,0,missing
+machiavelli,马基雅维利,Niccolo Machiavelli,0,missing
+macintyre,麦金太尔,Alasdair MacIntyre,0,missing
+maimonides,迈蒙尼德,Maimonides,0,missing
+marcus_aurelius,马可·奥勒留,Marcus Aurelius,0,missing
+marcuse,马尔库塞,Herbert Marcuse,0,missing
+martha_nussbaum,玛莎·努斯鲍姆,Martha Nussbaum,0,missing
+marx,马克思,Karl Marx,0,missing
+max_weber,韦伯,Max Weber,0,missing
+merleau_ponty,梅洛-庞蒂,Maurice Merleau-Ponty,0,missing
+mill,约翰·斯图亚特·密尔,John Stuart Mill,0,missing
+montaigne,蒙田,Michel de Montaigne,0,missing
+montesquieu,孟德斯鸠,Montesquieu,0,missing
+nietzsche,尼采,Friedrich Nietzsche,0,missing
+nozick,诺齐克,Robert Nozick,0,missing
+ockham,奥卡姆,William of Ockham,0,missing
+parmenides,巴门尼德,Parmenides,0,missing
+pascal,帕斯卡,Blaise Pascal,0,missing
+peirce,皮尔士,Charles Sanders Peirce,0,missing
+pierre_bourdieu,布迪厄,Pierre Bourdieu,0,missing
+plato,柏拉图,Plato,0,missing
+plotinus,普罗提诺,Plotinus,0,missing
+popper,波普尔,Karl Popper,0,missing
+protagoras,普罗泰戈拉,Protagoras,0,missing
+pyrrho,皮浪,Pyrrho,0,missing
+pythagoras,毕达哥拉斯,Pythagoras,0,missing
+quine,蒯因,Willard Van Orman Quine,0,missing
+rawls,罗尔斯,John Rawls,0,missing
+ricoeur,利科,Paul Ricoeur,0,missing
+rorty,罗蒂,Richard Rorty,0,missing
+rousseau,卢梭,Jean-Jacques Rousseau,0,missing
+russell,罗素,Bertrand Russell,0,missing
+sartre,萨特,Jean-Paul Sartre,0,missing
+saul_kripke,克里普克,Saul Kripke,0,missing
+scheler,舍勒,Max Scheler,0,missing
+schelling,谢林,Friedrich Wilhelm Joseph Schelling,0,missing
+schopenhauer,叔本华,Arthur Schopenhauer,0,missing
+sen,阿马蒂亚·森,Amartya Sen,0,missing
+seneca,塞涅卡,Seneca,0,missing
+sigmund_freud,弗洛伊德,Sigmund Freud,0,missing
+socrates,苏格拉底,Socrates,0,missing
+spinoza,斯宾诺莎,Baruch Spinoza,0,missing
+thales,泰勒斯,Thales,0,missing
+thomas_nagel,托马斯·内格尔,Thomas Nagel,0,missing
+tocqueville,托克维尔,Alexis de Tocqueville,0,missing
+vico,维柯,Giambattista Vico,0,missing
+viktor_frankl,弗兰克尔,Viktor Frankl,0,missing
+voltaire,伏尔泰,Voltaire,0,missing
+william_james,威廉·詹姆斯,William James,0,missing
+wittgenstein,维特根斯坦,Ludwig Wittgenstein,0,missing
+wollstonecraft,玛丽·沃斯通克拉夫特,Mary Wollstonecraft,0,missing
+zeno,芝诺,Zeno of Citium,0,missing

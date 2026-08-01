@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "anselm",
+    "name_zh": "安瑟伦",
+    "name_original": "Anselm of Canterbury",
+    "era": "中世纪",
+    "period": "1033—1109"
+  },
+  "asset": {
+    "title": "File:St. Anselm Church (Anselmo, Nebraska) interior 5.JPG",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:St._Anselm_Church_(Anselmo,_Nebraska)_interior_5.JPG",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/St._Anselm_Church_%28Anselmo%2C_Nebraska%29_interior_5.JPG/1280px-St._Anselm_Church_%28Anselmo%2C_Nebraska%29_interior_5.JPG",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 750,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Ammodramus",
+    "credit": "Own work",
+    "description": "Statues of Sacred Heart and of Anselm of Canterbury in southwest (rear) of St. Anselm's Church in Anselmo, Nebraska.  The Gothic Revival church was constructed in 1928.  The St. Anselm's complex, which includes the church, rectory, and parish hall, is listed in the National Register of Historic Places.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

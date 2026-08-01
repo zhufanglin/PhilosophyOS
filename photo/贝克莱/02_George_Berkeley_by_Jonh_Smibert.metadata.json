@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "berkeley",
+    "name_zh": "贝克莱",
+    "name_original": "George Berkeley",
+    "era": "启蒙时代",
+    "period": "1685–1753"
+  },
+  "asset": {
+    "title": "File:George Berkeley by Jonh Smibert.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:George_Berkeley_by_Jonh_Smibert.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/George_Berkeley_by_Jonh_Smibert.jpg",
+    "mime": "image/jpeg",
+    "width": 255,
+    "height": 350,
+    "score": 17
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "John Smibert",
+    "credit": "[1]",
+    "description": "Portrait of George Berkeley",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

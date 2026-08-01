@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "aquinas",
+    "name_zh": "托马斯·阿奎那",
+    "name_original": "Thomas Aquinas",
+    "era": "中世纪",
+    "period": "1224/25–1274"
+  },
+  "asset": {
+    "title": "File:S. Bonaventura - S. Augustinus - S. Thomas Aquinas, PA07103.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:S._Bonaventura_-_S._Augustinus_-_S._Thomas_Aquinas,_PA07103.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/S._Bonaventura_-_S._Augustinus_-_S._Thomas_Aquinas%2C_PA07103.jpg/1280px-S._Bonaventura_-_S._Augustinus_-_S._Thomas_Aquinas%2C_PA07103.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1573,
+    "score": 20
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Bonaventura, O.F.M. (Sanctus, 1221-1274) (depicted)",
+    "credit": "https://libis-kul.primo.exlibrisgroup.com/discovery/collectionDiscovery?vid=32KUL_KUL:KULeuven&amp;collectionId=81531994540001488&amp;lang=en&amp;sortItemsBy=date_a&amp;query=any,contains,PA07103",
+    "description": "TitleS. Bonaventura - S. Augustinus - S. Thomas AquinasContributorBonaventura, O.F.M. (Sanctus, 1221-1274) (depicted)Augustinus, Aurelius, sanctus (Augustinus Hipponensis, 354-430) (depicted)Thomas Aquinas, O.P. (c. 1225-1274) (depicted)Rucholle, Peeter (1618-1647) (engraver)Date1660Publisher(date mentioned on print)GenrePortraitsExtentvoorstelling: 312 x 203 mm plaatrand: 316 x 208 mm.GraphicBlack-and-white ;LanguageLatinTypographical detailsetching(s)engraving(s)Additional infoillustratie uit: Eloi de la Bassée I (O.F.M.Cap.) (1590-1670) (religious name of Pierre Facon) / P.F. Eligii Bassæi [...] Flores totivs theologiæ practicæ tum sacramentalis, tum moralis, apud Cornelium Woons. 1660Inscriptions: S.AVGVSTINVS. (in de voorstelling: bovenaan, centraal)Inscriptions: EGO ACCEPI A DOMINO / QVOD TRADIDI VOBIS. (in de voorstelling: bovenaan, centraal)Inscriptions: P. F. ELIGII / BASSÆI / Ordinis FF. Minorum S.Fran- / cisci Capucinorum Prouinciæ / Gallobelgicæ : FLORES / TOTIVS THEOLOGIÆ PRACTICÆ / Tum Sacramentalis, tum Moralis. / TOMVS PRIMVS. / EDITIO SEXTA / Ab Auctore recognita. (in de voorstelling: midden, centraal)Inscriptions: Florete / flores,/ quasi / lilim / et data / odorem. Eccl. 39. (in de voorstelling: midden, links)Inscriptions: Flores / mei / fructus / honoris / et hones / tatis.Eccl.24. (in de voorstelling: midden, rechts)Inscriptions: S. BONAVENTVRA. (in de voorstelling: onderaan, links)Inscriptions: S. THOMAS AQVINAS. (in de voorstelling: onderaan, rechts)Inscriptions: HOMO BVLLA (in de voorstelling: onderaan, centraal)Inscriptions: ANTVERPIÆ, / Apud CORNELIVS WOONS, Anno M.DC.LX. / Cum Gratia &amp; Privilegio. (in de voorstelling: onderaan, centraal)Inscriptions: Pet. Ruchello sculpsit. (in de voorstelling: onderaan, links)SourceLibrary CatalogSource IDlbsn9983538440101471",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

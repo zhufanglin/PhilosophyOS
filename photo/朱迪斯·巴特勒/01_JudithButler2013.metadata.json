@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "butler",
+    "name_zh": "朱迪斯·巴特勒",
+    "name_original": "Judith Butler",
+    "era": "当代",
+    "period": "1956–"
+  },
+  "asset": {
+    "title": "File:JudithButler2013.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:JudithButler2013.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/JudithButler2013.jpg",
+    "mime": "image/jpeg",
+    "width": 920,
+    "height": 1330,
+    "score": 14
+  },
+  "rights": {
+    "license_short": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "artist": "University of California, Berkeley",
+    "credit": "The photo was sent to me personally by Judith Butler",
+    "description": "Judith Butler (2013)",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

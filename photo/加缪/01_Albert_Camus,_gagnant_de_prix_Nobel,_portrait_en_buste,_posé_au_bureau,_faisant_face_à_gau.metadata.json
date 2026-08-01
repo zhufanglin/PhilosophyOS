@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "camus",
+    "name_zh": "加缪",
+    "name_original": "Albert Camus",
+    "era": "当代",
+    "period": "1913–1960"
+  },
+  "asset": {
+    "title": "File:Albert Camus, gagnant de prix Nobel, portrait en buste, posé au bureau, faisant face à gauche, cigarette de tabagisme.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Albert_Camus,_gagnant_de_prix_Nobel,_portrait_en_buste,_pos%C3%A9_au_bureau,_faisant_face_%C3%A0_gauche,_cigarette_de_tabagisme.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/08/Albert_Camus%2C_gagnant_de_prix_Nobel%2C_portrait_en_buste%2C_pos%C3%A9_au_bureau%2C_faisant_face_%C3%A0_gauche%2C_cigarette_de_tabagisme.jpg",
+    "mime": "image/jpeg",
+    "width": 719,
+    "height": 863,
+    "score": 20
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Photograph by United Press International",
+    "credit": "This image  is available from the United States Library of Congress's Prints and Photographs division under the digital ID cph.3c08028.This tag does not indicate the copyright status of the attached work. A normal copyright tag is still required. See Commons:Licensing.",
+    "description": "Albert Camus, Nobel prize winner, half-length portrait, seated at desk, facing left, smoking cigarette",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

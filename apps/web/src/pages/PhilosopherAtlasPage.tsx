@@ -1,16 +1,8 @@
 import { ArrowRight, BookOpen, ExternalLink, Landmark, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import kantPortrait from "../assets/philosophers/kant-becker.jpg";
-import sartrePortrait from "../assets/philosophers/sartre-cutout-v2.png";
-import socratesPortrait from "../assets/philosophers/socrates-cutout.png";
 import { philosophers, type Philosopher } from "../data/philosophers";
-
-const portraits: Record<NonNullable<Philosopher["portrait"]>, string> = {
-  socrates: socratesPortrait,
-  kant: kantPortrait,
-  sartre: sartrePortrait,
-};
+import { philosopherPortraitCoverage, philosopherPortraitsByEnglishName } from "../data/philosopherPortraits";
 
 const eraOrder = [
   "古典时代",
@@ -124,6 +116,7 @@ export function PhilosopherAtlasPage() {
   }, [filtered]);
 
   const selected = filtered.find((philosopher) => philosopher.id === selectedId) ?? filtered[0] ?? philosophers[0];
+  const selectedPortrait = philosopherPortraitsByEnglishName[selected.englishName];
   const related = selected.relatedIds
     .map((id) => philosophers.find((philosopher) => philosopher.id === id))
     .filter((philosopher): philosopher is Philosopher => Boolean(philosopher));
@@ -150,6 +143,7 @@ export function PhilosopherAtlasPage() {
           </span>
           <span>{eras.length} 个时代分区</span>
           <span>{traditions.length} 条思想传统</span>
+          <span>{philosopherPortraitCoverage.available} 张肖像已接入</span>
           <span>西方哲学范围</span>
         </div>
       </header>
@@ -285,14 +279,14 @@ export function PhilosopherAtlasPage() {
           </aside>
 
           <article className="atlas-exhibit">
-            <div className="atlas-portrait-stage">
-              {selected.portrait ? (
-                <img src={portraits[selected.portrait]} alt={`${selected.name}肖像`} />
+            <div className={`atlas-portrait-stage ${selectedPortrait ? "has-real-portrait" : "is-placeholder"}`}>
+              {selectedPortrait ? (
+                <img src={selectedPortrait.url} alt={`${selected.name}肖像`} />
               ) : (
                 <div className="atlas-name-seal" aria-label={`${selected.name}文字展签`}>
                   <span>Φ</span>
                   <strong>{selected.name.slice(0, 2)}</strong>
-                  <small>PORTRAIT ARCHIVE</small>
+                  <small>PORTRAIT PENDING</small>
                 </div>
               )}
               <div className="atlas-era-mark">
@@ -357,6 +351,12 @@ export function PhilosopherAtlasPage() {
                   资料来源：{selected.sourceLabel}
                   <ExternalLink size={13} />
                 </a>
+                {selectedPortrait?.sourcePage ? (
+                  <a href={selectedPortrait.sourcePage} target="_blank" rel="noreferrer">
+                    肖像来源：Wikimedia Commons
+                    <ExternalLink size={13} />
+                  </a>
+                ) : null}
               </footer>
             </div>
           </article>

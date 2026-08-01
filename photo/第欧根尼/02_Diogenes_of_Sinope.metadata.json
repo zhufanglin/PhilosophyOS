@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "diogenes",
+    "name_zh": "第欧根尼",
+    "name_original": "Diogenes of Sinope",
+    "era": "古典时代",
+    "period": "约 412—323 BC"
+  },
+  "asset": {
+    "title": "File:Diogenes of Sinope.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Diogenes_of_Sinope.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Diogenes_of_Sinope.jpg",
+    "mime": "image/jpeg",
+    "width": 375,
+    "height": 524,
+    "score": 15
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unidentified engraver",
+    "credit": "http://www.phil-fak.uni-duesseldorf.de/philo/galerie/antike/diogenes.html",
+    "description": "Diogenes of Sinope, ancient Greek cynic philosopher.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "comte",
+    "name_zh": "孔德",
+    "name_original": "Auguste Comte",
+    "era": "19世纪",
+    "period": "1798—1857"
+  },
+  "asset": {
+    "title": "File:Auguste Comte et ses trois anges.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Auguste_Comte_et_ses_trois_anges.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Auguste_Comte_et_ses_trois_anges.jpg",
+    "mime": "image/jpeg",
+    "width": 1008,
+    "height": 800,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "After Louis-Jules Étex",
+    "credit": "https://journals.openedition.org/cps/6405",
+    "description": "Auguste Comte et ses trois anges. Le philosophe est représenté avec ses « trois anges » :  Clotilde de Vaux, Sophie Bliaux, Rosalie Boyer. Lithographie d'Eugène Signol gravée en 1856 d'après un tableau d'Étex peint en 1852 (maison d'Auguste Comte). [1]",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "duns_scotus",
+    "name_zh": "邓斯·司各脱",
+    "name_original": "John Duns Scotus",
+    "era": "中世纪",
+    "period": "约 1266—1308"
+  },
+  "asset": {
+    "title": "File:Duns Scotus sculpture.jpg",
+    "source": "wikidata-commons-category:Category:John Duns Scotus bust, Duns",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Duns_Scotus_sculpture.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/a/ad/Duns_Scotus_sculpture.jpg",
+    "mime": "image/jpeg",
+    "width": 768,
+    "height": 1024,
+    "score": 17
+  },
+  "rights": {
+    "license_short": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "artist": "Renata (talk)",
+    "credit": "Own work (Original text: I (Renata (talk)) created this work entirely by myself.)",
+    "description": "Sculpture of John Duns Scotus",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

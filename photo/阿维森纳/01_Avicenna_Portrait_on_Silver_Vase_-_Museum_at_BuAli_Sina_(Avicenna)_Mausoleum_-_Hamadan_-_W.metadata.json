@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "avicenna",
+    "name_zh": "阿维森纳",
+    "name_original": "Avicenna",
+    "era": "中世纪",
+    "period": "980—1037"
+  },
+  "asset": {
+    "title": "File:Avicenna Portrait on Silver Vase - Museum at BuAli Sina (Avicenna) Mausoleum - Hamadan - Western Iran (7423560860).jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Avicenna_Portrait_on_Silver_Vase_-_Museum_at_BuAli_Sina_(Avicenna)_Mausoleum_-_Hamadan_-_Western_Iran_(7423560860).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Avicenna_Portrait_on_Silver_Vase_-_Museum_at_BuAli_Sina_%28Avicenna%29_Mausoleum_-_Hamadan_-_Western_Iran_%287423560860%29.jpg/1280px-Avicenna_Portrait_on_Silver_Vase_-_Museum_at_BuAli_Sina_%28Avicenna%29_Mausoleum_-_Hamadan_-_Western_Iran_%287423560860%29.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1333,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Adam Jones from Kelowna, BC, Canada",
+    "credit": "Avicenna Portrait on Silver Vase - Museum at BuAli Sina (Avicenna) Mausoleum - Hamadan - Western Iran\n\nUploaded by mrjohncummings",
+    "description": "Avicenna Portrait on Silver Vase - Museum at BuAli Sina (Avicenna) Mausoleum - Hamadan - Western Iran",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "democritus",
+    "name_zh": "德谟克利特",
+    "name_original": "Democritus",
+    "era": "古典时代",
+    "period": "约 460—370 BC"
+  },
+  "asset": {
+    "title": "File:Democritus LACMA AC1993.213.2.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Democritus_LACMA_AC1993.213.2.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Democritus_LACMA_AC1993.213.2.jpg/1280px-Democritus_LACMA_AC1993.213.2.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1319,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Antoine Coypel",
+    "credit": "Image: http://collections.lacma.org/sites/default/files/remote_images/piction/ma-31721353-O3.jpg\nGallery: http://collections.lacma.org/node/175427 archive copy at the Wayback Machine",
+    "description": "France, 1692\nPrints; engravings\nEtching and engraving\nGift of Mr. and Mrs. Theodore Harris (AC1993.213.2)\nPrints and Drawings",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

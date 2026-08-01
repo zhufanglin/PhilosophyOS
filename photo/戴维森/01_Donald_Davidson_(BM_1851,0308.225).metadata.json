@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "donald_davidson",
+    "name_zh": "戴维森",
+    "name_original": "Donald Davidson",
+    "era": "当代",
+    "period": "1917—2003"
+  },
+  "asset": {
+    "title": "File:Donald Davidson (BM 1851,0308.225).jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Donald_Davidson_(BM_1851,0308.225).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Donald_Davidson_%28BM_1851%2C0308.225%29.jpg/1280px-Donald_Davidson_%28BM_1851%2C0308.225%29.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1203,
+    "score": 20
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "",
+    "credit": "https://www.britishmuseum.org/collection/object/P_1851-0308-225",
+    "description": "Portrait of Donald Davidson, half-length, standing behind railings in profile to left, looking up, his left arm missing, holding hat in his right hand, wearing jacket with left sleeve tied across his chest.\nLithograph, printed on thin paper",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

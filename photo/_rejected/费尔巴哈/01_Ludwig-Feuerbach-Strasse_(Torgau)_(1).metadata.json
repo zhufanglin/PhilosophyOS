@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "feuerbach",
+    "name_zh": "费尔巴哈",
+    "name_original": "Ludwig Feuerbach",
+    "era": "19世纪",
+    "period": "1804—1872"
+  },
+  "asset": {
+    "title": "File:Ludwig-Feuerbach-Strasse (Torgau) (1).jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Ludwig-Feuerbach-Strasse_(Torgau)_(1).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Ludwig-Feuerbach-Strasse_%28Torgau%29_%281%29.jpg/1280px-Ludwig-Feuerbach-Strasse_%28Torgau%29_%281%29.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 760,
+    "score": 5
+  },
+  "rights": {
+    "license_short": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "dsmm",
+    "credit": "This file comes from Mapillary, a service for sharing geotagged photos. All photos are under a CC BY-SA 4.0 license meaning the individual photographer must be credited for each image.",
+    "description": "Ludwig-Feuerbach-Straße in Torgau",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

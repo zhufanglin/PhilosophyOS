@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "bruno_latour",
+    "name_zh": "拉图尔",
+    "name_original": "Bruno Latour",
+    "era": "当代",
+    "period": "1947—2022"
+  },
+  "asset": {
+    "title": "File:Bruno Latour (4381542885).jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Bruno_Latour_(4381542885).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Bruno_Latour_%284381542885%29.jpg/1280px-Bruno_Latour_%284381542885%29.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 667,
+    "score": 13
+  },
+  "rights": {
+    "license_short": "CC BY-SA 2.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+    "artist": "jeanbaptisteparis from Cambridge, MA, USA",
+    "credit": "Bruno Latour",
+    "description": "Bruno Latour\n\nBruno Latour seminar in 2010",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

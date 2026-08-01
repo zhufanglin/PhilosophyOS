@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "donald_davidson",
+    "name_zh": "戴维森",
+    "name_original": "Donald Davidson",
+    "era": "当代",
+    "period": "1917—2003"
+  },
+  "asset": {
+    "title": "File:Donald Davidson 20120519.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Donald_Davidson_20120519.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/62/Donald_Davidson_20120519.jpg",
+    "mime": "image/jpeg",
+    "width": 924,
+    "height": 709,
+    "score": 11
+  },
+  "rights": {
+    "license_short": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "artist": "Chuck Carroll",
+    "credit": "Own work",
+    "description": "Indianapolis Motor Speedway historian Donald Davidson at IMS on Pole Day 2012",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

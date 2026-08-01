@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "darwin",
+    "name_zh": "达尔文",
+    "name_original": "Charles Darwin",
+    "era": "19世纪",
+    "period": "1809—1882"
+  },
+  "asset": {
+    "title": "File:Charles Darwin 1880.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Charles_Darwin_1880.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Charles_Darwin_1880.jpg/1280px-Charles_Darwin_1880.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1372,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Elliott &amp; Fry",
+    "credit": "Swarthmore.edu (1st version); Flickr (second version), original source Corbis Images",
+    "description": "Charles Darwin in 1881, cropped version.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

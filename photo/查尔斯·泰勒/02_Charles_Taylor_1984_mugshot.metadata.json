@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "charles_taylor",
+    "name_zh": "查尔斯·泰勒",
+    "name_original": "Charles Taylor",
+    "era": "当代",
+    "period": "1931—"
+  },
+  "asset": {
+    "title": "File:Charles Taylor 1984 mugshot.jpg",
+    "source": "wikidata-commons-category:Category:Charles Taylor (Liberian politician)",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Charles_Taylor_1984_mugshot.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/1/14/Charles_Taylor_1984_mugshot.jpg",
+    "mime": "image/jpeg",
+    "width": 408,
+    "height": 596,
+    "score": 15
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Plymouth County Sheriff's Office",
+    "credit": "https://archive.is/XLNcm",
+    "description": "Future Liberian president Charles Taylor's mugshot in Plymouth County, MA, in 1984 for alleged embezzlement",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

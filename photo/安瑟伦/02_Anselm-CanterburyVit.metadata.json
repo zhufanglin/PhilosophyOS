@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "anselm",
+    "name_zh": "安瑟伦",
+    "name_original": "Anselm of Canterbury",
+    "era": "中世纪",
+    "period": "1033—1109"
+  },
+  "asset": {
+    "title": "File:Anselm-CanterburyVit.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Anselm-CanterburyVit.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Anselm-CanterburyVit.jpg",
+    "mime": "image/jpeg",
+    "width": 685,
+    "height": 1097,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown, English",
+    "credit": "http://www.arspublik.com/public-domain-images-saint-anselm/",
+    "description": "St. Anselm of Canterbury in an English glass window of 19th cent.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

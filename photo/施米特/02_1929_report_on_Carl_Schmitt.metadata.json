@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "carl_schmitt",
+    "name_zh": "施米特",
+    "name_original": "Carl Schmitt",
+    "era": "现代",
+    "period": "1888—1985"
+  },
+  "asset": {
+    "title": "File:1929 report on Carl Schmitt.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:1929_report_on_Carl_Schmitt.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/f0/1929_report_on_Carl_Schmitt.jpg",
+    "mime": "image/jpeg",
+    "width": 887,
+    "height": 1501,
+    "score": 14
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "ABC",
+    "credit": ".mw-parser-output cite.citation{font-style:inherit;word-wrap:break-word}.mw-parser-output .citation q{quotes:\"\\\"\"\"\\\"\"\"'\"\"'\"}.mw-parser-output .citation:target{background-color:rgba(0,127,255,0.133)}.mw-parser-output .id-lock-free.id-lock-free a{background:url(\"//upload.wikimedia.org/wikipedia/commons/6/65/Lock-green.svg\")right 0.1em center/9px no-repeat}.mw-parser-output .id-lock-limited.id-lock-limited a,.mw-parser-output .id-lock-registration.id-lock-registration a{background:url(\"//upload.wikimedia.org/wikipedia/commons/d/d6/Lock-gray-alt-2.svg\")right 0.1em center/9px no-repeat}.mw-parser-output .id-lock-subscription.id-lock-subscription a{background:url(\"//upload.wikimedia.org/wikipedia/commons/a/aa/Lock-red-alt-2.svg\")right 0.1em center/9px no-repeat}.mw-parser-output .cs1-ws-icon a{background:url(\"//upload.wikimedia.org/wikipedia/commons/4/4c/Wikisource-logo.svg\")right 0.1em center/12px no-repeat}body:not(.skin-timeless):not(.skin-minerva) .mw-parser-output .id-lock-free a,body:not(.skin-timeless):not(.skin-minerva) .mw-parser-output .id-lock-limited a,body:not(.skin-timeless):not(.skin-minerva) .mw-parser-output .id-lock-registration a,body:not(.skin-timeless):not(.skin-minerva) .mw-parser-output .id-lock-subscription a,body:not(.skin-timeless):not(.skin-minerva) .mw-parser-output .cs1-ws-icon a{background-size:contain;padding:0 1em 0 0}.mw-parser-output .cs1-code{color:inherit;background:inherit;border:none;padding:inherit}.mw-parser-output .cs1-hidden-error{display:none;color:var(--color-error,#bf3c2c)}.mw-parser-output .cs1-visible-error{color:var(--color-error,#bf3c2c)}.mw-parser-output .cs1-maint{display:none;color:#085;margin-left:0.3em}.mw-parser-output .cs1-kern-left{padding-left:0.2em}.mw-parser-output .cs1-kern-right{padding-right:0.2em}.mw-parser-output .citation .mw-selflink{font-weight:inherit}@media screen{.mw-parser-output .cs1-format{font-size:95%}html.skin-theme-clientpref-night .mw-parser-output .cs1-maint{color:#18911f}}@media screen and (prefers-color-scheme:dark){html.skin-theme-clientpref-os .mw-parser-output .cs1-maint{color:#18911f}}\"Figuras de actualidad\". ABC. No. 6326. Madrid. 24 October 1929.; immediate: https://www.carl-schmitt.de/en/carl-schmitt/schmitt-chronik/",
+    "description": "1929 article on Carl Schmitt about his lecture on Donoso Cortès in Madrid in the Spanish newspaper ABC",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "emile_durkheim",
+    "name_zh": "涂尔干",
+    "name_original": "Emile Durkheim",
+    "era": "现代",
+    "period": "1858—1917"
+  },
+  "asset": {
+    "title": "File:Portrait of Emile Durkheim in \"a collection of essays, with translations and a bibliography\".jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Portrait_of_Emile_Durkheim_in_%22a_collection_of_essays,_with_translations_and_a_bibliography%22.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Portrait_of_Emile_Durkheim_in_%22a_collection_of_essays%2C_with_translations_and_a_bibliography%22.jpg/1280px-Portrait_of_Emile_Durkheim_in_%22a_collection_of_essays%2C_with_translations_and_a_bibliography%22.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1506,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown authorUnknown author",
+    "credit": "https://archive.org/details/emiledurkheim1850000wolf/page/n7/mode/2up",
+    "description": "Portrait of Emile Durkheim in \"a collection of essays, with translations and a bibliography\"",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

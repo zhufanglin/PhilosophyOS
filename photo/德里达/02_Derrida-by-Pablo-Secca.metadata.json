@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "derrida",
+    "name_zh": "德里达",
+    "name_original": "Jacques Derrida",
+    "era": "当代",
+    "period": "1930–2004"
+  },
+  "asset": {
+    "title": "File:Derrida-by-Pablo-Secca.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Derrida-by-Pablo-Secca.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/9/99/Derrida-by-Pablo-Secca.jpg",
+    "mime": "image/jpeg",
+    "width": 250,
+    "height": 289,
+    "score": 12
+  },
+  "rights": {
+    "license_short": "CC BY 3.0",
+    "license_url": "https://creativecommons.org/licenses/by/3.0",
+    "artist": "Pablosecca",
+    "credit": "Own work",
+    "description": "An image of the deceased French philosopher Jacques Derrida.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

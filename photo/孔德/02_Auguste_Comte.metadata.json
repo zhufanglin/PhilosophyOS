@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "comte",
+    "name_zh": "孔德",
+    "name_original": "Auguste Comte",
+    "era": "19世纪",
+    "period": "1798—1857"
+  },
+  "asset": {
+    "title": "File:Auguste Comte.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Auguste_Comte.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Auguste_Comte.jpg/1280px-Auguste_Comte.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1284,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Johan Hendrik Hoffmeister",
+    "credit": "Maison d'Auguste Comte",
+    "description": "Half-length portrait of Auguste Comte, seated, known as the \"Dutch portrait\" (Portrait hollandais), produced after a daguerreotype of Comte taken in 1849",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

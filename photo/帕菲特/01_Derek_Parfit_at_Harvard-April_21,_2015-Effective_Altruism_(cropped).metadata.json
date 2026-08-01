@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "derek_parfit",
+    "name_zh": "帕菲特",
+    "name_original": "Derek Parfit",
+    "era": "当代",
+    "period": "1942—2017"
+  },
+  "asset": {
+    "title": "File:Derek Parfit at Harvard-April 21, 2015-Effective Altruism (cropped).jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Derek_Parfit_at_Harvard-April_21,_2015-Effective_Altruism_(cropped).jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Derek_Parfit_at_Harvard-April_21%2C_2015-Effective_Altruism_%28cropped%29.jpg",
+    "mime": "image/jpeg",
+    "width": 480,
+    "height": 652,
+    "score": 11
+  },
+  "rights": {
+    "license_short": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "Anna Riedl",
+    "credit": "Own work",
+    "description": "Derek Parfit",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

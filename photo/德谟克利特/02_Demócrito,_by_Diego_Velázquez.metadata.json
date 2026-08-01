@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "democritus",
+    "name_zh": "德谟克利特",
+    "name_original": "Democritus",
+    "era": "古典时代",
+    "period": "约 460—370 BC"
+  },
+  "asset": {
+    "title": "File:Demócrito, by Diego Velázquez.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Dem%C3%B3crito,_by_Diego_Vel%C3%A1zquez.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Dem%C3%B3crito%2C_by_Diego_Vel%C3%A1zquez.jpg",
+    "mime": "image/jpeg",
+    "width": 936,
+    "height": 1200,
+    "score": 18
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Diego Velázquez",
+    "credit": "http://mbarouen.fr/en/oeuvres/democritus",
+    "description": "This imaginary ‘portrait’ of the Greek philosopher Democritus by Velázquez recalls the artist’s actual portrayal of a court jester to King Philip II of Spain, Pablo de Valladolid. In fact the subject’s ‘spaniel’s ears’ haircut and his right hand holding a hat in the shadows are both reminiscent of the portrait of the real-life model.\nThe presence of the globe, however, to which the man is seen pointing, the fact that he is standing so closely to the artefact in such a reduced space, combined with the amused look on his face, all identify this character as the cynical philosopher displaying his scepticism about the world around us. In the early 17th century Democritus was often associated with Heraclitus, ‘the weeping philosopher’, a pairing that constituted an invitation to meditate on two opposing attitudes to the mediocrity of this world. In Spain, Flanders and Italy at the start of the 17th century, this theme of the philosopher was especially in vogue to decorate the studies and libraries of aristocrats keen to display their humanism.\nThis particular painting is difficult to date as a result of various modifications carried out by the artist. Both the rich ochre hues of the cloak, which discreetly reproduces a motif from the artist’s Sevillian period, and the pictorial, fluid representation of the face seem to date the work to around 1630. However, the downward-turning left hand, with its very carefully-worked treatment, originally pointed in the opposite direction: the painting had in fact been transformed by the artist, who initially intended to portray a jolly reveller, as we are led to conclude by two contemporary copies of the work in which the subject is depicted brandishing a glass of wine. It would seem that Velázquez later found him ideally suited for conversion into a Democritus, in keeping with the vogue for ‘portraits’ of philosophers that had been popularised in particular by Jusepe de Ribera.           \n\nTogether with the portrait of Saint Thomas in the Musée des Beaux Arts in Orleans, this painting is one of only two works by Velázquez conserved in France.",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

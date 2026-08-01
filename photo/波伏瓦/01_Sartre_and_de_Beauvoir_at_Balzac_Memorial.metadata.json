@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "beauvoir",
+    "name_zh": "波伏瓦",
+    "name_original": "Simone de Beauvoir",
+    "era": "当代",
+    "period": "1908–1986"
+  },
+  "asset": {
+    "title": "File:Sartre and de Beauvoir at Balzac Memorial.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Sartre_and_de_Beauvoir_at_Balzac_Memorial.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Sartre_and_de_Beauvoir_at_Balzac_Memorial.jpg/1280px-Sartre_and_de_Beauvoir_at_Balzac_Memorial.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 1570,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Unknown. Copyright holder is Archives Gallimard at Paris, Archives Gallimard no longer exists",
+    "credit": "Schwarzer, Alice: Simone de Beauvoir, Reinbek, Rowohlt, 2007, ISBN: 978-3-498-06400-6, S. 68",
+    "description": "Jean-Paul Sartre and Simone de Beauvoir at Balzac Memorial",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

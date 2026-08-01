@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "bentham",
+    "name_zh": "边沁",
+    "name_original": "Jeremy Bentham",
+    "era": "现代早期",
+    "period": "1748–1832"
+  },
+  "asset": {
+    "title": "File:Jeremy Bentham by Henry William Pickersgill detail.jpg",
+    "source": "wikidata-p18",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Jeremy_Bentham_by_Henry_William_Pickersgill_detail.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Jeremy_Bentham_by_Henry_William_Pickersgill_detail.jpg",
+    "mime": "image/jpeg",
+    "width": 536,
+    "height": 728,
+    "score": 16
+  },
+  "rights": {
+    "license_short": "Public domain",
+    "license_url": "",
+    "artist": "Henry William Pickersgill",
+    "credit": "one or more third parties have made copyright claims against Wikimedia Commons in relation to the work from which this is sourced or a purely mechanical reproduction thereof. This may be due to recognition of the \"sweat of the brow\" doctrine, allowing works to be eligible for protection through skill and labour, and not purely by originality as is the case in the United States (where this website is hosted). These claims may or may not be valid in all jurisdictions.\nAs such, use of this image in the jurisdiction of the claimant or other countries may be regarded as copyright infringement. Please see Commons:When to use the PD-Art tag for more information.",
+    "description": "",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}

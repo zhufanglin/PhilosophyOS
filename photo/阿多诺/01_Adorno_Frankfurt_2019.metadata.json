@@ -1,0 +1,27 @@
+{
+  "philosopher": {
+    "id": "adorno",
+    "name_zh": "阿多诺",
+    "name_original": "Theodor Adorno",
+    "era": "当代",
+    "period": "1903–1969"
+  },
+  "asset": {
+    "title": "File:Adorno Frankfurt 2019.jpg",
+    "source": "commons-search",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Adorno_Frankfurt_2019.jpg",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Adorno_Frankfurt_2019.jpg/1280px-Adorno_Frankfurt_2019.jpg",
+    "mime": "image/jpeg",
+    "width": 1000,
+    "height": 667,
+    "score": 13
+  },
+  "rights": {
+    "license_short": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "Vysotsky",
+    "credit": "Own work",
+    "description": "Mural of Theodor Adorno by Justus Becker and Oğuz Şen. Senckenberganlage, Frankfurt",
+    "commercial_review": "candidate_allowed_by_metadata_needs_human_audit"
+  }
+}
