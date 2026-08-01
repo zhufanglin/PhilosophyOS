@@ -75,8 +75,24 @@ async def test_direct_quote_request_degrades_without_version_bound_quote_evidenc
 
 
 @pytest.mark.anyio
-async def test_unknown_topic_returns_explicit_insufficient_evidence() -> None:
-    """Unsupported content returns no citations or invented quotation."""
+async def test_concept_question_uses_reviewed_rag_sources() -> None:
+    """Concept-level questions can synthesize across reviewed philosopher passages."""
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/knowledge-answers", json={"question": "决定论和自由意志是什么关系？"}
+        )
+
+    payload = response.json()
+    assert payload["status"] == "supported"
+    assert payload["citations"]
+    assert payload["claims"]
+    assert "决定论" in payload["answer"]
+
+
+@pytest.mark.anyio
+async def test_unknown_topic_returns_exploratory_model_guidance() -> None:
+    """Unsupported content returns model-guided exploration without fake citations."""
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post(
@@ -84,10 +100,10 @@ async def test_unknown_topic_returns_explicit_insufficient_evidence() -> None:
         )
 
     payload = response.json()
-    assert payload["status"] == "insufficient"
+    assert payload["status"] == "exploratory"
     assert payload["citations"] == []
     assert payload["claims"] == []
-    assert "没有生成引语" in payload["evidence_note"]
+    assert "探索性" in payload["evidence_note"]
 
 
 @pytest.mark.anyio

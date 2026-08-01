@@ -145,6 +145,12 @@ flowchart LR
 - **Acceptance:** 用户能按姓名、时代、地区和流派找到人物；每位人物至少具有中英文名、年代、传统、核心思想、代表著作和来源；无肖像时有一致的博物馆式占位展示；图鉴与思想档案中的哲学家筛选双向联通；桌面与 390px 手机视口无溢出。
 - **Dependencies:** 3.1
 
+### 3.4 [ ] 哲学家肖像资产管线与博物馆式展示
+- **Files:** `apps/web/public/philosophers/`, `apps/web/src/data/philosophers.ts`, `apps/web/src/pages/PhilosopherAtlasPage.tsx`, `apps/web/src/pages/TodayPage.tsx`, `apps/web/src/styles.css`, `docs/assets/philosopher-portraits.md`
+- **What:** 建立可持续的哲学家肖像资产规范：每个肖像记录来源、许可证、裁切焦点、透明/非透明版本、fallback 占位和适用页面；优先使用公共领域或兼容开放许可的西方哲学家肖像/雕塑，近现代人物使用黑白学术肖像风格，古希腊人物使用雕塑/大理石质感。肖像展示要融入“数字哲学博物馆”视觉，不使用生硬矩形头像框。
+- **Acceptance:** 至少完成今日页与图鉴常用哲学家的首批高质量肖像；每个资产有来源与许可证记录；图片失败时仍显示博物馆式占位；肖像不遮挡姓名、命题和 CTA；桌面与 390px 手机视口均无溢出；不得使用来源不明或侵权风险高的图片。
+- **Dependencies:** 3.3
+
 ---
 
 ## Milestone 4: 可交付的本地 Beta

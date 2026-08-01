@@ -1156,6 +1156,11 @@ h1 {
   background: #f8efda;
 }
 
+.evidence-status.exploratory {
+  color: #245943;
+  background: #edf4ef;
+}
+
 .evidence-status span {
   padding: 4px 8px;
   border-radius: 999px;

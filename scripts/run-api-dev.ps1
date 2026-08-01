@@ -15,4 +15,9 @@ if (Test-Path -LiteralPath $ApiEnvFile) {
     }
 }
 Set-Location $ApiDir
+$venvSitePackages = Join-Path $ApiDir ".venv\Lib\site-packages"
+$pythonPathParts = @($ApiDir)
+if (Test-Path -LiteralPath $venvSitePackages) { $pythonPathParts += $venvSitePackages }
+if ($env:PYTHONPATH) { $pythonPathParts += $env:PYTHONPATH }
+$env:PYTHONPATH = ($pythonPathParts -join [IO.Path]::PathSeparator)
 & $PythonPath -m uvicorn app.main:app --host 127.0.0.1 --port $Port

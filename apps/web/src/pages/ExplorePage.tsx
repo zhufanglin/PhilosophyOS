@@ -7,7 +7,7 @@ import {
   evidenceLabel,
 } from "../components/CitationPanel";
 
-type AnswerStatus = "supported" | "corrected" | "insufficient";
+type AnswerStatus = "supported" | "corrected" | "insufficient" | "exploratory";
 
 type AnswerClaim = {
   text: string;
@@ -39,6 +39,7 @@ const statusCopy: Record<AnswerStatus, { title: string; label: string }> = {
   supported: { title: "已有审核来源支持", label: "证据充分" },
   corrected: { title: "已先纠正问题前提", label: "归属纠正" },
   insufficient: { title: "当前资料不足", label: "明确降级" },
+  exploratory: { title: "AI 探索性引导", label: "未完全验证" },
 };
 
 export function ExplorePage({ apiBaseUrl }: ExplorePageProps) {
@@ -82,7 +83,7 @@ export function ExplorePage({ apiBaseUrl }: ExplorePageProps) {
           <h1 id="explore-title">先核对来源，再形成理解。</h1>
           <p className="intro">
             首批支持康德、斯宾诺莎和尼采。每条回答都会区分原典、研究解释与 AI
-            整理；证据不足时会明确停止。
+            整理；证据不足时会调用你配置的模型 API 给出探索性引导，并明确标注未验证。
           </p>
         </div>
 

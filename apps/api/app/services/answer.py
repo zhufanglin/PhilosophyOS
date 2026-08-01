@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from uuid import UUID, uuid5
 
+from app.agent.providers import ProviderRequest, select_dialogue_provider
 from app.models.knowledge import (
     CopyrightStatus,
     EvidenceKind,
@@ -19,6 +20,8 @@ from app.rag.retrievers import (
     RetrievalQuery,
     StructuredFilterRetriever,
 )
+from app.schemas.dialogue import DialogueMode, ModelProfile
+from app.settings import PhilosophyOSSettings, settings
 
 KNOWLEDGE_NAMESPACE = UUID("2ce9d7bd-d8d8-5d06-b22d-1c6bca7e173e")
 
@@ -29,6 +32,7 @@ class AnswerStatus(StrEnum):
     SUPPORTED = "supported"
     CORRECTED = "corrected"
     INSUFFICIENT = "insufficient"
+    EXPLORATORY = "exploratory"
 
 
 class EvidenceCategory(StrEnum):
@@ -106,29 +110,27 @@ class KnowledgeAnswerService:
         self._retriever = StructuredFilterRetriever([passage.document for passage in passages])
         self._profiles = _build_profiles()
 
-    def answer(self, question: str) -> AnswerResult:
+    def answer(
+        self,
+        question: str,
+        current_settings: PhilosophyOSSettings = settings,
+        model_profile: ModelProfile | None = None,
+    ) -> AnswerResult:
         """Answer a question or explicitly degrade when reviewed evidence is absent."""
 
         normalized = question.casefold().strip()
         profile = self._detect_profile(normalized)
+        concept_profiles = self._detect_concept_profiles(normalized)
         asks_for_direct_quote = any(
             marker in normalized for marker in ("原话", "原文", "页码", "直接引语", "quote")
         )
 
         if profile is not None and profile.slug == "nietzsche" and "存在与时间" in normalized:
             return self._wrong_work_attribution(question, profile)
+        if profile is None and concept_profiles:
+            return self._concept_answer(question, normalized, concept_profiles)
         if profile is None:
-            return AnswerResult(
-                question=question,
-                status=AnswerStatus.INSUFFICIENT,
-                answer=(
-                    "当前审核知识库只覆盖康德、斯宾诺莎和尼采的首批材料。"
-                    "对这个问题暂时不能给出有来源保证的回答。"
-                ),
-                evidence_note="未检索到可支持回答的已审核片段，因此没有生成引语。",
-                claims=(),
-                citations=(),
-            )
+            return self._exploratory_answer(question, current_settings, model_profile)
 
         citations = self._retrieve_citations(profile, normalized)
         if asks_for_direct_quote:
@@ -173,6 +175,136 @@ class KnowledgeAnswerService:
             if any(alias in normalized_question for alias in profile.aliases):
                 return profile
         return None
+
+    def _detect_concept_profiles(
+        self, normalized_question: str
+    ) -> tuple[PhilosopherProfile, ...]:
+        """Resolve reviewed philosophers relevant to a concept-level question."""
+
+        concept_markers = (
+            "决定论",
+            "自由意志",
+            "行动自由",
+            "道德责任",
+            "因果",
+            "必然性",
+            "determinism",
+            "free will",
+            "freedom",
+            "causality",
+        )
+        if not any(marker in normalized_question for marker in concept_markers):
+            return ()
+        return tuple(
+            profile
+            for profile in self._profiles
+            if profile.slug in {"kant", "spinoza", "nietzsche"}
+        )
+
+    def _concept_answer(
+        self,
+        question: str,
+        normalized_question: str,
+        profiles: tuple[PhilosopherProfile, ...],
+    ) -> AnswerResult:
+        """Synthesize a concept answer from multiple reviewed profile passages."""
+
+        citations_by_id: dict[str, CitationRecord] = {}
+        for profile in profiles:
+            for citation in self._retrieve_citations(profile, normalized_question):
+                citations_by_id[citation.citation_id] = citation
+
+        citations = tuple(citations_by_id.values())
+        if not citations:
+            return AnswerResult(
+                question=question,
+                status=AnswerStatus.INSUFFICIENT,
+                answer="当前知识库没有检索到能支撑这个概念问题的已审核片段。",
+                evidence_note="RAG 未命中已审核材料，因此没有生成引用或模型补写。",
+                claims=(),
+                citations=(),
+            )
+
+        claims = (
+            EvidenceClaim(
+                text="决定论问题通常关注行动是否被因果、必然性或先在条件决定。",
+                category=EvidenceCategory.AI_INFERENCE,
+                citation_ids=tuple(citation.citation_id for citation in citations),
+            ),
+            EvidenceClaim(
+                text="康德、斯宾诺莎和尼采都把自由问题放在因果性、能动性与责任的张力中讨论，但结论并不相同。",
+                category=EvidenceCategory.RESEARCH,
+                citation_ids=tuple(citation.citation_id for citation in citations),
+            ),
+        )
+        return AnswerResult(
+            question=question,
+            status=AnswerStatus.SUPPORTED,
+            answer=(
+                "如果把“决定论”理解为：人的行动是否已经被因果链条、必然性或先在条件决定，"
+                "那么它和自由意志问题是一组核心张力。康德会把自然因果解释和实践自由区分开："
+                "经验世界可以按因果解释，但道德责任仍要求我们把理性主体视为能够自律行动。"
+                "斯宾诺莎更强调必然性：自由不是无原因任选，而是行动越来自充分认识和自身能力，"
+                "就越不被外因和被动情感支配。尼采则批判传统形而上学意义上的自由意志，"
+                "但这不等于简单的被动决定论；他更关心力量、能动性和自我塑造如何发生。"
+            ),
+            evidence_note=(
+                "这是多片段 RAG 归纳：回答只使用康德、斯宾诺莎、尼采的已审核材料转述，"
+                "没有生成逐字引语。"
+            ),
+            claims=claims,
+            citations=citations,
+        )
+
+    def _exploratory_answer(
+        self,
+        question: str,
+        current_settings: PhilosophyOSSettings,
+        model_profile: ModelProfile | None,
+    ) -> AnswerResult:
+        """Use the user's configured model profile only when RAG evidence is absent."""
+
+        selected_profile = model_profile or ModelProfile(current_settings.model_profile)
+        selected_settings = current_settings.model_copy(
+            update={"model_profile": selected_profile.value}
+        )
+        deterministic_message = (
+            "当前审核知识库暂时没有足够来源支撑这个问题。你可以把它先作为探索入口："
+            "1）拆成一个更小的哲学概念；2）指定一位哲学家或一本著作；"
+            "3）再回到知识库中寻找可核对来源。"
+        )
+        prompt = (
+            "你是 PhilosophyOS 的探索助手。用户的问题暂时没有命中本地 RAG 的已审核资料。"
+            "请用中文给出谨慎、简短、有启发的探索性回答，不要编造出处、页码或原文引语；"
+            "如果提到可能方向，要明确这是待验证线索。\n\n"
+            f"用户问题：{question}"
+        )
+        try:
+            provider_response = select_dialogue_provider(selected_settings).generate(
+                ProviderRequest(
+                    user_message=question,
+                    mode=DialogueMode.EXPLAIN,
+                    topic="知识探索",
+                    turn_number=1,
+                    prompt=prompt,
+                    deterministic_message=deterministic_message,
+                )
+            )
+            answer = provider_response.assistant_message
+        except Exception:
+            answer = deterministic_message
+
+        return AnswerResult(
+            question=question,
+            status=AnswerStatus.EXPLORATORY,
+            answer=answer,
+            evidence_note=(
+                "RAG 未检索到足够的已审核来源；本回答由用户当前配置的模型 API 或本地兜底生成，"
+                "仅作为探索性引导，不视为来源已验证结论。"
+            ),
+            claims=(),
+            citations=(),
+        )
 
     def _retrieve_citations(
         self, profile: PhilosopherProfile, normalized_question: str

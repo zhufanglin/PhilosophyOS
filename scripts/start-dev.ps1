@@ -50,10 +50,25 @@ function Resolve-BasePython {
 function Resolve-ApiPython {
     $venvPython = Join-Path $ApiDir ".venv\Scripts\python.exe"
     if (Test-Path -LiteralPath $venvPython) {
-        & $venvPython --version *> $null
-        if ($LASTEXITCODE -eq 0) { return $venvPython }
+        try {
+            & $venvPython --version *> $null
+            if ($LASTEXITCODE -eq 0) { return $venvPython }
+        } catch {
+            Write-Host "The local venv Python launcher is not usable; trying a fallback Python..." -ForegroundColor Yellow
+        }
     }
     $basePython = Resolve-BasePython
+    $venvSitePackages = Join-Path $ApiDir ".venv\Lib\site-packages"
+    if (Test-Path -LiteralPath $venvSitePackages) {
+        $previousPythonPath = $env:PYTHONPATH
+        try {
+            $env:PYTHONPATH = (($ApiDir, $venvSitePackages, $previousPythonPath) | Where-Object { $_ }) -join [IO.Path]::PathSeparator
+            & $basePython -c "import fastapi, sqlalchemy, uvicorn" *> $null
+            if ($LASTEXITCODE -eq 0) { return $basePython }
+        } finally {
+            $env:PYTHONPATH = $previousPythonPath
+        }
+    }
     Write-Host "Repairing the local Python environment..." -ForegroundColor Yellow
     & $basePython -m venv --upgrade (Join-Path $ApiDir ".venv")
     if ($LASTEXITCODE -ne 0) { throw "The Python environment could not be repaired." }

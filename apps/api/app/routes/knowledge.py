@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Path, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.knowledge import SourceLevel
+from app.schemas.dialogue import ModelProfile
 from app.services.answer import (
     AnswerResult,
     AnswerStatus,
@@ -15,6 +16,7 @@ from app.services.answer import (
     EvidenceCategory,
     knowledge_answer_service,
 )
+from app.settings import settings
 
 router = APIRouter(prefix="/api/v1", tags=["knowledge"])
 
@@ -23,6 +25,7 @@ class KnowledgeAnswerRequest(BaseModel):
     """Question submitted to the reviewed local knowledge corpus."""
 
     question: str = Field(min_length=2, max_length=1000)
+    model_profile: ModelProfile | None = None
 
 
 class ClaimResponse(BaseModel):
@@ -124,7 +127,13 @@ def _answer_response(result: AnswerResult) -> KnowledgeAnswerResponse:
 async def create_knowledge_answer(request: KnowledgeAnswerRequest) -> KnowledgeAnswerResponse:
     """Return reviewed evidence or an explicit insufficient-evidence response."""
 
-    return _answer_response(knowledge_answer_service.answer(request.question))
+    return _answer_response(
+        knowledge_answer_service.answer(
+            request.question,
+            current_settings=settings,
+            model_profile=request.model_profile,
+        )
+    )
 
 
 @router.get(
