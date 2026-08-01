@@ -27,6 +27,7 @@ PhilosophyOS 是一个以每日哲学挑战、苏格拉底式对话、可信文�
 | [docs/architecture/knowledge-model.md](docs/architecture/knowledge-model.md) | 知识实体、关系、记忆和 Obsidian 数据模型 |
 | [docs/product/wireframes.md](docs/product/wireframes.md) | 核心页面低保真原型与状态说明 |
 | [docs/operations/模型配置与启动说明.md](docs/operations/模型配置与启动说明.md) | 本地启动、多模型配置、连接测试与常见故障排查 |
+| [docs/product/model-api-onboarding.md](docs/product/model-api-onboarding.md) | 模型 API 申请、Base URL、隐私边界与普通用户托管额度路径 |
 | [docs/product/social-discussion.md](docs/product/social-discussion.md) | 好友关系、私密讨论、权限和安全规范 |
 | [docs/agent/behavior-spec.md](docs/agent/behavior-spec.md) | Agent 模式、工具调用和输出约束 |
 | [docs/evaluation/evaluation-plan.md](docs/evaluation/evaluation-plan.md) | 质量评测维度、门槛和回归流程 |
@@ -45,6 +46,9 @@ PhilosophyOS 是一个以每日哲学挑战、苏格拉底式对话、可信文�
 - 写入策略：思想档案默认写入本地 SQLite；Obsidian 草稿只是可选副本，后续双向同步需要单独计划。
 - 社交策略：核心单人闭环后再加入好友和 2–8 人私密哲学讨论，不建设公开动态广场。
 - 后期扩展：中国哲学使用独立分期与概念体系，作为 Phase 4 加入。
+
+
+> 商业化版本的默认体验应是“打开即用”：普通用户使用 PhilosophyOS 托管模型额度；自带 API Key 只作为高级用户、团队和本地 Beta 的配置入口。详见 [模型 API 接入与用户路径](docs/product/model-api-onboarding.md)。
 
 ## 本地运行与 AI 配置
 

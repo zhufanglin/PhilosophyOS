@@ -32,7 +32,7 @@ PhilosophyOS 已经完成 Beta 后的关键安全边界：模型 Key 不回传�
 - **What:** 将模型配置从豆包、GPT、DeepSeek 扩展到豆包、GPT、DeepSeek、通义千问、Kimi、智谱 GLM、硅基流动；保留 API Key 只进本机后端的边界。
 - **Acceptance:** 七类模型都能在设置中心保存、选择、测试连接；免费入口显示为豆包；前后端测试通过。
 
-### 1.4 [ ] 增加模型配置帮助文档
+### 1.4 [x] 增加模型配置帮助文档 *(completed 2026-08-01)*
 
 - **Files:** `README.md`, `docs/product/model-api-onboarding.md`
 - **What:** 写清楚常用服务商的申请路径、Base URL、模型名、费用归属和隐私边界。
