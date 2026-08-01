@@ -24,6 +24,7 @@
 - **报告先作为草稿：** 每周思想报告先生成 Markdown/本地草稿，经用户确认后再进入长期档案。
 - **Obsidian 写入仍然后置：** 在解析器、差异预览、冲突检测和撤销通过前，不开放真实写回。
 - **商业化前必须处理 Key：** 当前 API Key 本地明文 SQLite 只适合本地 Beta，商业化前必须加密或接入系统密钥管理。
+- **商业化数据边界：** 后续账号、云同步、计费和团队能力必须以 `user_id` 与 `workspace_id` 为核心隔离字段；导出不得包含完整 API Key 或加密 envelope，删除必须区分单对象、Obsidian 文件撤销和 owner-only 工作区删除。
 
 ## Milestones Overview
 
@@ -105,7 +106,7 @@
 - **Acceptance:** 数据库不保存完整明文 Key；读取接口仍不回传明文；旧本地配置可迁移。
 - **Dependencies:** None
 
-### 3.2 [ ] 账号与多用户隔离设计
+### 3.2 [x] 账号与多用户隔离设计 *(completed 2026-08-01)*
 - **Files:** `docs/architecture/knowledge-model.md`, `docs/product/mvp-scope.md`, `plans/`
 - **What:** 定义用户、工作区、档案、模型配置和导出数据的隔离边界。
 - **Acceptance:** 所有核心数据对象都有 owner 或 workspace 边界；删除流程和导出范围明确。
