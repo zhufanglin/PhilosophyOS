@@ -30,7 +30,7 @@ type ReviewItem = {
 
 type ReflectionReviewProps = {
   apiBaseUrl: string;
-  modelProfile: "free" | "gpt" | "deepseek";
+  modelProfile: "free" | "gpt" | "deepseek" | "qwen" | "kimi" | "zhipu" | "siliconflow";
   question: string;
   userStatements: string[];
   onBack: () => void;

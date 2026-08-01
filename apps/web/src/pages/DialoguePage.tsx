@@ -20,7 +20,7 @@ import { DialogueSource, SourceDrawer } from "../components/SourceDrawer";
 import { DailyQuestionView } from "./TodayPage";
 
 type DialogueMode = "socratic" | "explain" | "compare" | "reflect" | "organize";
-export type ModelProfile = "free" | "gpt" | "deepseek";
+export type ModelProfile = "free" | "gpt" | "deepseek" | "qwen" | "kimi" | "zhipu" | "siliconflow";
 
 type DialoguePageProps = {
   apiBaseUrl: string;
@@ -94,15 +94,23 @@ const modes = [
 ];
 
 const modelProfileLabels: Record<ModelProfile, string> = {
-  free: "免费模型",
+  free: "豆包",
   gpt: "GPT",
   deepseek: "DeepSeek",
+  qwen: "通义千问",
+  kimi: "Kimi",
+  zhipu: "智谱 GLM",
+  siliconflow: "硅基流动",
 };
 
 const modelFailureGuidance: Record<ModelProfile, string> = {
-  free: "免费模型暂时不可用，请检查豆包/火山方舟配置，或稍后再试。",
-  gpt: "GPT 暂时不可用，你可以切换到免费模型继续，或稍后再试。",
-  deepseek: "DeepSeek 暂时不可用，你可以切换到免费模型继续，或稍后再试。",
+  free: "豆包暂时不可用，请检查火山方舟配置，或稍后再试。",
+  gpt: "GPT 暂时不可用，你可以切换到豆包继续，或稍后再试。",
+  deepseek: "DeepSeek 暂时不可用，你可以切换到豆包继续，或稍后再试。",
+  qwen: "通义千问暂时不可用，你可以切换到豆包继续，或稍后再试。",
+  kimi: "Kimi 暂时不可用，你可以切换到豆包继续，或稍后再试。",
+  zhipu: "智谱 GLM 暂时不可用，你可以切换到豆包继续，或稍后再试。",
+  siliconflow: "硅基流动暂时不可用，你可以切换到豆包继续，或稍后再试。",
 };
 
 const sources: DialogueSource[] = [
@@ -534,7 +542,7 @@ export function DialoguePage({
                 <div className="dialogue-retry-actions">
                   {failedTurn.modelProfile !== "free" ? (
                     <button type="button" onClick={switchToFreeAndRetry} disabled={thinking || finished}>
-                      <RotateCcw size={15} /> 切换到免费模型并重试
+                      <RotateCcw size={15} /> 切换到豆包并重试
                     </button>
                   ) : null}
                   <button type="button" onClick={retryFailedTurn} disabled={thinking || finished}>

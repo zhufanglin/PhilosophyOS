@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
 AIProviderName = Literal["auto", "openai", "deterministic"]
 OpenAIAPIStyle = Literal["responses", "chat_completions"]
-ModelProfile = Literal["free", "gpt", "deepseek"]
+ModelProfile = Literal["free", "gpt", "deepseek", "qwen", "kimi", "zhipu", "siliconflow"]
 
 
 class PhilosophyOSSettings(BaseModel):
@@ -37,6 +37,22 @@ class PhilosophyOSSettings(BaseModel):
     deepseek_model: str = Field(default="deepseek-v4-flash", min_length=1)
     deepseek_base_url: str = Field(default="https://api.deepseek.com", min_length=1)
     deepseek_api_style: OpenAIAPIStyle = "chat_completions"
+    qwen_api_key: SecretStr | None = None
+    qwen_model: str = Field(default="qwen-plus", min_length=1)
+    qwen_base_url: str = Field(default="https://dashscope.aliyuncs.com/compatible-mode/v1", min_length=1)
+    qwen_api_style: OpenAIAPIStyle = "chat_completions"
+    kimi_api_key: SecretStr | None = None
+    kimi_model: str = Field(default="moonshot-v1-8k", min_length=1)
+    kimi_base_url: str = Field(default="https://api.moonshot.cn/v1", min_length=1)
+    kimi_api_style: OpenAIAPIStyle = "chat_completions"
+    zhipu_api_key: SecretStr | None = None
+    zhipu_model: str = Field(default="glm-4-plus", min_length=1)
+    zhipu_base_url: str = Field(default="https://open.bigmodel.cn/api/paas/v4", min_length=1)
+    zhipu_api_style: OpenAIAPIStyle = "chat_completions"
+    siliconflow_api_key: SecretStr | None = None
+    siliconflow_model: str = Field(default="Qwen/Qwen2.5-72B-Instruct", min_length=1)
+    siliconflow_base_url: str = Field(default="https://api.siliconflow.cn/v1", min_length=1)
+    siliconflow_api_style: OpenAIAPIStyle = "chat_completions"
     ai_provider: AIProviderName = "auto"
     obsidian_drafts_dir: str = Field(
         default=r"D:\Obsidian\storage\Stu的哲学思考\PhilosophyOS\草稿",
@@ -56,6 +72,10 @@ class PhilosophyOSSettings(BaseModel):
         "gpt_api_style",
         "free_api_key",
         "deepseek_api_key",
+        "qwen_api_key",
+        "kimi_api_key",
+        "zhipu_api_key",
+        "siliconflow_api_key",
         mode="before",
     )
     @classmethod
@@ -81,6 +101,14 @@ class PhilosophyOSSettings(BaseModel):
         "free_base_url",
         "deepseek_model",
         "deepseek_base_url",
+        "qwen_model",
+        "qwen_base_url",
+        "kimi_model",
+        "kimi_base_url",
+        "zhipu_model",
+        "zhipu_base_url",
+        "siliconflow_model",
+        "siliconflow_base_url",
         "obsidian_drafts_dir",
         "thought_snapshots_path",
     )
@@ -107,6 +135,14 @@ class PhilosophyOSSettings(BaseModel):
             return self.free_api_key
         if self.model_profile == "deepseek":
             return self.deepseek_api_key
+        if self.model_profile == "qwen":
+            return self.qwen_api_key
+        if self.model_profile == "kimi":
+            return self.kimi_api_key
+        if self.model_profile == "zhipu":
+            return self.zhipu_api_key
+        if self.model_profile == "siliconflow":
+            return self.siliconflow_api_key
         return self.gpt_api_key or self.openai_api_key
 
     @property
@@ -117,6 +153,14 @@ class PhilosophyOSSettings(BaseModel):
             return self.free_model
         if self.model_profile == "deepseek":
             return self.deepseek_model
+        if self.model_profile == "qwen":
+            return self.qwen_model
+        if self.model_profile == "kimi":
+            return self.kimi_model
+        if self.model_profile == "zhipu":
+            return self.zhipu_model
+        if self.model_profile == "siliconflow":
+            return self.siliconflow_model
         return self.gpt_model or self.openai_model
 
     @property
@@ -127,6 +171,14 @@ class PhilosophyOSSettings(BaseModel):
             return self.free_base_url
         if self.model_profile == "deepseek":
             return self.deepseek_base_url
+        if self.model_profile == "qwen":
+            return self.qwen_base_url
+        if self.model_profile == "kimi":
+            return self.kimi_base_url
+        if self.model_profile == "zhipu":
+            return self.zhipu_base_url
+        if self.model_profile == "siliconflow":
+            return self.siliconflow_base_url
         return self.gpt_base_url or self.openai_base_url
 
     @property
@@ -137,6 +189,14 @@ class PhilosophyOSSettings(BaseModel):
             return self.free_api_style
         if self.model_profile == "deepseek":
             return self.deepseek_api_style
+        if self.model_profile == "qwen":
+            return self.qwen_api_style
+        if self.model_profile == "kimi":
+            return self.kimi_api_style
+        if self.model_profile == "zhipu":
+            return self.zhipu_api_style
+        if self.model_profile == "siliconflow":
+            return self.siliconflow_api_style
         return self.gpt_api_style or self.openai_api_style
 
     @classmethod
@@ -161,6 +221,22 @@ class PhilosophyOSSettings(BaseModel):
             deepseek_model=os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash"),
             deepseek_base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
             deepseek_api_style=os.getenv("DEEPSEEK_API_STYLE", "chat_completions"),
+            qwen_api_key=os.getenv("QWEN_API_KEY"),
+            qwen_model=os.getenv("QWEN_MODEL", "qwen-plus"),
+            qwen_base_url=os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1"),
+            qwen_api_style=os.getenv("QWEN_API_STYLE", "chat_completions"),
+            kimi_api_key=os.getenv("KIMI_API_KEY"),
+            kimi_model=os.getenv("KIMI_MODEL", "moonshot-v1-8k"),
+            kimi_base_url=os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1"),
+            kimi_api_style=os.getenv("KIMI_API_STYLE", "chat_completions"),
+            zhipu_api_key=os.getenv("ZHIPU_API_KEY"),
+            zhipu_model=os.getenv("ZHIPU_MODEL", "glm-4-plus"),
+            zhipu_base_url=os.getenv("ZHIPU_BASE_URL", "https://open.bigmodel.cn/api/paas/v4"),
+            zhipu_api_style=os.getenv("ZHIPU_API_STYLE", "chat_completions"),
+            siliconflow_api_key=os.getenv("SILICONFLOW_API_KEY"),
+            siliconflow_model=os.getenv("SILICONFLOW_MODEL", "Qwen/Qwen2.5-72B-Instruct"),
+            siliconflow_base_url=os.getenv("SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/v1"),
+            siliconflow_api_style=os.getenv("SILICONFLOW_API_STYLE", "chat_completions"),
             ai_provider=os.getenv("PHILOSOPHYOS_AI_PROVIDER", "auto"),
             obsidian_drafts_dir=os.getenv(
                 "OBSIDIAN_DRAFTS_DIR",

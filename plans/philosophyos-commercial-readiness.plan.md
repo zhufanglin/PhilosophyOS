@@ -26,10 +26,16 @@ PhilosophyOS 已经完成 Beta 后的关键安全边界：模型 Key 不回传�
 - **What:** 当当前模型未配置时，在顶部状态与对话失败提示中给出更明确的“去设置中心配置 API”的路径。
 - **Acceptance:** 用户选择未配置模型时，不会只看到失败，而能直接打开设置中心完成配置。
 
-### 1.3 [ ] 增加模型配置帮助文档
+### 1.3 [x] 扩展常用模型 API 接口并恢复豆包命名 *(completed 2026-08-01)*
+
+- **Files:** `apps/api/app/settings.py`, `apps/api/app/routes/model_profiles.py`, `apps/api/app/schemas/dialogue.py`, `apps/api/app/storage/model_profile_repository.py`, `apps/web/src/main.tsx`, `apps/web/src/pages/DialoguePage.tsx`, `apps/web/src/styles.css`, `apps/api/tests/`
+- **What:** 将模型配置从豆包、GPT、DeepSeek 扩展到豆包、GPT、DeepSeek、通义千问、Kimi、智谱 GLM、硅基流动；保留 API Key 只进本机后端的边界。
+- **Acceptance:** 七类模型都能在设置中心保存、选择、测试连接；免费入口显示为豆包；前后端测试通过。
+
+### 1.4 [ ] 增加模型配置帮助文档
 
 - **Files:** `README.md`, `docs/product/model-api-onboarding.md`
-- **What:** 写清楚三类服务商的申请路径、Base URL、模型名、费用归属和隐私边界。
+- **What:** 写清楚常用服务商的申请路径、Base URL、模型名、费用归属和隐私边界。
 - **Acceptance:** 新用户不看代码也能完成模型 Key 配置；文档不包含任何真实 Key。
 
 ## Milestone 2: Commercial Account Boundary

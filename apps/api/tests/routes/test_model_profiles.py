@@ -34,8 +34,8 @@ async def test_model_profiles_endpoint_returns_key_free_status() -> None:
     assert response.status_code == 200
     payload = response.json()
 
-    assert payload["selected_profile"] in {"free", "gpt", "deepseek"}
-    assert {profile["profile"] for profile in payload["profiles"]} == {"free", "gpt", "deepseek"}
+    assert payload["selected_profile"] in {"free", "gpt", "deepseek", "qwen", "kimi", "zhipu", "siliconflow"}
+    assert {profile["profile"] for profile in payload["profiles"]} == {"free", "gpt", "deepseek", "qwen", "kimi", "zhipu", "siliconflow"}
     assert "api_key" not in str(payload).lower()
     assert "secret" not in str(payload).lower()
 
@@ -50,6 +50,9 @@ def test_model_profile_status_marks_configured_keys_without_exposing_values() ->
         gpt_model="gpt-5.6",
         gpt_base_url="https://relay.example.com/v1",
         deepseek_api_key=None,
+        qwen_api_key=SecretStr("qwen-secret"),
+        qwen_model="qwen-plus",
+        qwen_base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
 
     payload = build_model_profiles_response(configured_settings).model_dump()
@@ -58,10 +61,13 @@ def test_model_profile_status_marks_configured_keys_without_exposing_values() ->
     assert profiles["free"]["configured"] is True
     assert profiles["gpt"]["configured"] is True
     assert profiles["deepseek"]["configured"] is False
+    assert profiles["qwen"]["configured"] is True
+    assert profiles["qwen"]["base_url_host"] == "dashscope.aliyuncs.com"
     assert profiles["gpt"]["base_url_host"] == "relay.example.com"
     assert profiles["gpt"]["base_url"] == "https://relay.example.com/v1"
     assert "free-secret" not in str(payload)
     assert "gpt-secret" not in str(payload)
+    assert "qwen-secret" not in str(payload)
 
 
 def test_safe_base_url_removes_credentials_query_and_fragment() -> None:
@@ -196,6 +202,34 @@ async def test_connection_test_endpoint_rejects_unknown_profile() -> None:
             "https://api.deepseek.com/",
             "chat_completions",
             "deepseek_api_key",
+        ),
+        (
+            "qwen",
+            "qwen-plus",
+            "https://dashscope.aliyuncs.com/compatible-mode/v1/",
+            "chat_completions",
+            "qwen_api_key",
+        ),
+        (
+            "kimi",
+            "moonshot-v1-8k",
+            "https://api.moonshot.cn/v1/",
+            "chat_completions",
+            "kimi_api_key",
+        ),
+        (
+            "zhipu",
+            "glm-4-plus",
+            "https://open.bigmodel.cn/api/paas/v4/",
+            "chat_completions",
+            "zhipu_api_key",
+        ),
+        (
+            "siliconflow",
+            "Qwen/Qwen2.5-72B-Instruct",
+            "https://api.siliconflow.cn/v1/",
+            "chat_completions",
+            "siliconflow_api_key",
         ),
     ],
 )

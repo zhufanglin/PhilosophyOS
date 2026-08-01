@@ -25,6 +25,10 @@ class ModelProfile(StrEnum):
     FREE = "free"
     GPT = "gpt"
     DEEPSEEK = "deepseek"
+    QWEN = "qwen"
+    KIMI = "kimi"
+    ZHIPU = "zhipu"
+    SILICONFLOW = "siliconflow"
 
 
 class DialogueRequest(BaseModel):

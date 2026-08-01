@@ -20,6 +20,25 @@ from app.storage.model_profile_repository import save_profile
 
 router = APIRouter(prefix="/api/v1", tags=["model-profiles"])
 
+MODEL_PROFILE_ORDER: tuple[ModelProfile, ...] = (
+    "free",
+    "gpt",
+    "deepseek",
+    "qwen",
+    "kimi",
+    "zhipu",
+    "siliconflow",
+)
+MODEL_PROFILE_LABELS: dict[ModelProfile, str] = {
+    "free": "豆包",
+    "gpt": "GPT",
+    "deepseek": "DeepSeek",
+    "qwen": "通义千问",
+    "kimi": "Kimi",
+    "zhipu": "智谱 GLM",
+    "siliconflow": "硅基流动",
+}
+
 
 def base_url_host(base_url: str | None) -> str | None:
     """Return only the host part of a base URL so secrets or paths cannot leak."""
@@ -46,6 +65,30 @@ def safe_base_url(base_url: str | None) -> str | None:
     return urlunparse((parsed.scheme, f"{hostname}{port}", parsed.path, "", "", ""))
 
 
+def profile_status(profile: ModelProfile, current_settings: PhilosophyOSSettings) -> ModelProfileStatus:
+    """Build one safe, key-free profile status."""
+
+    if profile == "gpt":
+        configured = (current_settings.gpt_api_key or current_settings.openai_api_key) is not None
+        model = current_settings.gpt_model or current_settings.openai_model
+        base_url = current_settings.gpt_base_url or current_settings.openai_base_url
+        api_style = current_settings.gpt_api_style or current_settings.openai_api_style
+    else:
+        configured = getattr(current_settings, f"{profile}_api_key") is not None
+        model = getattr(current_settings, f"{profile}_model")
+        base_url = getattr(current_settings, f"{profile}_base_url")
+        api_style = getattr(current_settings, f"{profile}_api_style")
+    return ModelProfileStatus(
+        profile=profile,
+        label=MODEL_PROFILE_LABELS[profile],
+        configured=configured,
+        model=model,
+        base_url_host=base_url_host(base_url),
+        base_url=safe_base_url(base_url),
+        api_style=api_style,
+    )
+
+
 def build_model_profiles_response(
     current_settings: PhilosophyOSSettings = settings,
 ) -> ModelProfilesResponse:
@@ -53,40 +96,7 @@ def build_model_profiles_response(
 
     return ModelProfilesResponse(
         selected_profile=current_settings.model_profile,
-        profiles=[
-            ModelProfileStatus(
-                profile="free",
-                label="豆包",
-                configured=current_settings.free_api_key is not None,
-                model=current_settings.free_model,
-                base_url_host=base_url_host(current_settings.free_base_url),
-                base_url=safe_base_url(current_settings.free_base_url),
-                api_style=current_settings.free_api_style,
-            ),
-            ModelProfileStatus(
-                profile="gpt",
-                label="GPT",
-                configured=(current_settings.gpt_api_key or current_settings.openai_api_key)
-                is not None,
-                model=current_settings.gpt_model or current_settings.openai_model,
-                base_url_host=base_url_host(
-                    current_settings.gpt_base_url or current_settings.openai_base_url
-                ),
-                base_url=safe_base_url(
-                    current_settings.gpt_base_url or current_settings.openai_base_url
-                ),
-                api_style=current_settings.gpt_api_style or current_settings.openai_api_style,
-            ),
-            ModelProfileStatus(
-                profile="deepseek",
-                label="DeepSeek",
-                configured=current_settings.deepseek_api_key is not None,
-                model=current_settings.deepseek_model,
-                base_url_host=base_url_host(current_settings.deepseek_base_url),
-                base_url=safe_base_url(current_settings.deepseek_base_url),
-                api_style=current_settings.deepseek_api_style,
-            ),
-        ],
+        profiles=[profile_status(profile, current_settings) for profile in MODEL_PROFILE_ORDER],
     )
 
 

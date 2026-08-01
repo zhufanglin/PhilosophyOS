@@ -28,7 +28,7 @@ async function mockModelProfiles(page: Page) {
         profiles: [
           {
             profile: "free",
-            label: "免费",
+            label: "豆包",
             configured: true,
             model: "doubao-seed-2-0-lite-260428",
             base_url_host: "ark.cn-beijing.volces.com",

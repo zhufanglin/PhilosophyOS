@@ -81,20 +81,20 @@ type ModelProfileGuide = {
 const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
   free: {
     name: "豆包 / 火山方舟",
-    description: "适合先免费体验，Key 在火山引擎方舟控制台创建。",
+    description: "默认的低门槛模型入口，适合先完成本地体验与端到端测试。",
     signupUrl: "https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey",
     signupLabel: "打开火山方舟控制台",
     docsUrl: "https://api.volcengine.com/api-docs/view?action=ChatCompletions&serviceCode=ark&version=2024-01-01",
     docsLabel: "查看火山方舟 API 文档",
     providerHint: "在火山方舟开通模型后，复制 API Key，并确认模型 ID 可用。",
     defaultModel: "doubao-seed-2-0-lite-260428",
-    modelOptions: ["doubao-seed-2-0-lite-260428"],
+    modelOptions: ["doubao-seed-2-0-lite-260428", "doubao-1-5-pro-32k-250115", "doubao-1-5-lite-32k-250115"],
     defaultBaseUrl: "https://ark.cn-beijing.volces.com/api/v3",
     apiStyle: "responses",
   },
   gpt: {
     name: "GPT / OpenAI",
-    description: "使用 OpenAI 官方 API。需要在平台创建 API Key，费用由平台账户承担。",
+    description: "使用 OpenAI 官方 API。适合高质量推理、英文资料整理和稳定商业接入。",
     signupUrl: "https://platform.openai.com/api-keys",
     signupLabel: "打开 OpenAI API Keys",
     docsUrl: "https://platform.openai.com/docs/quickstart",
@@ -107,18 +107,81 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
   },
   deepseek: {
     name: "DeepSeek",
-    description: "使用 DeepSeek 官方平台创建 Key，可选择 Flash 或 Pro。",
+    description: "适合中文推理、低成本批量对话和 OpenAI-compatible 接入。",
     signupUrl: "https://platform.deepseek.com/api_keys",
     signupLabel: "打开 DeepSeek API Keys",
     docsUrl: "https://api-docs.deepseek.com/zh-cn/",
     docsLabel: "查看 DeepSeek API 文档",
     providerHint: "DeepSeek 兼容 OpenAI Chat Completions，Base URL 默认是 https://api.deepseek.com。",
     defaultModel: "deepseek-v4-flash",
-    modelOptions: ["deepseek-v4-flash", "deepseek-v4-pro"],
+    modelOptions: ["deepseek-v4-flash", "deepseek-v4-pro", "deepseek-chat", "deepseek-reasoner"],
     defaultBaseUrl: "https://api.deepseek.com",
     apiStyle: "chat_completions",
   },
+  qwen: {
+    name: "通义千问 / 阿里百炼",
+    description: "适合中文任务、企业云账号和阿里云生态用户。",
+    signupUrl: "https://bailian.console.aliyun.com/?tab=model#/api-key",
+    signupLabel: "打开阿里百炼 API Key",
+    docsUrl: "https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope",
+    docsLabel: "查看兼容模式文档",
+    providerHint: "使用 DashScope OpenAI 兼容模式，Base URL 默认是 compatible-mode/v1。",
+    defaultModel: "qwen-plus",
+    modelOptions: ["qwen-plus", "qwen-turbo", "qwen-max", "qwen-long"],
+    defaultBaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    apiStyle: "chat_completions",
+  },
+  kimi: {
+    name: "Kimi / 月之暗面",
+    description: "适合长上下文阅读、中文材料分析和轻量知识整理。",
+    signupUrl: "https://platform.moonshot.cn/console/api-keys",
+    signupLabel: "打开 Kimi API Keys",
+    docsUrl: "https://platform.moonshot.cn/docs/guide/start-using-kimi-api",
+    docsLabel: "查看 Kimi API 文档",
+    providerHint: "Kimi 使用 OpenAI-compatible Chat Completions，Base URL 默认是 https://api.moonshot.cn/v1。",
+    defaultModel: "moonshot-v1-8k",
+    modelOptions: ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
+    defaultBaseUrl: "https://api.moonshot.cn/v1",
+    apiStyle: "chat_completions",
+  },
+  zhipu: {
+    name: "智谱 GLM",
+    description: "适合中文通用问答、知识抽取和国内平台部署路线。",
+    signupUrl: "https://bigmodel.cn/usercenter/proj-mgmt/apikeys",
+    signupLabel: "打开智谱 API Keys",
+    docsUrl: "https://docs.bigmodel.cn/cn/guide/start/introduction",
+    docsLabel: "查看智谱开放平台文档",
+    providerHint: "智谱开放平台提供 OpenAI-compatible 调用，Base URL 默认是 https://open.bigmodel.cn/api/paas/v4。",
+    defaultModel: "glm-4-plus",
+    modelOptions: ["glm-4-plus", "glm-4-air", "glm-4-flash", "glm-4-long"],
+    defaultBaseUrl: "https://open.bigmodel.cn/api/paas/v4",
+    apiStyle: "chat_completions",
+  },
+  siliconflow: {
+    name: "硅基流动 / SiliconFlow",
+    description: "适合聚合开源与国产模型，方便快速试用不同模型。",
+    signupUrl: "https://cloud.siliconflow.cn/account/ak",
+    signupLabel: "打开硅基流动 API Keys",
+    docsUrl: "https://docs.siliconflow.cn/cn/api-reference/chat-completions/chat-completions",
+    docsLabel: "查看 SiliconFlow API 文档",
+    providerHint: "硅基流动兼容 OpenAI Chat Completions，可在模型市场复制完整模型 ID。",
+    defaultModel: "Qwen/Qwen2.5-72B-Instruct",
+    modelOptions: ["Qwen/Qwen2.5-72B-Instruct", "deepseek-ai/DeepSeek-V3", "meta-llama/Meta-Llama-3.1-70B-Instruct"],
+    defaultBaseUrl: "https://api.siliconflow.cn/v1",
+    apiStyle: "chat_completions",
+  },
 };
+
+
+const modelSwitcherItems: Array<{ profile: ModelProfile; label: string }> = [
+  { profile: "free", label: "豆包" },
+  { profile: "gpt", label: "GPT" },
+  { profile: "deepseek", label: "DeepSeek" },
+  { profile: "qwen", label: "千问" },
+  { profile: "kimi", label: "Kimi" },
+  { profile: "zhipu", label: "GLM" },
+  { profile: "siliconflow", label: "硅基" },
+];
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8001";
 
@@ -175,7 +238,7 @@ function App() {
   const [activeQuestion, setActiveQuestion] = useState(fallbackQuestion);
   const [modelProfile, setModelProfile] = useState<ModelProfile>(() => {
     const saved = window.localStorage.getItem("philosophyos:model-profile");
-    return saved === "gpt" || saved === "deepseek" ? saved : "free";
+    return modelSwitcherItems.some((item) => item.profile === saved) ? saved as ModelProfile : "free";
   });
   const [thoughtTransition, setThoughtTransition] = useState<ThoughtTransitionState | null>(null);
   const transitionTimers = useRef<number[]>([]);
@@ -436,7 +499,7 @@ function App() {
   const modelStatusCopy = activeModelStatus
     ? `${activeModelStatus.configured ? "已配置" : "未配置"} · ${activeModelStatus.model}`
     : "等待模型状态";
-  const profileOrder: ModelProfile[] = ["free", "gpt", "deepseek"];
+  const profileOrder: ModelProfile[] = modelSwitcherItems.map((item) => item.profile);
   const orderedModelProfiles = profileOrder
     .map((profile) => modelProfiles.find((item) => item.profile === profile))
     .filter((profile): profile is ModelProfileStatus => Boolean(profile));
@@ -782,30 +845,17 @@ function App() {
             )}
             <div className="model-switcher" aria-label="选择大模型">
               <span>模型</span>
-              <button
-                className={modelProfile === "free" ? "active" : ""}
-                type="button"
-                aria-pressed={modelProfile === "free"}
-                onClick={() => changeModelProfile("free")}
-              >
-                免费
-              </button>
-              <button
-                className={modelProfile === "gpt" ? "active" : ""}
-                type="button"
-                aria-pressed={modelProfile === "gpt"}
-                onClick={() => changeModelProfile("gpt")}
-              >
-                GPT
-              </button>
-              <button
-                className={modelProfile === "deepseek" ? "active" : ""}
-                type="button"
-                aria-pressed={modelProfile === "deepseek"}
-                onClick={() => changeModelProfile("deepseek")}
-              >
-                DeepSeek
-              </button>
+              {modelSwitcherItems.map((item) => (
+                <button
+                  className={modelProfile === item.profile ? "active" : ""}
+                  type="button"
+                  aria-pressed={modelProfile === item.profile}
+                  onClick={() => changeModelProfile(item.profile)}
+                  key={item.profile}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
             <div
               className={`model-profile-status${activeModelStatus?.configured ? " configured" : ""}${modelNeedsConfiguration ? " needs-configuration" : ""}`}

@@ -12,6 +12,17 @@ from app.settings import ModelProfile, OpenAIAPIStyle, PhilosophyOSSettings
 from app.storage.database import create_snapshot_engine
 
 
+SUPPORTED_MODEL_PROFILES: tuple[ModelProfile, ...] = (
+    "free",
+    "gpt",
+    "deepseek",
+    "qwen",
+    "kimi",
+    "zhipu",
+    "siliconflow",
+)
+
+
 def _now() -> datetime:
     return datetime.now(UTC)
 
@@ -25,9 +36,9 @@ def restore_settings(current_settings: PhilosophyOSSettings) -> None:
 
     for row in rows:
         profile = row["profile"]
-        if profile not in {"free", "gpt", "deepseek"}:
+        if profile not in SUPPORTED_MODEL_PROFILES:
             continue
-        prefix = {"free": "free", "gpt": "gpt", "deepseek": "deepseek"}[profile]
+        prefix = profile
         stored_api_key = row["api_key"]
         if stored_api_key:
             api_key = decrypt_api_key(stored_api_key)
@@ -99,7 +110,7 @@ def seed_profile_rows(current_settings: PhilosophyOSSettings) -> None:
         has_rows = connection.execute(select(ModelProfileConfig.profile).limit(1)).first()
     if has_rows is not None:
         return
-    for profile in ("free", "gpt", "deepseek"):
+    for profile in SUPPORTED_MODEL_PROFILES:
         selected = current_settings.model_copy(update={"model_profile": profile})
         save_profile(
             current_settings,
