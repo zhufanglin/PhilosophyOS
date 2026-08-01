@@ -69,6 +69,9 @@ type ModelProfileGuide = {
   description: string;
   signupUrl: string;
   signupLabel: string;
+  docsUrl: string;
+  docsLabel: string;
+  providerHint: string;
   defaultModel: string;
   modelOptions: string[];
   defaultBaseUrl: string;
@@ -81,6 +84,9 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
     description: "适合先免费体验，Key 在火山引擎方舟控制台创建。",
     signupUrl: "https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey",
     signupLabel: "打开火山方舟控制台",
+    docsUrl: "https://api.volcengine.com/api-docs/view?action=ChatCompletions&serviceCode=ark&version=2024-01-01",
+    docsLabel: "查看火山方舟 API 文档",
+    providerHint: "在火山方舟开通模型后，复制 API Key，并确认模型 ID 可用。",
     defaultModel: "doubao-seed-2-0-lite-260428",
     modelOptions: ["doubao-seed-2-0-lite-260428"],
     defaultBaseUrl: "https://ark.cn-beijing.volces.com/api/v3",
@@ -91,6 +97,9 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
     description: "使用 OpenAI 官方 API。需要在平台创建 API Key，费用由平台账户承担。",
     signupUrl: "https://platform.openai.com/api-keys",
     signupLabel: "打开 OpenAI API Keys",
+    docsUrl: "https://platform.openai.com/docs/quickstart",
+    docsLabel: "查看 OpenAI Quickstart",
+    providerHint: "在 OpenAI Platform 创建 Project API Key，Base URL 通常保持官方默认。",
     defaultModel: "gpt-5.6",
     modelOptions: ["gpt-5.6", "gpt-4.1-mini"],
     defaultBaseUrl: "https://api.openai.com/v1",
@@ -101,6 +110,9 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
     description: "使用 DeepSeek 官方平台创建 Key，可选择 Flash 或 Pro。",
     signupUrl: "https://platform.deepseek.com/api_keys",
     signupLabel: "打开 DeepSeek API Keys",
+    docsUrl: "https://api-docs.deepseek.com/zh-cn/",
+    docsLabel: "查看 DeepSeek API 文档",
+    providerHint: "DeepSeek 兼容 OpenAI Chat Completions，Base URL 默认是 https://api.deepseek.com。",
     defaultModel: "deepseek-v4-flash",
     modelOptions: ["deepseek-v4-flash", "deepseek-v4-pro"],
     defaultBaseUrl: "https://api.deepseek.com",
@@ -563,9 +575,15 @@ function App() {
                       {selected ? <strong>当前使用</strong> : null}
                     </div>
                     <p className="model-card-description">{guide.description}</p>
-                    <a className="provider-link" href={guide.signupUrl} target="_blank" rel="noreferrer">
-                      {guide.signupLabel}<span aria-hidden="true">↗</span>
-                    </a>
+                    <div className="provider-action-row" aria-label={`${guide.name} 官方入口`}>
+                      <a className="provider-link primary" href={guide.signupUrl} target="_blank" rel="noreferrer">
+                        {guide.signupLabel}<span aria-hidden="true">↗</span>
+                      </a>
+                      <a className="provider-link" href={guide.docsUrl} target="_blank" rel="noreferrer">
+                        {guide.docsLabel}<span aria-hidden="true">↗</span>
+                      </a>
+                    </div>
+                    <p className="provider-setup-hint">{guide.providerHint}</p>
                     <div className="model-config-fields">
                       <label>
                         <span>API Key</span>
