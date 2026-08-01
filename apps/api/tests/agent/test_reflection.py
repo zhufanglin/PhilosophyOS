@@ -226,3 +226,36 @@ def test_confirmed_draft_cannot_be_modified(
 
     with pytest.raises(ValueError, match="already confirmed"):
         workflow.revise_item(draft.id, viewpoint.id, "新的改写")
+
+
+def test_open_question_keeps_reason_and_can_be_rejected(
+    workflow: ReflectionWorkflow,
+    repository: InMemoryReflectionRepository,
+    conversation_id: UUID,
+) -> None:
+    """The user can reject a follow-up question before it enters memory."""
+
+    draft = workflow.create_draft(
+        conversation_id=conversation_id,
+        question="Should a promise always bind me?",
+        evidence=(evidence("I think promises matter, but exceptions are unclear."),),
+    )
+    viewpoint = item_for(draft.items, ReflectionSection.VIEWPOINT)
+    open_question = item_for(draft.items, ReflectionSection.OPEN_QUESTION)
+    assert open_question.decision_reason
+
+    rejected = workflow.reject_item(
+        draft.id,
+        open_question.id,
+        "This is not the question I want to continue.",
+    )
+    rejected_question = item_for(rejected.items, ReflectionSection.OPEN_QUESTION)
+    assert rejected_question.rejected
+    assert not rejected_question.selected
+    assert rejected_question.decision_reason == "This is not the question I want to continue."
+
+    workflow.set_item_selected(draft.id, viewpoint.id, selected=True)
+    confirmed = workflow.finalize(draft.id)
+
+    assert all(item.section is not ReflectionSection.OPEN_QUESTION for item in confirmed.items)
+    assert repository.memory_for(conversation_id) == (confirmed,)

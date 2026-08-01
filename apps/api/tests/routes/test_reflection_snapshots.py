@@ -90,6 +90,67 @@ async def test_reflection_snapshot_endpoint_persists_pending_without_api_key(
     assert stored["snapshot"]["snapshot_id"] == payload["snapshot_id"]
 
 
+
+
+@pytest.mark.anyio
+async def test_snapshot_generation_uses_reviewed_followup_choice(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Only a user-confirmed follow-up question can return to the Today page."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    configured_settings = PhilosophyOSSettings(
+        thought_snapshots_path=str(snapshot_path),
+        model_profile="free",
+        free_api_key="test-key",
+    )
+    monkeypatch.setattr(snapshot_routes, "settings", configured_settings)
+    monkeypatch.setattr(
+        snapshot_service,
+        "select_dialogue_provider",
+        lambda settings: SuccessfulSnapshotProvider(),
+    )
+
+    payload = snapshot_payload()
+    payload["selected_items"] = [
+        *payload["selected_items"],
+        {
+            "label": "Open question",
+            "text": "Which limits still allow responsibility?",
+            "origin": "ai",
+            "kind": "question",
+        },
+    ]
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        selected_response = await client.post("/api/v1/reflection-snapshots", json=payload)
+        unselected_payload = snapshot_payload()
+        unselected_response = await client.post(
+            "/api/v1/reflection-snapshots",
+            json=unselected_payload,
+        )
+        latest = await client.get("/api/v1/reflection-archive/next-question")
+        rejected_lookup = await client.get(
+            "/api/v1/reflection-archive/next-question",
+            params={"snapshot_id": unselected_response.json()["snapshot_id"]},
+        )
+
+    assert selected_response.status_code == 201
+    selected = selected_response.json()
+    assert selected["content"]["next_question"] == "Which limits still allow responsibility?"
+    assert selected["content"]["next_question_status"] == "approved"
+    assert selected["content"]["next_question_reason"]
+
+    assert unselected_response.status_code == 201
+    unselected = unselected_response.json()
+    assert unselected["content"]["next_question"] is None
+    assert unselected["content"]["next_question_status"] == "rejected"
+
+    assert latest.json()["snapshot_id"] == selected["snapshot_id"]
+    assert latest.json()["next_question_reason"]
+    assert rejected_lookup.json() is None
+
+
 @pytest.mark.anyio
 async def test_pending_snapshot_retries_in_place_and_preserves_user_evidence(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -753,6 +814,33 @@ async def test_next_question_endpoint_returns_latest_or_requested_followup(
         "完成的节点",
         None,
     )
+    repository.add(
+        created_at="2026-08-01T09:00:00+00:00",
+        request_payload={"question": "Rejected follow-up source"},
+        response_payload={
+            "snapshot_id": "snap_rejected_followup",
+            "status": "completed",
+            "content": {
+                "topic": "Rejected",
+                "title": "Rejected follow-up",
+                "user_position": "This follow-up was rejected.",
+                "confidence": 0.7,
+                "core_question": "Rejected follow-up source",
+                "key_insights": [],
+                "tensions": [],
+                "related_philosophers": [],
+                "change_signal": {"changed": False},
+                "next_question": "This should not return.",
+                "next_question_reason": "The user rejected it.",
+                "next_question_status": "rejected",
+                "tags": [],
+            },
+            "provider": "openai",
+            "provider_model": "test-model",
+            "pending_reason": None,
+        },
+    )
+
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         latest = await client.get("/api/v1/reflection-archive/next-question")

@@ -36,6 +36,14 @@ class SnapshotReviewVerdict(StrEnum):
     RAW_ONLY = "raw_only"
 
 
+class FollowUpQuestionStatus(StrEnum):
+    """Whether a follow-up question can return to the Today page."""
+
+    SUGGESTED = "suggested"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
 class ReflectionSnapshotReview(BaseModel):
     """User review metadata attached to a stored thought snapshot."""
 
@@ -76,6 +84,8 @@ class ReflectionSnapshotContent(BaseModel):
     related_philosophers: list[RelatedPhilosopher] = Field(default_factory=list, max_length=6)
     change_signal: ThoughtChangeSignal = Field(default_factory=ThoughtChangeSignal)
     next_question: str | None = Field(default=None, max_length=500)
+    next_question_reason: str | None = Field(default=None, max_length=500)
+    next_question_status: FollowUpQuestionStatus = FollowUpQuestionStatus.SUGGESTED
     tags: list[str] = Field(default_factory=list, max_length=10)
 
 
@@ -87,6 +97,8 @@ class ReflectionSnapshotRevision(BaseModel):
     previous_user_position: str
     previous_tensions: list[str]
     previous_next_question: str | None = None
+    previous_next_question_reason: str | None = None
+    previous_next_question_status: FollowUpQuestionStatus | None = None
 
 
 class ReflectionSnapshotRequest(BaseModel):
@@ -125,6 +137,8 @@ class ReflectionSnapshotCorrectionRequest(BaseModel):
     user_position: str = Field(min_length=1, max_length=1000)
     tensions: list[str] = Field(default_factory=list, max_length=6)
     next_question: str | None = Field(default=None, max_length=500)
+    next_question_reason: str | None = Field(default=None, max_length=500)
+    next_question_status: FollowUpQuestionStatus = FollowUpQuestionStatus.APPROVED
 
     @field_validator("tensions")
     @classmethod
@@ -224,6 +238,7 @@ class ReflectionNextQuestionItem(BaseModel):
     title: str
     question: str
     next_question: str
+    next_question_reason: str | None = None
     tension: str | None = None
     philosopher_names: list[str] = Field(default_factory=list)
 

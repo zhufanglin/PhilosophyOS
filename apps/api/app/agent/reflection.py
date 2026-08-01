@@ -55,6 +55,8 @@ class ReflectionItem:
     evidence_message_ids: tuple[UUID, ...] = ()
     selected: bool = False
     edited_by_user: bool = False
+    rejected: bool = False
+    decision_reason: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -219,7 +221,34 @@ class ReflectionWorkflow:
         current = _find_item(draft, item_id)
         if selected and current.origin is ReflectionOrigin.UNRESOLVED:
             raise ValueError("unresolved content must be edited before confirmation")
-        updated = _replace_item(draft, replace(current, selected=selected))
+        updated = _replace_item(
+            draft,
+            replace(
+                current,
+                selected=selected,
+                rejected=False if selected else current.rejected,
+            ),
+        )
+        self.repository.save_draft(updated)
+        return updated
+
+    def reject_item(self, draft_id: UUID, item_id: UUID, reason: str) -> ReflectionDraft:
+        """Record that the user rejected one AI suggestion or follow-up question."""
+
+        normalized_reason = reason.strip()
+        if not normalized_reason:
+            raise ValueError("rejection reason must not be blank")
+        draft = self._pending_draft(draft_id)
+        current = _find_item(draft, item_id)
+        updated = _replace_item(
+            draft,
+            replace(
+                current,
+                selected=False,
+                rejected=True,
+                decision_reason=normalized_reason,
+            ),
+        )
         self.repository.save_draft(updated)
         return updated
 
@@ -283,14 +312,27 @@ def _unresolved_item(section: ReflectionSection, text: str) -> ReflectionItem:
     )
 
 
-def _ai_item(section: ReflectionSection, text: str) -> ReflectionItem:
+def _ai_item(
+    section: ReflectionSection,
+    text: str,
+    *,
+    decision_reason: str | None = None,
+) -> ReflectionItem:
     """Build an AI suggestion that remains distinguishable after user edits."""
+
+    followup_reason = decision_reason
+    if followup_reason is None and section is ReflectionSection.OPEN_QUESTION:
+        followup_reason = (
+            "\u8fd9\u6761\u8ffd\u95ee\u4fdd\u7559\u4e86\u672c\u6b21\u5bf9\u8bdd\u5c1a\u672a\u89e3\u5f00\u7684\u5224\u65ad\u6807\u51c6\uff0c"
+            "\u9002\u5408\u4e0b\u6b21\u7ee7\u7eed\u68c0\u9a8c\u3002"
+        )
 
     return ReflectionItem(
         id=uuid4(),
         section=section,
         text=text,
         origin=ReflectionOrigin.AI_SUGGESTION,
+        decision_reason=followup_reason,
     )
 
 

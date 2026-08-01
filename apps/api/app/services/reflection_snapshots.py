@@ -16,6 +16,7 @@ from app.schemas.reflection_snapshots import (
     ReflectionArchiveDeleteResponse,
     ReflectionArchiveImportResponse,
     ReflectionArchivePackage,
+    FollowUpQuestionStatus,
     ReflectionArchiveRecord,
     ReflectionNextQuestionItem,
     ReflectionPhilosopherInfluence,
@@ -78,6 +79,44 @@ def build_snapshot_prompt(request: ReflectionSnapshotRequest) -> str:
         "\n}"
         "\n\n输入资料："
         f"\n{json.dumps(source_payload, ensure_ascii=False)}"
+    )
+
+
+
+def _reviewed_followup_item(request: ReflectionSnapshotRequest):
+    """Return the user-confirmed follow-up item, if the review selected one."""
+
+    for item in request.selected_items:
+        kind = (item.kind or "").strip().casefold()
+        label = item.label.strip().casefold()
+        if kind in {"question", "open_question"} or "question" in label or "??" in label:
+            return item
+    return None
+
+
+def apply_reviewed_followup_decision(
+    content: ReflectionSnapshotContent,
+    request: ReflectionSnapshotRequest,
+) -> ReflectionSnapshotContent:
+    """Make the saved follow-up reflect the user's review choice, not model invention."""
+
+    followup = _reviewed_followup_item(request)
+    if followup is None:
+        return content.model_copy(
+            update={
+                "next_question": None,
+                "next_question_reason": "\u7528\u6237\u672a\u786e\u8ba4 AI \u5efa\u8bae\u7684\u7ee7\u7eed\u8ffd\u95ee\uff0c\u56e0\u6b64\u4e0d\u8fdb\u5165\u4eca\u65e5\u9875\u63a8\u8350\u3002",
+                "next_question_status": FollowUpQuestionStatus.REJECTED,
+            }
+        )
+
+    reason = content.next_question_reason or "\u7528\u6237\u5728\u4fdd\u5b58\u524d\u786e\u8ba4\u6216\u4fee\u8ba2\u4e86\u8fd9\u6761\u8ffd\u95ee\uff0c\u53ef\u4f5c\u4e3a\u4e0b\u6b21\u601d\u8003\u5165\u53e3\u3002"
+    return content.model_copy(
+        update={
+            "next_question": followup.text.strip(),
+            "next_question_reason": reason,
+            "next_question_status": FollowUpQuestionStatus.APPROVED,
+        }
     )
 
 
@@ -444,7 +483,12 @@ def get_next_reflection_question(
             continue
         content = response.content
         next_question = content.next_question.strip() if content and content.next_question else ""
-        if response.status != SnapshotStatus.COMPLETED or content is None or not next_question:
+        if (
+            response.status != SnapshotStatus.COMPLETED
+            or content is None
+            or not next_question
+            or content.next_question_status is FollowUpQuestionStatus.REJECTED
+        ):
             continue
         return ReflectionNextQuestionItem(
             snapshot_id=response.snapshot_id,
@@ -453,6 +497,7 @@ def get_next_reflection_question(
             title=content.title,
             question=record.question,
             next_question=next_question,
+            next_question_reason=content.next_question_reason,
             tension=content.tensions[0] if content.tensions else None,
             philosopher_names=[item.name for item in content.related_philosophers],
         )
@@ -574,7 +619,10 @@ def generate_snapshot_response(
 
     try:
         provider_response = provider.generate(provider_request)
-        content = parse_snapshot_content(provider_response.assistant_message)
+        content = apply_reviewed_followup_decision(
+            parse_snapshot_content(provider_response.assistant_message),
+            request,
+        )
     except (Exception, ValidationError, json.JSONDecodeError) as error:
         return ReflectionSnapshotResponse(
             snapshot_id=snapshot_id,
@@ -657,12 +705,16 @@ def correct_reflection_snapshot(
         previous_user_position=previous.user_position,
         previous_tensions=previous.tensions,
         previous_next_question=previous.next_question,
+        previous_next_question_reason=previous.next_question_reason,
+        previous_next_question_status=previous.next_question_status,
     )
     corrected_content = previous.model_copy(
         update={
             "user_position": correction.user_position,
             "tensions": correction.tensions,
             "next_question": correction.next_question,
+            "next_question_reason": correction.next_question_reason,
+            "next_question_status": correction.next_question_status,
         }
     )
     corrected = existing.model_copy(

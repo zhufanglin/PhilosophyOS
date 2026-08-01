@@ -6,6 +6,7 @@ from collections import Counter
 from datetime import UTC, date, datetime, timedelta
 
 from app.schemas.reflection_snapshots import (
+    FollowUpQuestionStatus,
     ReflectionSnapshotResponse,
     ReflectionWeeklyReportDraft,
     ReflectionWeeklyReportSource,
@@ -155,7 +156,7 @@ def _render_report_markdown(
             previous = content.change_signal.previous_position or "\u6b64\u524d\u7acb\u573a\u672a\u660e\u786e"
             current = content.change_signal.current_position or content.user_position
             changes.append(f"\u4ece\u201c{previous}\u201d\u79fb\u52a8\u5230\u201c{current}\u201d\u3002")
-        if content.next_question:
+        if content.next_question and content.next_question_status is not FollowUpQuestionStatus.REJECTED:
             next_questions.append(content.next_question)
 
     dominant_topics = _counter_labels(topics, fallback="\u672c\u5468\u4e3b\u9898\u4ecd\u5728\u5f62\u6210")

@@ -63,7 +63,7 @@
 - **Acceptance:** 用户可生成周报草稿；草稿不自动进入长期档案；内容包含来源节点；没有足够数据时不伪造报告。
 - **Dependencies:** 1.3
 
-### 1.5 [ ] 反问质量机制
+### 1.5 [x] 反问质量机制 *(completed 2026-08-01)*
 - **Files:** `apps/api/app/agent/reflection.py`, `apps/api/app/services/reflection_snapshots.py`, `apps/web/src/pages/DialoguePage.tsx`, `apps/api/tests/agent/`
 - **What:** 在每次对话总结中明确保存“最值得继续追问的问题”和原因，用于今日页复访和周报。
 - **Acceptance:** 新思想节点包含可追踪的继续追问；用户可修改或拒绝 AI 提出的追问；追问不会在用户拒绝后继续进入推荐。

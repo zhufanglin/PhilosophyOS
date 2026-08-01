@@ -57,6 +57,8 @@ type ReflectionSnapshotResponse = {
     user_position: string;
     tensions: string[];
     next_question: string | null;
+    next_question_reason?: string | null;
+    next_question_status?: "suggested" | "approved" | "rejected";
   } | null;
 };
 
@@ -167,6 +169,7 @@ export function ReflectionReview({
   const [correctedPosition, setCorrectedPosition] = useState("");
   const [correctedTensions, setCorrectedTensions] = useState("");
   const [correctedNextQuestion, setCorrectedNextQuestion] = useState("");
+  const [correctedNextQuestionReason, setCorrectedNextQuestionReason] = useState("");
   const selectedItems = useMemo(() => items.filter((item) => item.selected), [items]);
   const canSave = selectedItems.some(
     (item) => item.kind === "viewpoint" && item.origin === "user",
@@ -177,6 +180,7 @@ export function ReflectionReview({
     setCorrectedPosition(snapshotResult.content.user_position);
     setCorrectedTensions(snapshotResult.content.tensions.join("\n"));
     setCorrectedNextQuestion(snapshotResult.content.next_question ?? "");
+    setCorrectedNextQuestionReason(snapshotResult.content.next_question_reason ?? "");
   }, [snapshotResult?.content]);
 
   function updateItem(itemId: string, update: Partial<ReviewItem>) {
@@ -208,6 +212,7 @@ export function ReflectionReview({
       label: item.label,
       text: item.text,
       origin: item.origin === "ai" ? "ai" : "user",
+      kind: item.kind,
     }));
   }
 
@@ -303,6 +308,8 @@ export function ReflectionReview({
             user_position: correctedPosition.trim(),
             tensions: correctedTensions.split("\n").map((value) => value.trim()).filter(Boolean),
             next_question: correctedNextQuestion.trim() || null,
+            next_question_reason: correctedNextQuestionReason.trim() || null,
+            next_question_status: correctedNextQuestion.trim() ? "approved" : "rejected",
           }),
         },
       );
@@ -406,6 +413,14 @@ export function ReflectionReview({
               <>
                 <span>{snapshotResult.content.title}</span>
                 <p>{snapshotResult.content.user_position}</p>
+                {snapshotResult.content.next_question ? (
+                  <em className="snapshot-followup-line">
+                    {"\u4e0b\u6b21\u8ffd\u95ee\uff1a"}{snapshotResult.content.next_question}
+                    {snapshotResult.content.next_question_reason ? ` ? ${snapshotResult.content.next_question_reason}` : ""}
+                  </em>
+                ) : snapshotResult.content.next_question_status === "rejected" ? (
+                  <em className="snapshot-followup-line">{"\u8fd9\u6761 AI \u8ffd\u95ee\u5df2\u88ab\u62d2\u7edd\uff0c\u4e0d\u4f1a\u56de\u5230\u4eca\u65e5\u9875\u63a8\u8350\u3002"}</em>
+                ) : null}
               </>
             ) : (
               <>
@@ -465,8 +480,12 @@ export function ReflectionReview({
                       <textarea rows={3} value={correctedTensions} onChange={(event) => setCorrectedTensions(event.target.value)} />
                     </label>
                     <label>
-                      <span>下一步问题</span>
+                      <span>{"\u4e0b\u4e00\u6b65\u8ffd\u95ee\uff08\u6e05\u7a7a\u5c31\u8868\u793a\u62d2\u7edd\u8fd9\u6761\u8ffd\u95ee\uff09"}</span>
                       <textarea rows={2} value={correctedNextQuestion} onChange={(event) => setCorrectedNextQuestion(event.target.value)} />
+                    </label>
+                    <label>
+                      <span>{"\u4e3a\u4ec0\u4e48\u8fd9\u6761\u8ffd\u95ee\u503c\u5f97\u7ee7\u7eed"}</span>
+                      <textarea rows={2} value={correctedNextQuestionReason} onChange={(event) => setCorrectedNextQuestionReason(event.target.value)} />
                     </label>
                     <button type="button" disabled={!correctedPosition.trim() || savingCorrection} onClick={() => void saveSnapshotCorrection()}>
                       {savingCorrection ? "正在写入" : "保存修正版本"}
@@ -575,6 +594,13 @@ function ReviewItemRow({ item, onToggle, onEdit, onSave }: ReviewItemRowProps) {
             {item.origin === "ai" ? "AI 来源" : item.origin === "user" ? "用户原文" : "主体待确认"}
           </span>
         </div>
+        {item.kind === "question" ? (
+          <small className="review-followup-hint">
+            {item.selected
+              ? "\u5df2\u9009\u4e2d\uff1a\u8fd9\u6761\u8ffd\u95ee\u4f1a\u6210\u4e3a\u4eca\u65e5\u9875\u53ef\u7ee7\u7eed\u5165\u53e3\u3002"
+              : "\u672a\u9009\u4e2d\uff1a\u8868\u793a\u62d2\u7edd AI \u8ffd\u95ee\uff0c\u4e0d\u4f1a\u8fdb\u5165\u4eca\u65e5\u9875\u63a8\u8350\u3002"}
+          </small>
+        ) : null}
         {item.editing ? (
           <textarea
             rows={3}

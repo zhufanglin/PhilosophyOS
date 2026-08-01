@@ -22,6 +22,7 @@ class ObsidianDraftItem(BaseModel):
     label: str = Field(min_length=1, max_length=80)
     text: str = Field(min_length=1, max_length=2000)
     origin: DraftItemOrigin
+    kind: str | None = Field(default=None, max_length=40)
 
 
 class ObsidianDraftRequest(BaseModel):
