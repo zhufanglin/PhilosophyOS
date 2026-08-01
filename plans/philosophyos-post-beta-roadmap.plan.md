@@ -75,7 +75,7 @@
 
 **Why this matters:** Obsidian 是高级用户的长期知识资产。写入能力必须可预览、可确认、可撤销，不允许任何自动覆盖。
 
-### 2.1 [ ] 合成 Obsidian 仓库与解析器
+### 2.1 [x] 合成 Obsidian 仓库与解析器 *(completed 2026-08-01)*
 - **Files:** `tests/fixtures/obsidian-vault/`, `apps/api/app/vault/parser.py`, `apps/api/tests/vault/test_parser.py`
 - **What:** 建立合成仓库，解析 YAML、标签、双向链接、章节、任务和开放问题。
 - **Acceptance:** 不读取 `.obsidian`；开放问题提取准确；解析器单测覆盖隐私排除目录。
