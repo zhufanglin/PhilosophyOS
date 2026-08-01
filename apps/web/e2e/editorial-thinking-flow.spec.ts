@@ -27,7 +27,7 @@ async function mockModelProfiles(page: Page) {
         profiles: [
           {
             profile: "free",
-            label: "豆包",
+            label: "Doubao / Volcano Ark",
             configured: true,
             model: "doubao-seed-2-0-lite-260428",
             base_url_host: "ark.cn-beijing.volces.com",
@@ -60,7 +60,7 @@ async function mockModelProfiles(page: Page) {
       body: JSON.stringify({
         selected_profile: selectedProfile,
         profiles: [
-          { profile: "free", label: "豆包", configured: true, model: "doubao-seed-2-0-lite-260428", base_url_host: "ark.cn-beijing.volces.com", api_style: "responses" },
+          { profile: "free", label: "Doubao / Volcano Ark", configured: true, model: "doubao-seed-2-0-lite-260428", base_url_host: "ark.cn-beijing.volces.com", api_style: "responses" },
           { profile: "gpt", label: "GPT", configured: true, model: "gpt-5.6", base_url_host: "api.synapai.top", api_style: "responses" },
           { profile: "deepseek", label: "DeepSeek", configured: true, model: "deepseek-v4-flash", base_url_host: "api.deepseek.com", api_style: "chat_completions" },
         ],
@@ -415,7 +415,7 @@ async function mockDialogueTurnWithDeepSeekFailureThenFreeSuccess(page: Page) {
         previous_mode: request.requested_mode ?? "socratic",
         switched: false,
         switch_reason: "mocked free fallback response",
-        assistant_message: `豆包兜底回答：第 ${request.turn_number ?? 1} 轮已经恢复。`,
+        assistant_message: `Doubao 兜底回答：第 ${request.turn_number ?? 1} 轮已经恢复。`,
         primary_question: "我们继续检验这个理由。",
         should_ask_followup: true,
         evidence_status: null,
@@ -503,7 +503,7 @@ test("editorial thinking flow works from today to saved reflection", async ({ pa
   await page.locator(".start-button").click();
   await expect(page.locator(".dialogue-page")).toBeVisible();
 
-  await expect(page.getByRole("button", { name: "豆包", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Doubao", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "DeepSeek", exact: true }).click();
   await expect(page.getByRole("button", { name: "DeepSeek", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "打开设置中心" }).click();
@@ -748,11 +748,11 @@ test("deepseek failure can switch to free model without duplicating the user tur
   await expect(page.locator(".dialogue-retry-notice")).toContainText("DeepSeek 暂时不可用");
   await expect(page.locator(".message.assistant")).toHaveCount(1);
 
-  await page.getByRole("button", { name: "切换到豆包并重试" }).click();
-  await expect(page.getByRole("button", { name: "豆包", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "切换到 Doubao 并重试" }).click();
+  await expect(page.getByRole("button", { name: "Doubao", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".message.user")).toHaveCount(1);
   await expect(page.locator(".message.assistant")).toHaveCount(2);
-  await expect(page.locator(".message.assistant").last()).toContainText("豆包兜底回答");
+  await expect(page.locator(".message.assistant").last()).toContainText("Doubao 兜底回答");
   expect(requestedProfiles).toEqual(["deepseek", "free"]);
   expect(consoleProblems.warnings).toEqual([]);
   expect(consoleProblems.errors).toEqual([]);

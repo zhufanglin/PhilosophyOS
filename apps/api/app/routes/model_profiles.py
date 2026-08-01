@@ -21,22 +21,22 @@ from app.storage.model_profile_repository import save_profile
 router = APIRouter(prefix="/api/v1", tags=["model-profiles"])
 
 MODEL_PROFILE_ORDER: tuple[ModelProfile, ...] = (
-    "free",
-    "gpt",
     "deepseek",
-    "qwen",
+    "free",
     "kimi",
-    "zhipu",
+    "gpt",
+    "qwen",
     "siliconflow",
+    "zhipu",
 )
 MODEL_PROFILE_LABELS: dict[ModelProfile, str] = {
-    "free": "豆包",
-    "gpt": "GPT",
     "deepseek": "DeepSeek",
-    "qwen": "通义千问",
-    "kimi": "Kimi",
-    "zhipu": "智谱 GLM",
-    "siliconflow": "硅基流动",
+    "free": "Doubao / Volcano Ark",
+    "kimi": "Kimi / Moonshot AI",
+    "gpt": "OpenAI",
+    "qwen": "Qwen / Alibaba Cloud Bailian",
+    "siliconflow": "SiliconFlow",
+    "zhipu": "Zhipu GLM",
 }
 
 

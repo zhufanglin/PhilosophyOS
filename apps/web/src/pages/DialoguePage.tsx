@@ -94,23 +94,23 @@ const modes = [
 ];
 
 const modelProfileLabels: Record<ModelProfile, string> = {
-  free: "豆包",
-  gpt: "GPT",
   deepseek: "DeepSeek",
-  qwen: "通义千问",
-  kimi: "Kimi",
-  zhipu: "智谱 GLM",
-  siliconflow: "硅基流动",
+  free: "Doubao / Volcano Ark",
+  kimi: "Kimi / Moonshot AI",
+  gpt: "OpenAI",
+  qwen: "Qwen / Alibaba Cloud Bailian",
+  siliconflow: "SiliconFlow",
+  zhipu: "Zhipu GLM",
 };
 
 const modelFailureGuidance: Record<ModelProfile, string> = {
-  free: "豆包暂时不可用，请检查火山方舟配置，或稍后再试。",
-  gpt: "GPT 暂时不可用，你可以切换到豆包继续，或稍后再试。",
-  deepseek: "DeepSeek 暂时不可用，你可以切换到豆包继续，或稍后再试。",
-  qwen: "通义千问暂时不可用，你可以切换到豆包继续，或稍后再试。",
-  kimi: "Kimi 暂时不可用，你可以切换到豆包继续，或稍后再试。",
-  zhipu: "智谱 GLM 暂时不可用，你可以切换到豆包继续，或稍后再试。",
-  siliconflow: "硅基流动暂时不可用，你可以切换到豆包继续，或稍后再试。",
+  free: "Doubao / Volcano Ark 暂时不可用，请检查火山方舟配置，或稍后再试。",
+  gpt: "OpenAI 暂时不可用，你可以切换到 Doubao 继续，或稍后再试。",
+  deepseek: "DeepSeek 暂时不可用，你可以切换到 Doubao 继续，或稍后再试。",
+  qwen: "Qwen 暂时不可用，你可以切换到 Doubao 继续，或稍后再试。",
+  kimi: "Kimi 暂时不可用，你可以切换到 Doubao 继续，或稍后再试。",
+  zhipu: "Zhipu GLM 暂时不可用，你可以切换到 Doubao 继续，或稍后再试。",
+  siliconflow: "SiliconFlow 暂时不可用，你可以切换到 Doubao 继续，或稍后再试。",
 };
 
 const sources: DialogueSource[] = [

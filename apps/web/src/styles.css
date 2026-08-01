@@ -301,9 +301,12 @@ textarea:focus-visible {
 
 .model-switcher {
   display: inline-flex;
+  max-width: min(48vw, 620px);
   align-items: center;
   gap: 3px;
+  overflow-x: auto;
   padding: 3px;
+  scrollbar-width: thin;
   border: 1px solid var(--rule);
   border-radius: 999px;
   background:
@@ -321,7 +324,7 @@ textarea:focus-visible {
 }
 
 .model-switcher button {
-  min-width: 52px;
+  min-width: max-content;
   padding: 0 11px;
   height: 28px;
   border: 0;
@@ -579,9 +582,18 @@ textarea:focus-visible {
   line-height: 1.65;
 }
 
+.settings-section-heading .settings-user-path {
+  max-width: 820px;
+  padding: 10px 12px;
+  border-left: 2px solid rgb(40 86 64 / 34%);
+  border-radius: 10px;
+  color: var(--ink-soft);
+  background: rgb(223 233 225 / 46%);
+}
+
 .model-profile-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 14px;
   margin-top: 0;
 }

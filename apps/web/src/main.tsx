@@ -80,7 +80,7 @@ type ModelProfileGuide = {
 
 const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
   free: {
-    name: "豆包 / 火山方舟",
+    name: "Doubao / Volcano Ark",
     description: "默认的低门槛模型入口，适合先完成本地体验与端到端测试。",
     signupUrl: "https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey",
     signupLabel: "打开火山方舟控制台",
@@ -93,7 +93,7 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
     apiStyle: "responses",
   },
   gpt: {
-    name: "GPT / OpenAI",
+    name: "OpenAI",
     description: "使用 OpenAI 官方 API。适合高质量推理、英文资料整理和稳定商业接入。",
     signupUrl: "https://platform.openai.com/api-keys",
     signupLabel: "打开 OpenAI API Keys",
@@ -119,7 +119,7 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
     apiStyle: "chat_completions",
   },
   qwen: {
-    name: "通义千问 / 阿里百炼",
+    name: "Qwen / Alibaba Cloud Bailian",
     description: "适合中文任务、企业云账号和阿里云生态用户。",
     signupUrl: "https://bailian.console.aliyun.com/?tab=model#/api-key",
     signupLabel: "打开阿里百炼 API Key",
@@ -132,7 +132,7 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
     apiStyle: "chat_completions",
   },
   kimi: {
-    name: "Kimi / 月之暗面",
+    name: "Kimi / Moonshot AI",
     description: "适合长上下文阅读、中文材料分析和轻量知识整理。",
     signupUrl: "https://platform.moonshot.cn/console/api-keys",
     signupLabel: "打开 Kimi API Keys",
@@ -145,7 +145,7 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
     apiStyle: "chat_completions",
   },
   zhipu: {
-    name: "智谱 GLM",
+    name: "Zhipu GLM",
     description: "适合中文通用问答、知识抽取和国内平台部署路线。",
     signupUrl: "https://bigmodel.cn/usercenter/proj-mgmt/apikeys",
     signupLabel: "打开智谱 API Keys",
@@ -158,7 +158,7 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
     apiStyle: "chat_completions",
   },
   siliconflow: {
-    name: "硅基流动 / SiliconFlow",
+    name: "SiliconFlow",
     description: "适合聚合开源与国产模型，方便快速试用不同模型。",
     signupUrl: "https://cloud.siliconflow.cn/account/ak",
     signupLabel: "打开硅基流动 API Keys",
@@ -174,13 +174,13 @@ const modelProfileGuides: Record<ModelProfile, ModelProfileGuide> = {
 
 
 const modelSwitcherItems: Array<{ profile: ModelProfile; label: string }> = [
-  { profile: "free", label: "豆包" },
-  { profile: "gpt", label: "GPT" },
   { profile: "deepseek", label: "DeepSeek" },
-  { profile: "qwen", label: "千问" },
+  { profile: "free", label: "Doubao" },
   { profile: "kimi", label: "Kimi" },
-  { profile: "zhipu", label: "GLM" },
-  { profile: "siliconflow", label: "硅基" },
+  { profile: "gpt", label: "OpenAI" },
+  { profile: "qwen", label: "Qwen" },
+  { profile: "siliconflow", label: "SiliconFlow" },
+  { profile: "zhipu", label: "Zhipu" },
 ];
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8001";
@@ -588,7 +588,7 @@ function App() {
           <section className="settings-ledger" aria-label="设置概览">
             <article>
               <span>当前模型</span>
-              <strong>{activeModelStatus?.label ?? "免费模型"}</strong>
+              <strong>{activeModelStatus?.label ?? "Doubao / Volcano Ark"}</strong>
               <p>{modelStatusCopy}</p>
             </article>
             <article>
@@ -608,6 +608,7 @@ function App() {
               <span>01 / MODEL API</span>
               <h3 id="settings-model-title">模型与 API</h3>
               <p>在这里填写自己的 API。官方申请入口会标在每张卡片里，Key 只发送给本机后端保存。</p>
+              <p className="settings-user-path">普通用户路径：后续商业版应默认使用 PhilosophyOS 托管额度；API Key 配置只作为高级/开发者入口。</p>
             </div>
             <div className="model-profile-grid">
               {orderedModelProfiles.map((profile) => {
