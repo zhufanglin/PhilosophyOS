@@ -46,7 +46,7 @@ PhilosophyOS 已经完成 Beta 后的关键安全边界：模型 Key 不回传�
 - **What:** 在后端模型中为未来账号、工作区、多用户隔离建立最小字段与迁移路线。
 - **Acceptance:** 现有单机 Beta 不破坏；新增字段有默认/迁移策略；测试覆盖隔离边界。
 
-### 2.2 [ ] 设计本地账户与云账户切换边界
+### 2.2 [x] 设计本地账户与云账户切换边界 *(completed 2026-08-01)*
 
 - **Files:** `docs/architecture/knowledge-model.md`, `docs/product/mvp-scope.md`, `plans/`
 - **What:** 明确本地模式、云同步模式、团队工作区模式的权限和数据流差异。
