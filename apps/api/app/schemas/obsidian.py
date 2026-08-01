@@ -80,3 +80,14 @@ class ObsidianDraftConfirmResponse(BaseModel):
     new_sha256: str
     audit_path: str
     message: str
+
+
+class ObsidianDraftUndoResponse(BaseModel):
+    """Undo metadata safe for the frontend."""
+
+    file_name: str
+    absolute_path: str
+    restored_sha256: str
+    removed_file: bool
+    audit_path: str
+    message: str

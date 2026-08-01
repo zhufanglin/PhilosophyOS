@@ -16,6 +16,7 @@ from app.routes.obsidian import (
 from app.schemas.obsidian import ObsidianDraftRequest
 from app.settings import PhilosophyOSSettings
 from app.settings import settings as runtime_settings
+from app.vault.drafts import sha256_text
 
 
 def sample_draft_request() -> ObsidianDraftRequest:
@@ -166,3 +167,58 @@ async def test_obsidian_confirm_endpoint_blocks_conflict(tmp_path: Path, monkeyp
 
     assert confirm_response.status_code == 409
     assert target_path.read_text(encoding="utf-8") == "changed after preview\n"
+
+
+@pytest.mark.anyio
+async def test_obsidian_undo_latest_endpoint_restores_previous_version(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Undo endpoint restores the previous Markdown after a confirmed write."""
+
+    monkeypatch.setattr(runtime_settings, "obsidian_drafts_dir", str(tmp_path))
+    target_path = tmp_path / "manual.md"
+    original_markdown = "# Before\n"
+    target_path.write_text(original_markdown, encoding="utf-8")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        confirm_response = await client.post(
+            "/api/v1/obsidian-drafts/confirm",
+            json={
+                "target_path": str(target_path),
+                "markdown": "# After\n",
+                "expected_current_sha256": sha256_text(original_markdown),
+            },
+        )
+        undo_response = await client.post("/api/v1/obsidian-drafts/undo-latest")
+
+    assert confirm_response.status_code == 201
+    assert undo_response.status_code == 200
+    assert target_path.read_text(encoding="utf-8") == "# Before\n"
+    assert undo_response.json()["removed_file"] is False
+
+
+@pytest.mark.anyio
+async def test_obsidian_undo_latest_endpoint_blocks_user_changes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Undo endpoint refuses to overwrite user edits made after the AI write."""
+
+    monkeypatch.setattr(runtime_settings, "obsidian_drafts_dir", str(tmp_path))
+    target_path = tmp_path / "manual.md"
+    original_markdown = ""
+    target_path.write_text(original_markdown, encoding="utf-8")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        await client.post(
+            "/api/v1/obsidian-drafts/confirm",
+            json={
+                "target_path": str(target_path),
+                "markdown": "# AI write\n",
+                "expected_current_sha256": sha256_text(original_markdown),
+            },
+        )
+        target_path.write_text("# User changed it\n", encoding="utf-8")
+        undo_response = await client.post("/api/v1/obsidian-drafts/undo-latest")
+
+    assert undo_response.status_code == 409
+    assert target_path.read_text(encoding="utf-8") == "# User changed it\n"

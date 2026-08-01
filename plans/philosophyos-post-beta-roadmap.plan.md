@@ -87,7 +87,7 @@
 - **Acceptance:** 未确认写入为 0；冲突时阻止写入；写入后保留审计记录。
 - **Dependencies:** 2.1
 
-### 2.3 [ ] 撤销最近一次 AI 写入
+### 2.3 [x] 撤销最近一次 AI 写入 *(completed 2026-08-01)*
 - **Files:** `apps/api/app/vault/writer.py`, `apps/api/app/models/audit.py`, `apps/api/tests/vault/test_writer.py`
 - **What:** 记录写入前哈希和备份，支持撤销最近一次 AI 写入。
 - **Acceptance:** 撤销后文件哈希与写入前一致；失败时不破坏当前文件。

@@ -15,10 +15,16 @@ from app.schemas.obsidian import (
     ObsidianDraftPreviewResponse,
     ObsidianDraftRequest,
     ObsidianDraftResponse,
+    ObsidianDraftUndoResponse,
 )
 from app.settings import PhilosophyOSSettings, settings
 from app.vault.drafts import build_obsidian_draft_preview
-from app.vault.writer import VaultWriteConflictError, confirm_markdown_write
+from app.vault.writer import (
+    VaultUndoUnavailableError,
+    VaultWriteConflictError,
+    confirm_markdown_write,
+    undo_latest_confirmed_write,
+)
 
 router = APIRouter(prefix="/api/v1", tags=["obsidian"])
 
@@ -201,4 +207,39 @@ async def confirm_obsidian_draft_endpoint(
         new_sha256=result.new_sha256,
         audit_path=result.audit_path,
         message="Obsidian draft written after explicit confirmation.",
+    )
+
+
+@router.post(
+    "/obsidian-drafts/undo-latest",
+    response_model=ObsidianDraftUndoResponse,
+    summary="Undo the latest confirmed Obsidian Markdown write",
+)
+async def undo_latest_obsidian_draft_endpoint() -> ObsidianDraftUndoResponse:
+    """Undo the latest audited write if the target file was not changed afterwards."""
+
+    try:
+        result = undo_latest_confirmed_write(settings.obsidian_drafts_dir)
+    except VaultWriteConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+    except VaultUndoUnavailableError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+
+    return ObsidianDraftUndoResponse(
+        file_name=result.file_name,
+        absolute_path=result.absolute_path,
+        restored_sha256=result.restored_sha256,
+        removed_file=result.removed_file,
+        audit_path=result.audit_path,
+        message=(
+            "Latest Obsidian AI write was removed."
+            if result.removed_file
+            else "Latest Obsidian AI write was restored to its previous version."
+        ),
     )

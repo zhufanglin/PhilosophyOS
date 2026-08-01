@@ -11,6 +11,7 @@ from app.schemas.obsidian import ObsidianDraftRequest
 from app.settings import PhilosophyOSSettings
 from app.vault.drafts import build_obsidian_draft_preview, build_markdown_diff, sha256_text
 from app.vault.writer import AUDIT_FILE_NAME, VaultWriteConflictError, confirm_markdown_write
+from app.vault.writer import undo_latest_confirmed_write
 
 
 def sample_request() -> ObsidianDraftRequest:
@@ -93,3 +94,59 @@ def test_markdown_diff_is_structured() -> None:
         ("context", 2, 3, "beta"),
     ]
 
+
+def test_undo_latest_confirmed_write_restores_previous_file(tmp_path: Path) -> None:
+    target_path = tmp_path / "existing.md"
+    original_markdown = "# Original\n\nHuman text.\n"
+    target_path.write_text(original_markdown, encoding="utf-8")
+
+    result = confirm_markdown_write(
+        target_path=target_path,
+        markdown="# Changed\n\nAI text.\n",
+        expected_current_sha256=sha256_text(original_markdown),
+    )
+    undo = undo_latest_confirmed_write(tmp_path)
+
+    assert target_path.read_text(encoding="utf-8") == original_markdown
+    assert undo.restored_sha256 == sha256_text(original_markdown)
+    assert undo.removed_file is False
+    assert Path(result.backup_path or "").exists()
+    audit_records = [
+        json.loads(line)
+        for line in (tmp_path / AUDIT_FILE_NAME).read_text(encoding="utf-8").splitlines()
+    ]
+    assert audit_records[-1]["operation"] == "undo_confirmed_markdown_write"
+
+
+def test_undo_latest_confirmed_write_removes_file_created_by_write(tmp_path: Path) -> None:
+    target_path = tmp_path / "new.md"
+    written_markdown = "# New\n\nAI text.\n"
+
+    confirm_markdown_write(
+        target_path=target_path,
+        markdown=written_markdown,
+        expected_current_sha256=sha256_text(""),
+    )
+    undo = undo_latest_confirmed_write(tmp_path)
+
+    assert not target_path.exists()
+    assert undo.restored_sha256 == sha256_text("")
+    assert undo.removed_file is True
+
+
+def test_undo_latest_confirmed_write_blocks_modified_target(tmp_path: Path) -> None:
+    target_path = tmp_path / "existing.md"
+    original_markdown = "# Original\n"
+    target_path.write_text(original_markdown, encoding="utf-8")
+
+    confirm_markdown_write(
+        target_path=target_path,
+        markdown="# Changed by AI\n",
+        expected_current_sha256=sha256_text(original_markdown),
+    )
+    target_path.write_text("# Changed by user after AI\n", encoding="utf-8")
+
+    with pytest.raises(VaultWriteConflictError):
+        undo_latest_confirmed_write(tmp_path)
+
+    assert target_path.read_text(encoding="utf-8") == "# Changed by user after AI\n"
