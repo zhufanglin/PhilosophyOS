@@ -20,9 +20,9 @@ PhilosophyOS 已经完成 Beta 后的关键安全边界：模型 Key 不回传�
 - **What:** 在模型配置卡片中增加官方 Key 获取入口、API 文档入口和接入提示；保留 Key 只提交给本机后端、不回传前端的边界。
 - **Acceptance:** OpenAI、DeepSeek、豆包/火山方舟三类配置都能看到“拿 Key / 看文档 / 填 Key、Model、Base URL”的完整路径；前端构建通过。
 
-### 1.2 [ ] 增加模型配置的空状态引导
+### 1.2 [x] 增加模型配置的空状态引导 *(completed 2026-08-01)*
 
-- **Files:** `apps/web/src/main.tsx`, `apps/web/src/styles.css`
+- **Files:** `apps/web/src/main.tsx`, `apps/web/src/pages/DialoguePage.tsx`, `apps/web/src/styles.css`
 - **What:** 当当前模型未配置时，在顶部状态与对话失败提示中给出更明确的“去设置中心配置 API”的路径。
 - **Acceptance:** 用户选择未配置模型时，不会只看到失败，而能直接打开设置中心完成配置。
 
@@ -59,4 +59,3 @@ PhilosophyOS 已经完成 Beta 后的关键安全边界：模型 Key 不回传�
 - **Files:** `apps/web/src/pages/ThoughtArchivePage.tsx`, `apps/web/src/styles.css`
 - **What:** 继续优化群落翻页、节点文字避让、交互状态恢复与缩放体验。
 - **Acceptance:** 图谱更接近 Obsidian 网状知识图，不再像单中心发散图。
-

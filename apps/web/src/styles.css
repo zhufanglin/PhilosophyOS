@@ -256,14 +256,42 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0;
+  border: 0;
   color: var(--ink-muted);
+  background: transparent;
   font-size: 0.68rem;
+  text-align: left;
+}
+
+.api-status.needs-configuration {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid rgb(176 141 87 / 24%);
+  border-radius: 999px;
+  color: #7b5b31;
+  background: rgb(255 250 239 / 74%);
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.api-status.needs-configuration:hover {
+  border-color: rgb(176 141 87 / 42%);
+  background: rgb(255 246 226 / 92%);
+  transform: translateY(-1px);
 }
 
 .api-status strong {
   color: var(--ink-soft);
   font-size: 0.72rem;
   font-weight: 650;
+}
+
+.api-status.needs-configuration strong {
+  color: #6c4b26;
 }
 
 .api-version {
@@ -356,6 +384,18 @@ textarea:focus-visible {
 
 .model-profile-status.configured strong {
   color: var(--forest);
+}
+
+.model-profile-status.needs-configuration {
+  border-left-color: rgb(176 141 87 / 44%);
+}
+
+.model-profile-status.needs-configuration span {
+  color: #9a6b30;
+}
+
+.model-profile-status.needs-configuration strong {
+  color: #7b5b31;
 }
 
 .model-profile-status button {
@@ -608,6 +648,17 @@ textarea:focus-visible {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.model-profile-status.needs-configuration button {
+  border-color: rgb(40 86 64 / 26%);
+  color: #fff;
+  background: var(--forest);
+}
+
+.model-profile-status.needs-configuration button:hover:not(:disabled) {
+  color: #fff;
+  background: #1f523a;
 }
 
 .provider-link {
@@ -2674,6 +2725,18 @@ h1 {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.dialogue-settings-action {
+  border-color: rgb(176 141 87 / 28%) !important;
+  color: #7b5b31 !important;
+  background: rgb(255 250 239 / 86%) !important;
+}
+
+.dialogue-settings-action:hover {
+  border-color: rgb(176 141 87 / 40%) !important;
+  color: #5f431f !important;
+  background: rgb(255 244 220 / 96%) !important;
 }
 
 .dialogue-retry-notice button {

@@ -8,6 +8,7 @@ import {
   Plus,
   RotateCcw,
   Send,
+  Settings2,
   Sparkles,
   Square,
 } from "lucide-react";
@@ -26,6 +27,7 @@ type DialoguePageProps = {
   question: DailyQuestionView;
   modelProfile: ModelProfile;
   onModelProfileChange: (profile: ModelProfile) => void;
+  onOpenModelSettings: () => void;
   onBack: () => void;
 };
 
@@ -160,6 +162,7 @@ export function DialoguePage({
   question,
   modelProfile,
   onModelProfileChange,
+  onOpenModelSettings,
   onBack,
 }: DialoguePageProps) {
   const [mode, setMode] = useState<DialogueMode>("socratic");
@@ -536,6 +539,9 @@ export function DialoguePage({
                   ) : null}
                   <button type="button" onClick={retryFailedTurn} disabled={thinking || finished}>
                     <RotateCcw size={15} /> 重试原模型
+                  </button>
+                  <button type="button" className="dialogue-settings-action" onClick={onOpenModelSettings}>
+                    <Settings2 size={15} /> 打开设置中心
                   </button>
                 </div>
               </div>

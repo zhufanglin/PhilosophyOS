@@ -761,11 +761,25 @@ function App() {
             </span>
           </div>
           <div className="top-bar-actions">
-            <div className="api-status" aria-live="polite">
-              <span className={health ? "status-dot online" : "status-dot"} />
-              <strong>{modelNeedsConfiguration ? "模型尚未配置" : health ? "知识服务在线" : error ? "知识服务离线" : "正在连接"}</strong>
-              <span className="api-version">{modelNeedsConfiguration ? "打开设置填写 API" : health ? `v${health.version}` : error ?? apiBaseUrl}</span>
-            </div>
+            {modelNeedsConfiguration ? (
+              <button
+                className="api-status needs-configuration"
+                type="button"
+                onClick={() => setModelPanelOpen(true)}
+                aria-live="polite"
+                aria-label="打开设置中心配置模型 API"
+              >
+                <span className="status-dot online" />
+                <strong>模型尚未配置</strong>
+                <span className="api-version">打开设置填写 API</span>
+              </button>
+            ) : (
+              <div className="api-status" aria-live="polite">
+                <span className={health ? "status-dot online" : "status-dot"} />
+                <strong>{health ? "知识服务在线" : error ? "知识服务离线" : "正在连接"}</strong>
+                <span className="api-version">{health ? `v${health.version}` : error ?? apiBaseUrl}</span>
+              </div>
+            )}
             <div className="model-switcher" aria-label="选择大模型">
               <span>模型</span>
               <button
@@ -794,7 +808,7 @@ function App() {
               </button>
             </div>
             <div
-              className={`model-profile-status${activeModelStatus?.configured ? " configured" : ""}`}
+              className={`model-profile-status${activeModelStatus?.configured ? " configured" : ""}${modelNeedsConfiguration ? " needs-configuration" : ""}`}
               title={activeModelStatus?.base_url_host ?? undefined}
             >
               <span>{activeModelStatus?.label ?? "模型"}</span>
@@ -805,7 +819,7 @@ function App() {
                 aria-expanded={modelPanelOpen}
                 aria-label="打开设置中心"
               >
-                <Settings2 size={13} /> 设置
+                <Settings2 size={13} /> {modelNeedsConfiguration ? "配置 API" : "设置"}
               </button>
             </div>
             {activeModelTest ? (
@@ -829,6 +843,7 @@ function App() {
             question={activeQuestion}
             modelProfile={modelProfile}
             onModelProfileChange={changeModelProfile}
+            onOpenModelSettings={() => setModelPanelOpen(true)}
             onBack={() => navigate("today")}
           />
         ) : null}
