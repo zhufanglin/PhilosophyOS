@@ -40,7 +40,7 @@ PhilosophyOS 已经完成 Beta 后的关键安全边界：模型 Key 不回传�
 
 ## Milestone 2: Commercial Account Boundary
 
-### 2.1 [ ] 落地 user_id / workspace_id 数据模型
+### 2.1 [x] 落地 user_id / workspace_id 数据模型 *(completed 2026-08-01)*
 
 - **Files:** `apps/api/app/models/`, `apps/api/migrations/`, `apps/api/tests/`
 - **What:** 在后端模型中为未来账号、工作区、多用户隔离建立最小字段与迁移路线。

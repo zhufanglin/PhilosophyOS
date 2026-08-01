@@ -20,6 +20,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.knowledge import Base, enum_type, utc_now
+from app.models.tenancy import LOCAL_USER_ID, LOCAL_WORKSPACE_ID
 
 
 class DialogueRole(StrEnum):
@@ -36,6 +37,12 @@ class DialogueSession(Base):
     __table_args__ = (Index("ix_dialogue_sessions_updated_at", "updated_at"),)
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID | None] = mapped_column(
+        index=True, nullable=True, default=LOCAL_USER_ID
+    )
+    workspace_id: Mapped[UUID | None] = mapped_column(
+        index=True, nullable=True, default=LOCAL_WORKSPACE_ID
+    )
     topic: Mapped[str] = mapped_column(Text)
     title: Mapped[str] = mapped_column(String(200))
     current_mode: Mapped[str] = mapped_column(String(40))
@@ -87,6 +94,12 @@ class ModelProfileConfig(Base):
     __tablename__ = "model_profile_configs"
 
     profile: Mapped[str] = mapped_column(String(40), primary_key=True)
+    user_id: Mapped[UUID | None] = mapped_column(
+        index=True, nullable=True, default=LOCAL_USER_ID
+    )
+    workspace_id: Mapped[UUID | None] = mapped_column(
+        index=True, nullable=True, default=LOCAL_WORKSPACE_ID
+    )
     api_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     model: Mapped[str] = mapped_column(String(200))
     base_url: Mapped[str | None] = mapped_column(Text, nullable=True)

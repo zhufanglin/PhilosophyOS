@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import JSON, CheckConstraint, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.knowledge import Base
+from app.models.tenancy import LOCAL_USER_ID, LOCAL_WORKSPACE_ID
 
 
 class ReflectionSnapshotRecord(Base):
@@ -20,6 +22,12 @@ class ReflectionSnapshotRecord(Base):
     )
 
     snapshot_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    user_id: Mapped[UUID | None] = mapped_column(
+        index=True, nullable=True, default=LOCAL_USER_ID
+    )
+    workspace_id: Mapped[UUID | None] = mapped_column(
+        index=True, nullable=True, default=LOCAL_WORKSPACE_ID
+    )
     created_at: Mapped[str] = mapped_column(String(64))
     question: Mapped[str] = mapped_column(Text)
     request_payload: Mapped[dict[str, Any]] = mapped_column(JSON)

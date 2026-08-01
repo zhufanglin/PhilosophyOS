@@ -8,14 +8,22 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.models.knowledge import Base
-from app.models.memory import AttributedClaim, DialogueMessage, DialogueSession, DialogueSessionMessage
+from app.models.memory import (
+    AttributedClaim,
+    DialogueMessage,
+    DialogueSession,
+    DialogueSessionMessage,
+    ModelProfileConfig,
+)
 from app.models.questions import DailyQuestion, QuestionInteraction
 from app.models.reflection import ReflectionSnapshotRecord
+from app.models.tenancy import User, Workspace, WorkspaceMembership
 
 _MEMORY_MODELS = (AttributedClaim, DialogueMessage)
 _QUESTION_MODELS = (DailyQuestion, QuestionInteraction)
 _REFLECTION_MODELS = (ReflectionSnapshotRecord,)
-_DIALOGUE_SESSION_MODELS = (DialogueSession, DialogueSessionMessage)
+_DIALOGUE_SESSION_MODELS = (DialogueSession, DialogueSessionMessage, ModelProfileConfig)
+_TENANCY_MODELS = (User, Workspace, WorkspaceMembership)
 
 config = context.config
 
