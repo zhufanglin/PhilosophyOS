@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | in-progress |
+| Status | complete |
 | Created | 2026-08-01 |
 | Ticket | N/A |
 | Branch | main |
@@ -25,6 +25,7 @@
 - **Obsidian 写入仍然后置：** 在解析器、差异预览、冲突检测和撤销通过前，不开放真实写回。
 - **商业化前必须处理 Key：** 当前 API Key 本地明文 SQLite 只适合本地 Beta，商业化前必须加密或接入系统密钥管理。
 - **商业化数据边界：** 后续账号、云同步、计费和团队能力必须以 `user_id` 与 `workspace_id` 为核心隔离字段；导出不得包含完整 API Key 或加密 envelope，删除必须区分单对象、Obsidian 文件撤销和 owner-only 工作区删除。
+- **商业化上线门槛：** 正式收费前必须先通过 workspace 隔离、usage ledger 成本账本、备份恢复演练、监控审计和合规文档清单；欠费用户保留只读、导出和删除能力。
 
 ## Milestones Overview
 
@@ -112,7 +113,7 @@
 - **Acceptance:** 所有核心数据对象都有 owner 或 workspace 边界；删除流程和导出范围明确。
 - **Dependencies:** 3.1
 
-### 3.3 [ ] 云同步、计费与运维路线图
+### 3.3 [x] 云同步、计费与运维路线图 *(completed 2026-08-01)*
 - **Files:** `plans/`, `docs/operations/`, `docs/architecture/technical-spikes.md`
 - **What:** 拆分云数据库、对象存储、订阅计费、额度限流、备份恢复、监控审计和合规文档。
 - **Acceptance:** 每个商业化模块都有最小可交付任务、阻断风险和上线前验收门槛。
