@@ -57,7 +57,7 @@
 - **Acceptance:** 今日页能展示一个历史遗留追问；用户可一键进入对话；进入后不重复创建原思想节点；E2E 覆盖从档案到今日再到对话。
 - **Dependencies:** 1.2
 
-### 1.4 [ ] 每周思想报告草稿
+### 1.4 [x] 每周思想报告草稿 *(completed 2026-08-01)*
 - **Files:** `apps/api/app/routes/reflection_snapshots.py`, `apps/api/app/services/weekly_report.py`, `apps/web/src/pages/ThoughtArchivePage.tsx`, `apps/api/tests/`
 - **What:** 基于本周思想节点生成本周主题、张力、哲学家、观点变化和下周建议的 Markdown 草稿。
 - **Acceptance:** 用户可生成周报草稿；草稿不自动进入长期档案；内容包含来源节点；没有足够数据时不伪造报告。

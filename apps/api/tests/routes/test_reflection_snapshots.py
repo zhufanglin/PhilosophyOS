@@ -223,12 +223,178 @@ async def test_pending_snapshot_cannot_be_corrected_before_generation(
     assert response.status_code == 409
 
 
+
+@pytest.mark.anyio
+async def test_weekly_report_endpoint_generates_source_backed_markdown(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A weekly report draft summarizes only completed source nodes."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    test_settings = PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path))
+    monkeypatch.setattr(snapshot_routes, "settings", test_settings)
+    repository = ReflectionSnapshotRepository(create_snapshot_engine(snapshot_path))
+
+    def add_completed_snapshot(
+        snapshot_id: str,
+        created_at: str,
+        question: str,
+        topic: str,
+        title: str,
+        tensions: list[str],
+        philosophers: list[dict[str, str]],
+        changed: bool,
+    ) -> None:
+        repository.add(
+            created_at=created_at,
+            request_payload={"question": question},
+            response_payload={
+                "snapshot_id": snapshot_id,
+                "status": "completed",
+                "content": {
+                    "topic": topic,
+                    "title": title,
+                    "user_position": "I am clarifying responsibility inside freedom.",
+                    "confidence": 0.78,
+                    "emotional_tone": "clearer",
+                    "core_question": question,
+                    "key_insights": ["Responsibility is part of freedom."],
+                    "tensions": tensions,
+                    "related_philosophers": philosophers,
+                    "change_signal": {
+                        "changed": changed,
+                        "previous_position": "Freedom means no limits.",
+                        "current_position": "Freedom means responsible choice inside limits.",
+                        "change_type": "refinement",
+                    },
+                    "next_question": "Which limits still allow responsibility?",
+                    "tags": ["freedom"],
+                },
+                "provider": "openai",
+                "provider_model": "test-model",
+                "pending_reason": None,
+            },
+        )
+
+    add_completed_snapshot(
+        "snap_week_first",
+        "2026-07-28T09:00:00+00:00",
+        "Does freedom require limits?",
+        "Freedom and Responsibility",
+        "Freedom inside limits",
+        ["Freedom versus causality"],
+        [{"name": "Kant", "reason": "Autonomy and responsibility are central here."}],
+        True,
+    )
+    add_completed_snapshot(
+        "snap_week_second",
+        "2026-07-30T09:00:00+00:00",
+        "Can duty coexist with choice?",
+        "Freedom and Responsibility",
+        "Duty as chosen form",
+        ["Duty versus desire"],
+        [{"name": "Aristotle", "reason": "Habit helps explain practical responsibility."}],
+        False,
+    )
+    repository.add(
+        created_at="2026-07-31T09:00:00+00:00",
+        request_payload={"question": "Pending question"},
+        response_payload={
+            "snapshot_id": "snap_week_pending",
+            "status": "pending",
+            "content": None,
+            "provider": "none",
+            "pending_reason": "not configured",
+        },
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get(
+            "/api/v1/reflection-archive/weekly-report",
+            params={"from_date": "2026-07-27", "to_date": "2026-08-02"},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["enough_data"] is True
+    assert payload["node_count"] == 2
+    assert [source["snapshot_id"] for source in payload["sources"]] == [
+        "snap_week_first",
+        "snap_week_second",
+    ]
+    assert "# PhilosophyOS \u672c\u5468\u601d\u60f3\u62a5\u544a\u8349\u7a3f" in payload["markdown"]
+    assert "## \u672c\u5468\u4e3b\u9898" in payload["markdown"]
+    assert "## \u53cd\u590d\u5f20\u529b" in payload["markdown"]
+    assert "## \u76f8\u5173\u54f2\u5b66\u5bb6" in payload["markdown"]
+    assert "## \u89c2\u70b9\u53d8\u5316" in payload["markdown"]
+    assert "## \u4e0b\u5468\u5efa\u8bae" in payload["markdown"]
+    assert "## \u6765\u6e90\u8282\u70b9" in payload["markdown"]
+    assert "snap_week_first" in payload["markdown"]
+    assert "snap_week_pending" not in payload["markdown"]
+    assert "\u4e0d\u4f1a\u81ea\u52a8\u8fdb\u5165\u957f\u671f\u6863\u6848" in payload["markdown"]
+
+
+@pytest.mark.anyio
+async def test_weekly_report_endpoint_refuses_to_invent_when_data_is_insufficient(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Insufficient weekly data returns an explicit empty-state draft."""
+
+    snapshot_path = tmp_path / "thought-snapshots.jsonl"
+    monkeypatch.setattr(
+        snapshot_routes,
+        "settings",
+        PhilosophyOSSettings(thought_snapshots_path=str(snapshot_path)),
+    )
+    repository = ReflectionSnapshotRepository(create_snapshot_engine(snapshot_path))
+    repository.add(
+        created_at="2026-07-28T09:00:00+00:00",
+        request_payload={"question": "Only one question"},
+        response_payload={
+            "snapshot_id": "snap_only_one",
+            "status": "completed",
+            "content": {
+                "topic": "Freedom",
+                "title": "One node only",
+                "user_position": "One thought is not enough for a weekly synthesis.",
+                "confidence": 0.7,
+                "core_question": "Only one question",
+                "key_insights": [],
+                "tensions": [],
+                "related_philosophers": [],
+                "change_signal": {"changed": False},
+                "next_question": None,
+                "tags": [],
+            },
+            "provider": "openai",
+            "provider_model": "test-model",
+            "pending_reason": None,
+        },
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get(
+            "/api/v1/reflection-archive/weekly-report",
+            params={"from_date": "2026-07-27", "to_date": "2026-08-02"},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["enough_data"] is False
+    assert payload["node_count"] == 1
+    assert payload["message"] == "\u672c\u5468\u5df2\u5b8c\u6210\u601d\u60f3\u8282\u70b9\u4e0d\u8db3\uff0c\u6682\u4e0d\u751f\u6210\u603b\u7ed3\u6027\u5468\u62a5\u3002"
+    assert "\u4e3a\u4e86\u907f\u514d\u4f2a\u9020\u4e3b\u9898\u3001\u5f20\u529b\u6216\u89c2\u70b9\u53d8\u5316" in payload["markdown"]
+    assert "## \u672c\u5468\u4e3b\u9898" not in payload["markdown"]
+    assert payload["sources"][0]["snapshot_id"] == "snap_only_one"
+
+
 def test_openapi_exposes_reflection_snapshot_resource() -> None:
     """The API contract includes the versioned reflection snapshot resource."""
 
     assert "/api/v1/reflection-snapshots" in app.openapi()["paths"]
     assert "/api/v1/reflection-archive/philosopher-influences" in app.openapi()["paths"]
     assert "/api/v1/reflection-archive/next-question" in app.openapi()["paths"]
+    assert "/api/v1/reflection-archive/weekly-report" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/retry" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/content" in app.openapi()["paths"]
     assert "/api/v1/reflection-snapshots/{snapshot_id}/decision" in app.openapi()["paths"]

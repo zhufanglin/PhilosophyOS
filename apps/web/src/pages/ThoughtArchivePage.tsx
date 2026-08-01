@@ -84,6 +84,23 @@ type ReflectionPhilosopherInfluenceResponse = {
   }>;
 };
 
+type ReflectionWeeklyReportDraft = {
+  week_start: string;
+  week_end: string;
+  generated_at: string;
+  enough_data: boolean;
+  node_count: number;
+  markdown: string;
+  sources: Array<{
+    snapshot_id: string;
+    created_at: string;
+    title: string;
+    topic: string;
+    question: string;
+  }>;
+  message: string | null;
+};
+
 type ThoughtArchivePageProps = {
   apiBaseUrl: string;
 };
@@ -559,6 +576,9 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [toDate, setToDate] = useState("");
   const [archiveActionStatus, setArchiveActionStatus] = useState<string | null>(null);
   const [archiveActionBusy, setArchiveActionBusy] = useState(false);
+  const [weeklyReport, setWeeklyReport] = useState<ReflectionWeeklyReportDraft | null>(null);
+  const [weeklyReportLoading, setWeeklyReportLoading] = useState(false);
+  const [weeklyReportStatus, setWeeklyReportStatus] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const timelineCardRefs = useRef<Record<string, HTMLElement | null>>({});
   const highlightTimerRef = useRef<number | null>(null);
@@ -764,6 +784,33 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     setArchiveActionBusy(false);
   }
 
+  async function generateWeeklyReport() {
+    if (weeklyReportLoading) return;
+    setWeeklyReportLoading(true);
+    setWeeklyReportStatus(null);
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/v1/reflection-archive/weekly-report`);
+      if (!response.ok) throw new Error(`Weekly report returned ${response.status}`);
+      const payload = (await response.json()) as ReflectionWeeklyReportDraft;
+      setWeeklyReport(payload);
+      setWeeklyReportStatus(payload.message ?? (payload.enough_data ? "\u5468\u62a5\u8349\u7a3f\u5df2\u751f\u6210\u3002" : "\u672c\u5468\u6570\u636e\u6682\u65f6\u4e0d\u8db3\u3002"));
+    } catch {
+      setWeeklyReportStatus("\u5468\u62a5\u8349\u7a3f\u6682\u65f6\u65e0\u6cd5\u751f\u6210\uff0c\u8bf7\u786e\u8ba4\u540e\u7aef\u670d\u52a1\u53ef\u7528\u540e\u518d\u8bd5\u3002");
+    } finally {
+      setWeeklyReportLoading(false);
+    }
+  }
+
+  async function copyWeeklyReport() {
+    if (!weeklyReport?.markdown) return;
+    try {
+      await navigator.clipboard.writeText(weeklyReport.markdown);
+      setWeeklyReportStatus("Markdown \u5df2\u590d\u5236\u3002\u8349\u7a3f\u4ecd\u672a\u5199\u5165\u957f\u671f\u6863\u6848\u3002");
+    } catch {
+      setWeeklyReportStatus("\u6d4f\u89c8\u5668\u6682\u65f6\u4e0d\u5141\u8bb8\u590d\u5236\uff0c\u8bf7\u624b\u52a8\u9009\u4e2d\u8349\u7a3f\u5185\u5bb9\u590d\u5236\u3002");
+    }
+  }
+
   function updateSnapshotReview(snapshotId: string, review: SnapshotReviewResponse["snapshot_review"]) {
     setItems((currentItems) =>
       currentItems.map((item) =>
@@ -854,6 +901,34 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
             <button className="archive-clear-button" type="button" disabled={archiveActionBusy || items.length === 0} onClick={() => void clearArchive()}><Trash2 size={16} />清空全部</button>
           </div>
           {archiveActionStatus ? <p className="archive-action-status" role="status">{archiveActionStatus}</p> : null}
+        </section>
+      ) : null}
+
+      {!loading && !error ? (
+        <section className="weekly-report-draft-panel" aria-label="\u672c\u5468\u601d\u60f3\u62a5\u544a\u8349\u7a3f">
+          <div className="weekly-report-draft-copy">
+            <span>WEEKLY DRAFT</span>
+            <h2>{"\u672c\u5468\u601d\u60f3\u62a5\u544a\u8349\u7a3f"}</h2>
+            <p>{"\u57fa\u4e8e\u672c\u5468\u5df2\u5b8c\u6210\u601d\u60f3\u8282\u70b9\u751f\u6210 Markdown \u8349\u7a3f\u3002\u5b83\u53ea\u4f9b\u4f60\u9884\u89c8\u3001\u590d\u5236\u548c\u6821\u5bf9\uff0c\u4e0d\u4f1a\u81ea\u52a8\u8fdb\u5165\u957f\u671f\u6863\u6848\u3002"}</p>
+          </div>
+          <div className="weekly-report-draft-actions">
+            <button type="button" disabled={weeklyReportLoading} onClick={() => void generateWeeklyReport()}>
+              {weeklyReportLoading ? "\u6b63\u5728\u751f\u6210" : "\u751f\u6210\u672c\u5468\u8349\u7a3f"}
+            </button>
+            <button type="button" disabled={!weeklyReport?.markdown} onClick={() => void copyWeeklyReport()}>
+              {"\u590d\u5236 Markdown"}
+            </button>
+          </div>
+          {weeklyReportStatus ? <p className="weekly-report-draft-status" role="status">{weeklyReportStatus}</p> : null}
+          {weeklyReport ? (
+            <article className={`weekly-report-preview ${weeklyReport.enough_data ? "ready" : "insufficient"}`}>
+              <header>
+                <span>{weeklyReport.week_start} {"\u2014"} {weeklyReport.week_end}</span>
+                <strong>{weeklyReport.node_count} {"\u4e2a\u6765\u6e90\u8282\u70b9"}</strong>
+              </header>
+              <pre>{weeklyReport.markdown}</pre>
+            </article>
+          ) : null}
         </section>
       ) : null}
 

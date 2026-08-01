@@ -228,6 +228,29 @@ class ReflectionNextQuestionItem(BaseModel):
     philosopher_names: list[str] = Field(default_factory=list)
 
 
+class ReflectionWeeklyReportSource(BaseModel):
+    """One thought node used as evidence in a weekly report draft."""
+
+    snapshot_id: str
+    created_at: str
+    title: str
+    topic: str
+    question: str
+
+
+class ReflectionWeeklyReportDraft(BaseModel):
+    """A local Markdown draft that is not automatically archived."""
+
+    week_start: str
+    week_end: str
+    generated_at: str
+    enough_data: bool
+    node_count: int = Field(ge=0)
+    markdown: str
+    sources: list[ReflectionWeeklyReportSource] = Field(default_factory=list)
+    message: str | None = None
+
+
 class ReflectionArchiveRecord(BaseModel):
     """One lossless archive record including its immutable source request."""
 

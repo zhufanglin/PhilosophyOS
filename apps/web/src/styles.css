@@ -7244,3 +7244,130 @@ body {
   }
 }
 }
+
+
+.weekly-report-draft-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+  margin: 22px 0;
+  padding: 22px;
+  border: 1px solid rgba(36, 89, 67, .18);
+  background:
+    linear-gradient(135deg, rgba(255, 253, 247, .92), rgba(245, 240, 230, .78)),
+    radial-gradient(circle at 14% 0%, rgba(176, 141, 87, .12), transparent 32%);
+  box-shadow: 0 18px 42px rgba(49, 42, 32, .08);
+}
+
+.weekly-report-draft-copy span {
+  color: #245943;
+  font-size: 11px;
+  letter-spacing: .14em;
+  font-weight: 700;
+}
+
+.weekly-report-draft-copy h2 {
+  margin: 7px 0 6px;
+  color: #27231e;
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.weekly-report-draft-copy p {
+  margin: 0;
+  max-width: 680px;
+  color: #71685d;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.weekly-report-draft-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.weekly-report-draft-actions button {
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid rgba(36, 89, 67, .3);
+  background: rgba(255, 253, 247, .72);
+  color: #245943;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.weekly-report-draft-actions button:first-child {
+  background: #245943;
+  color: #f7f2e8;
+}
+
+.weekly-report-draft-actions button:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+.weekly-report-draft-status {
+  grid-column: 1 / -1;
+  margin: -6px 0 0;
+  color: #245943;
+  font-size: 13px;
+}
+
+.weekly-report-preview {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(61, 52, 41, .14);
+  background: rgba(255, 253, 247, .82);
+}
+
+.weekly-report-preview.insufficient {
+  border-color: rgba(132, 58, 49, .22);
+}
+
+.weekly-report-preview header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(61, 52, 41, .12);
+  color: #71685d;
+  font-size: 12px;
+}
+
+.weekly-report-preview header strong {
+  color: #245943;
+}
+
+.weekly-report-preview pre {
+  max-height: 360px;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: #2d2923;
+  font-family: "LXGW WenKai Screen", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  line-height: 1.72;
+}
+
+@media (max-width: 760px) {
+  .weekly-report-draft-panel {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .weekly-report-draft-actions {
+    justify-content: flex-start;
+  }
+
+  .weekly-report-draft-actions button {
+    flex: 1 1 150px;
+  }
+
+  .weekly-report-preview header {
+    flex-direction: column;
+  }
+}

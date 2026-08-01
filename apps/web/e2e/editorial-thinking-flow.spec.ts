@@ -230,6 +230,44 @@ async function mockArchiveExports(page: Page) {
   });
 }
 
+async function mockWeeklyReport(page: Page) {
+  await page.route(`${apiBaseUrl}/api/v1/reflection-archive/weekly-report**`, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        week_start: "2026-07-27",
+        week_end: "2026-08-02",
+        generated_at: "2026-08-01T09:00:00+00:00",
+        enough_data: true,
+        node_count: 2,
+        message: "\u5468\u62a5\u8349\u7a3f\u5df2\u751f\u6210\u3002\u5b83\u53ea\u7528\u4e8e\u9884\u89c8\u548c\u590d\u5236\uff0c\u4e0d\u4f1a\u81ea\u52a8\u8fdb\u5165\u957f\u671f\u6863\u6848\u3002",
+        sources: [
+          {
+            snapshot_id: "snap_timeline_e2e",
+            created_at: "2026-07-28T09:00:00+00:00",
+            title: "\u8bda\u5b9e\u662f\u5728\u4f24\u5bb3\u4e0e\u8d23\u4efb\u4e4b\u95f4\u4fdd\u6301\u6e05\u9192",
+            topic: "\u8bda\u5b9e\u4e0e\u5fb7\u6027",
+            question: "\u8bda\u5b9e\u662f\u5426\u603b\u662f\u503c\u5f97\u575a\u6301\uff1f",
+          },
+        ],
+        markdown: [
+          "# PhilosophyOS \u672c\u5468\u601d\u60f3\u62a5\u544a\u8349\u7a3f",
+          "",
+          "> \u8fd9\u662f\u4e00\u4efd\u53ef\u6821\u5bf9\u8349\u7a3f\uff0c\u4e0d\u4f1a\u81ea\u52a8\u8fdb\u5165\u957f\u671f\u6863\u6848\u3002",
+          "",
+          "## \u672c\u5468\u4e3b\u9898",
+          "",
+          "- \u8bda\u5b9e\u4e0e\u5fb7\u6027\uff081 \u6b21\uff09",
+          "",
+          "## \u6765\u6e90\u8282\u70b9",
+          "",
+          "- 2026-07-28 \u00b7 \u300a\u8bda\u5b9e\u662f\u5728\u4f24\u5bb3\u4e0e\u8d23\u4efb\u4e4b\u95f4\u4fdd\u6301\u6e05\u9192\u300b \u00b7 `snap_timeline_e2e`",
+        ].join("\n"),
+      }),
+    });
+  });
+}
+
 async function mockPhilosopherInfluences(page: Page) {
   await page.route(`${apiBaseUrl}/api/v1/reflection-archive/philosopher-influences**`, async (route) => {
     await route.fulfill({
@@ -440,6 +478,7 @@ test.beforeEach(async ({ page }) => {
   await mockReflectionSnapshot(page);
   await mockArchiveExports(page);
   await mockPhilosopherInfluences(page);
+  await mockWeeklyReport(page);
   await mockNextReflectionQuestion(page);
   await mockDialogueSessions(page);
   await mockDialogueTurn(page);
@@ -584,6 +623,12 @@ test("thought archive page lists stored reflection snapshots", async ({ page }) 
   await expect(page.locator(".philosopher-influence-archive")).toContainText("影响我的哲学家");
   await expect(page.locator(".philosopher-influence-archive")).toContainText("康德");
   await expect(page.locator(".philosopher-influence-archive")).toContainText("问题涉及诚实义务与道德原则");
+  await expect(page.locator(".weekly-report-draft-panel")).toContainText("\u672c\u5468\u601d\u60f3\u62a5\u544a\u8349\u7a3f");
+  await page.locator(".weekly-report-draft-actions button").first().click();
+  await expect(page.locator(".weekly-report-preview")).toContainText("# PhilosophyOS \u672c\u5468\u601d\u60f3\u62a5\u544a\u8349\u7a3f");
+  await expect(page.locator(".weekly-report-preview")).toContainText("## \u6765\u6e90\u8282\u70b9");
+  await expect(page.locator(".weekly-report-preview")).toContainText("snap_timeline_e2e");
+  await expect(page.locator(".weekly-report-draft-panel")).toContainText("\u4e0d\u4f1a\u81ea\u52a8\u8fdb\u5165\u957f\u671f\u6863\u6848");
   await expectNoHorizontalOverflow(page);
   const jsonDownloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: "备份 JSON" }).click();

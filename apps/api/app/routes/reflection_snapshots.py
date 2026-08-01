@@ -15,6 +15,7 @@ from app.schemas.reflection_snapshots import (
     ReflectionNextQuestionItem,
     ReflectionPhilosopherInfluenceResponse,
     ReflectionSnapshotCorrectionRequest,
+    ReflectionWeeklyReportDraft,
     ReflectionSnapshotCorrectionResponse,
     ReflectionSnapshotDecisionRequest,
     ReflectionSnapshotDecisionResponse,
@@ -40,6 +41,7 @@ from app.services.reflection_snapshots import (
     update_reflection_snapshot_decision,
     update_reflection_snapshot_review,
 )
+from app.services.weekly_report import build_weekly_report_draft
 from app.settings import settings
 
 router = APIRouter(prefix="/api/v1", tags=["reflection-snapshots"])
@@ -216,6 +218,26 @@ async def get_next_reflection_question_endpoint(
     """Return the requested or latest recoverable follow-up question."""
 
     return get_next_reflection_question(settings, snapshot_id=snapshot_id)
+
+
+@router.get(
+    "/reflection-archive/weekly-report",
+    response_model=ReflectionWeeklyReportDraft,
+    status_code=status.HTTP_200_OK,
+    summary="Build a local weekly reflection report Markdown draft",
+)
+async def get_weekly_reflection_report_endpoint(
+    from_date: Annotated[date | None, Query()] = None,
+    to_date: Annotated[date | None, Query()] = None,
+) -> ReflectionWeeklyReportDraft:
+    """Return a Markdown report draft without saving it into the long-term archive."""
+
+    if from_date and to_date and from_date > to_date:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="from_date must not be later than to_date",
+        )
+    return build_weekly_report_draft(settings, from_date=from_date, to_date=to_date)
 
 
 @router.post(
