@@ -99,7 +99,7 @@
 
 **Why this matters:** 商业化不是加一个付款按钮，而是账号、隔离、密钥、安全、成本和合规同时成立。
 
-### 3.1 [ ] API Key 加密与密钥边界
+### 3.1 [x] API Key 加密与密钥边界 *(completed 2026-08-01)*
 - **Files:** `apps/api/app/models/memory.py`, `apps/api/app/services/model_profiles.py`, `apps/api/tests/`
 - **What:** 将本地明文 Key 存储升级为可迁移的加密或系统密钥管理策略。
 - **Acceptance:** 数据库不保存完整明文 Key；读取接口仍不回传明文；旧本地配置可迁移。

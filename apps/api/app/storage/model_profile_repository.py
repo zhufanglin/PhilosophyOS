@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from sqlalchemy import insert, select, update
 
 from app.models.memory import ModelProfileConfig
+from app.services.model_profiles import decrypt_api_key, encrypt_api_key, is_encrypted_secret
 from app.settings import ModelProfile, OpenAIAPIStyle, PhilosophyOSSettings
 from app.storage.database import create_snapshot_engine
 
@@ -27,8 +28,20 @@ def restore_settings(current_settings: PhilosophyOSSettings) -> None:
         if profile not in {"free", "gpt", "deepseek"}:
             continue
         prefix = {"free": "free", "gpt": "gpt", "deepseek": "deepseek"}[profile]
-        if row["api_key"]:
-            setattr(current_settings, f"{prefix}_api_key", row["api_key"])
+        stored_api_key = row["api_key"]
+        if stored_api_key:
+            api_key = decrypt_api_key(stored_api_key)
+            setattr(current_settings, f"{prefix}_api_key", api_key)
+            if not is_encrypted_secret(stored_api_key):
+                save_profile(
+                    current_settings,
+                    profile,
+                    api_key=api_key,
+                    model=row["model"],
+                    base_url=row["base_url"],
+                    api_style=row["api_style"],
+                    selected=row["selected"],
+                )
         setattr(current_settings, f"{prefix}_model", row["model"])
         setattr(current_settings, f"{prefix}_base_url", row["base_url"])
         setattr(current_settings, f"{prefix}_api_style", row["api_style"])
@@ -51,7 +64,7 @@ def save_profile(
     engine = create_snapshot_engine(current_settings.thought_snapshots_path)
     values = {
         "profile": profile,
-        "api_key": api_key,
+        "api_key": encrypt_api_key(api_key),
         "model": model,
         "base_url": base_url,
         "api_style": api_style,

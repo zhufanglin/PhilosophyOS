@@ -7,8 +7,10 @@ from pathlib import Path
 import pytest
 from httpx import ASGITransport, AsyncClient
 from pydantic import SecretStr
+from sqlalchemy import select
 
 from app.main import app
+from app.models.memory import ModelProfileConfig
 from app.routes import model_profiles as model_profile_routes
 from app.routes.model_profiles import (
     build_connection_test_response,
@@ -16,7 +18,10 @@ from app.routes.model_profiles import (
     safe_base_url,
 )
 from app.settings import PhilosophyOSSettings, settings
+from app.storage.database import create_snapshot_engine
 from app.storage.model_profile_repository import restore_settings
+from app.storage.model_profile_repository import save_profile
+from app.services.model_profiles import ENCRYPTED_SECRET_PREFIX
 
 
 @pytest.mark.anyio
@@ -236,6 +241,15 @@ async def test_model_profile_update_persists_key_without_echoing_it(
     assert restored_key is not None
     assert restored_key.get_secret_value() == secret
 
+    engine = create_snapshot_engine(snapshot_path)
+    with engine.begin() as connection:
+        stored_key = connection.execute(
+            select(ModelProfileConfig.api_key).where(ModelProfileConfig.profile == profile)
+        ).scalar_one()
+    assert stored_key is not None
+    assert stored_key.startswith(ENCRYPTED_SECRET_PREFIX)
+    assert secret not in stored_key
+
 
 @pytest.mark.anyio
 async def test_model_profile_update_rejects_invalid_base_url() -> None:
@@ -252,3 +266,68 @@ async def test_model_profile_update_rejects_invalid_base_url() -> None:
         )
 
     assert response.status_code == 422
+
+
+def test_restore_settings_migrates_legacy_plaintext_api_key(tmp_path: Path) -> None:
+    """Legacy local plaintext keys are loaded then rewritten as encrypted envelopes."""
+
+    snapshot_path = str(tmp_path / "thought-snapshots.jsonl")
+    legacy_secret = "legacy-local-secret"
+    initial_settings = PhilosophyOSSettings(thought_snapshots_path=snapshot_path)
+    engine = create_snapshot_engine(snapshot_path)
+    with engine.begin() as connection:
+        connection.execute(
+            ModelProfileConfig.__table__.insert().values(
+                profile="gpt",
+                api_key=legacy_secret,
+                model="gpt-5.6",
+                base_url="https://api.openai.com/v1",
+                api_style="responses",
+                selected=True,
+            )
+        )
+
+    restore_settings(initial_settings)
+
+    assert initial_settings.model_profile == "gpt"
+    assert initial_settings.gpt_api_key is not None
+    assert initial_settings.gpt_api_key.get_secret_value() == legacy_secret
+    with engine.begin() as connection:
+        migrated_key = connection.execute(
+            select(ModelProfileConfig.api_key).where(ModelProfileConfig.profile == "gpt")
+        ).scalar_one()
+    assert migrated_key is not None
+    assert migrated_key.startswith(ENCRYPTED_SECRET_PREFIX)
+    assert legacy_secret not in migrated_key
+
+
+def test_save_profile_stores_encrypted_key_but_runtime_can_restore_it(tmp_path: Path) -> None:
+    """The SQLite store no longer persists full plaintext API keys."""
+
+    snapshot_path = str(tmp_path / "thought-snapshots.jsonl")
+    secret = "deepseek-local-secret"
+    configured_settings = PhilosophyOSSettings(thought_snapshots_path=snapshot_path)
+
+    save_profile(
+        configured_settings,
+        "deepseek",
+        api_key=secret,
+        model="deepseek-v4-pro",
+        base_url="https://api.deepseek.com",
+        api_style="chat_completions",
+        selected=True,
+    )
+
+    engine = create_snapshot_engine(snapshot_path)
+    with engine.begin() as connection:
+        stored_key = connection.execute(
+            select(ModelProfileConfig.api_key).where(ModelProfileConfig.profile == "deepseek")
+        ).scalar_one()
+    assert stored_key is not None
+    assert stored_key.startswith(ENCRYPTED_SECRET_PREFIX)
+    assert secret not in stored_key
+
+    restored = PhilosophyOSSettings(thought_snapshots_path=snapshot_path)
+    restore_settings(restored)
+    assert restored.deepseek_api_key is not None
+    assert restored.deepseek_api_key.get_secret_value() == secret
