@@ -81,7 +81,7 @@
 - **Acceptance:** 不读取 `.obsidian`；开放问题提取准确；解析器单测覆盖隐私排除目录。
 - **Dependencies:** None
 
-### 2.2 [ ] Markdown 差异预览与确认写入
+### 2.2 [x] Markdown 差异预览与确认写入 *(completed 2026-08-01)*
 - **Files:** `apps/api/app/vault/drafts.py`, `apps/api/app/vault/writer.py`, `apps/web/src/components/MarkdownDiff.tsx`, `apps/api/tests/vault/`
 - **What:** 生成草稿和结构化 diff，用户确认后才写入目标文件。
 - **Acceptance:** 未确认写入为 0；冲突时阻止写入；写入后保留审计记录。

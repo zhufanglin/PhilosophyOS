@@ -6,14 +6,19 @@ import re
 from datetime import date
 from pathlib import Path
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.schemas.obsidian import (
     DraftItemOrigin,
+    ObsidianDraftConfirmRequest,
+    ObsidianDraftConfirmResponse,
+    ObsidianDraftPreviewResponse,
     ObsidianDraftRequest,
     ObsidianDraftResponse,
 )
 from app.settings import PhilosophyOSSettings, settings
+from app.vault.drafts import build_obsidian_draft_preview
+from app.vault.writer import VaultWriteConflictError, confirm_markdown_write
 
 router = APIRouter(prefix="/api/v1", tags=["obsidian"])
 
@@ -135,3 +140,65 @@ async def create_obsidian_draft_endpoint(
     """Create a non-overwriting Markdown draft in the fixed Obsidian draft directory."""
 
     return create_obsidian_draft(request, settings)
+
+
+@router.post(
+    "/obsidian-drafts/preview",
+    response_model=ObsidianDraftPreviewResponse,
+    summary="Preview an Obsidian Markdown draft without writing it",
+)
+async def preview_obsidian_draft_endpoint(
+    request: ObsidianDraftRequest,
+) -> ObsidianDraftPreviewResponse:
+    """Return Markdown and a structured diff without touching the target file."""
+
+    preview = build_obsidian_draft_preview(request, settings)
+    return ObsidianDraftPreviewResponse(
+        file_name=preview.file_name,
+        target_path=str(preview.target_path),
+        markdown=preview.markdown,
+        current_sha256=preview.current_sha256,
+        proposed_sha256=preview.proposed_sha256,
+        diff=[
+            {
+                "kind": line.kind,
+                "text": line.text,
+                "old_line": line.old_line,
+                "new_line": line.new_line,
+            }
+            for line in preview.diff
+        ],
+    )
+
+
+@router.post(
+    "/obsidian-drafts/confirm",
+    response_model=ObsidianDraftConfirmResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Confirm and write a previewed Obsidian Markdown draft",
+)
+async def confirm_obsidian_draft_endpoint(
+    request: ObsidianDraftConfirmRequest,
+) -> ObsidianDraftConfirmResponse:
+    """Write Markdown only when the target file still matches the preview hash."""
+
+    try:
+        result = confirm_markdown_write(
+            target_path=request.target_path,
+            markdown=request.markdown,
+            expected_current_sha256=request.expected_current_sha256,
+        )
+    except VaultWriteConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+
+    return ObsidianDraftConfirmResponse(
+        file_name=result.file_name,
+        absolute_path=result.absolute_path,
+        previous_sha256=result.previous_sha256,
+        new_sha256=result.new_sha256,
+        audit_path=result.audit_path,
+        message="Obsidian draft written after explicit confirmation.",
+    )

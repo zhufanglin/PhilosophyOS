@@ -41,3 +41,42 @@ class ObsidianDraftResponse(BaseModel):
     file_name: str
     absolute_path: str
     message: str
+
+
+class MarkdownDiffLineResponse(BaseModel):
+    """One structured Markdown diff line."""
+
+    kind: str
+    text: str
+    old_line: int | None
+    new_line: int | None
+
+
+class ObsidianDraftPreviewResponse(BaseModel):
+    """Preview payload that does not write to disk."""
+
+    file_name: str
+    target_path: str
+    markdown: str
+    current_sha256: str
+    proposed_sha256: str
+    diff: list[MarkdownDiffLineResponse]
+
+
+class ObsidianDraftConfirmRequest(BaseModel):
+    """Confirm a previewed Markdown write."""
+
+    target_path: str = Field(min_length=1)
+    markdown: str = Field(min_length=1)
+    expected_current_sha256: str = Field(min_length=64, max_length=64)
+
+
+class ObsidianDraftConfirmResponse(BaseModel):
+    """Confirmed write metadata safe for the frontend."""
+
+    file_name: str
+    absolute_path: str
+    previous_sha256: str
+    new_sha256: str
+    audit_path: str
+    message: str

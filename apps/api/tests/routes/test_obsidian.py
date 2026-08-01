@@ -15,6 +15,7 @@ from app.routes.obsidian import (
 )
 from app.schemas.obsidian import ObsidianDraftRequest
 from app.settings import PhilosophyOSSettings
+from app.settings import settings as runtime_settings
 
 
 def sample_draft_request() -> ObsidianDraftRequest:
@@ -94,3 +95,74 @@ def test_openapi_exposes_obsidian_drafts_resource() -> None:
     """The API contract includes the Obsidian draft creation resource."""
 
     assert "/api/v1/obsidian-drafts" in app.openapi()["paths"]
+
+
+@pytest.mark.anyio
+async def test_obsidian_preview_endpoint_does_not_write(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Preview returns Markdown and diff without creating a file."""
+
+    monkeypatch.setattr(runtime_settings, "obsidian_drafts_dir", str(tmp_path))
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/obsidian-drafts/preview",
+            json=sample_draft_request().model_dump(mode="json"),
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["markdown"].startswith("# PhilosophyOS reflection:")
+    assert payload["diff"]
+    assert not Path(payload["target_path"]).exists()
+    assert not (tmp_path / ".philosophyos-writes.jsonl").exists()
+
+
+@pytest.mark.anyio
+async def test_obsidian_confirm_endpoint_writes_after_preview(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Confirm writes only the previewed Markdown and records an audit line."""
+
+    monkeypatch.setattr(runtime_settings, "obsidian_drafts_dir", str(tmp_path))
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        preview_response = await client.post(
+            "/api/v1/obsidian-drafts/preview",
+            json=sample_draft_request().model_dump(mode="json"),
+        )
+        preview = preview_response.json()
+        confirm_response = await client.post(
+            "/api/v1/obsidian-drafts/confirm",
+            json={
+                "target_path": preview["target_path"],
+                "markdown": preview["markdown"],
+                "expected_current_sha256": preview["current_sha256"],
+            },
+        )
+
+    assert confirm_response.status_code == 201
+    assert Path(preview["target_path"]).read_text(encoding="utf-8") == preview["markdown"]
+    assert (tmp_path / ".philosophyos-writes.jsonl").exists()
+
+
+@pytest.mark.anyio
+async def test_obsidian_confirm_endpoint_blocks_conflict(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Confirm returns 409 when the target changed after preview."""
+
+    monkeypatch.setattr(runtime_settings, "obsidian_drafts_dir", str(tmp_path))
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        preview_response = await client.post(
+            "/api/v1/obsidian-drafts/preview",
+            json=sample_draft_request().model_dump(mode="json"),
+        )
+        preview = preview_response.json()
+        target_path = Path(preview["target_path"])
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        target_path.write_text("changed after preview\n", encoding="utf-8")
+        confirm_response = await client.post(
+            "/api/v1/obsidian-drafts/confirm",
+            json={
+                "target_path": preview["target_path"],
+                "markdown": preview["markdown"],
+                "expected_current_sha256": preview["current_sha256"],
+            },
+        )
+
+    assert confirm_response.status_code == 409
+    assert target_path.read_text(encoding="utf-8") == "changed after preview\n"
