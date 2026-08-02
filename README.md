@@ -1,202 +1,209 @@
-# PhilosophyOS
+# PhilosophyOS 🏛️✨
 
-PhilosophyOS 是一个以每日哲学挑战、苏格拉底式对话、可信文献检索和 Obsidian 思想沉淀为核心的个人哲学学习智能体。
+> 一座给个人思想使用的「数字哲学博物馆」。
+>
+> PhilosophyOS 不是普通的 AI 聊天页，也不是只会塞知识点的学习工具。它想做的是：每天给你一个值得认真对话的问题，把你的回答、犹豫、立场变化和哲学家参照沉淀成一座可以回看的思想档案。
 
-当前本地 Beta 优先覆盖从古希腊到当代的西方哲学，并先交付一个不依赖 Obsidian 的单人思想闭环。中国哲学、好友讨论、笔记工作台、云同步和计费能力都放入后续计划。
+PhilosophyOS 当前处在本地 Beta 阶段，优先覆盖从古希腊到当代的西方哲学。核心体验围绕四件事展开：
 
-## 当前可用模块
+- 🌅 每日哲学命题：从一个问题开始，而不是从一堆菜单开始。
+- 🧭 苏格拉底式对话：追问、澄清、比较、整理，让观点慢慢成形。
+- 🗂️ 思想档案：把每次对话沉淀成本地可检索、可导出、可回看的思想节点。
+- 🕸️ 关系图谱与哲学家图鉴：像 Obsidian 一样探索思想之间的联系，也能从哲学家进入相关问题。
 
-本地 Beta 的主导航只保留已完成模块：
+---
 
-- 今日：进入每日哲学命题。
-- 对话：完成苏格拉底式追问、解释、比较和整理。
-- 探索：查询西方哲学知识与来源。
-- 思想档案：查看、筛选、导出、导入和删除本地思想快照。
-- 西方哲学家：浏览 60 位西方哲学家图鉴，并跳转到相关档案。
+## 现在能用什么？🚀
 
-暂不在主导航展示好友、笔记工作台、云同步、计费或 Obsidian 双向同步。这些能力保留在产品文档和后续计划中，避免当前版本出现占位入口。
+本地 Beta 的主导航只保留已经有实际功能的模块：
 
-## 前期文档
-
-| 文档 | 用途 |
+| 模块 | 用来做什么 |
 | --- | --- |
-| [PhilosophyOS-PRD.md](PhilosophyOS-PRD.md) | 完整产品需求与版本范围 |
-| [docs/product/mvp-scope.md](docs/product/mvp-scope.md) | MVP 边界、成功标准和演示路径 |
-| [docs/content/western-philosophy-map.md](docs/content/western-philosophy-map.md) | 西方哲学时代、人物与内容深度地图 |
-| [docs/content/source-policy.md](docs/content/source-policy.md) | 来源、版权、引用和版本管理规范 |
-| [docs/architecture/knowledge-model.md](docs/architecture/knowledge-model.md) | 知识实体、关系、记忆和 Obsidian 数据模型 |
-| [docs/product/wireframes.md](docs/product/wireframes.md) | 核心页面低保真原型与状态说明 |
-| [docs/operations/模型配置与启动说明.md](docs/operations/模型配置与启动说明.md) | 本地启动、多模型配置、连接测试与常见故障排查 |
-| [docs/product/model-api-onboarding.md](docs/product/model-api-onboarding.md) | 模型 API 申请、Base URL、隐私边界与普通用户托管额度路径 |
-| [docs/product/social-discussion.md](docs/product/social-discussion.md) | 好友关系、私密讨论、权限和安全规范 |
-| [docs/agent/behavior-spec.md](docs/agent/behavior-spec.md) | Agent 模式、工具调用和输出约束 |
-| [docs/evaluation/evaluation-plan.md](docs/evaluation/evaluation-plan.md) | 质量评测维度、门槛和回归流程 |
-| [docs/architecture/technical-spikes.md](docs/architecture/technical-spikes.md) | RAG 与 Obsidian 两项技术验证方案 |
-| [data/seed/philosophers.csv](data/seed/philosophers.csv) | 首批哲学家种子数据 |
-| [data/seed/questions.csv](data/seed/questions.csv) | 首批每日问题种子数据 |
-| [data/evals/cases.csv](data/evals/cases.csv) | 首批回归评测案例 |
-| [plans/philosophyos-mvp.plan.md](plans/philosophyos-mvp.plan.md) | 后续实现里程碑与任务 |
+| 🌅 今日 | 进入每日哲学问题，开启当天的思考 |
+| 💬 对话 | 完成苏格拉底式追问、解释、比较和整理 |
+| 🔍 探索 | 使用本地 RAG 与模型 API 查询西方哲学知识 |
+| 🗂️ 思想档案 | 查看、筛选、导出、导入和删除本地思想快照 |
+| 🕸️ 关系图谱 | 以网状图查看问题、主题、张力、哲学家和标签的关系 |
+| 🏛️ 哲学家图鉴 | 浏览西方思想家，进入相关档案与思想关系 |
 
-## 当前决策
+暂不在主导航展示的能力包括：好友讨论、笔记工作台、云同步、计费、Obsidian 双向同步。这些还在计划里，但不会用空入口假装已经完成。
 
-- Beta 形态：桌面优先的本地 Web 应用，普通用户不安装 Obsidian 也能完成核心闭环。
-- 内容范围：西方哲学从古希腊至当代。
-- 内容策略：全时代 L1 覆盖，重点人物达到 L2/L3。
-- Agent 架构：一个编排器加受控工具，不在首版部署自由协作的多 Agent。
-- 写入策略：思想档案默认写入本地 SQLite；Obsidian 草稿只是可选副本，后续双向同步需要单独计划。
-- 社交策略：核心单人闭环后再加入好友和 2–8 人私密哲学讨论，不建设公开动态广场。
-- 后期扩展：中国哲学使用独立分期与概念体系，作为 Phase 4 加入。
+---
 
+## 项目气质 🎨
 
-> 商业化版本的默认体验应是“打开即用”：普通用户使用 PhilosophyOS 托管模型额度；自带 API Key 只作为高级用户、团队和本地 Beta 的配置入口。详见 [模型 API 接入与用户路径](docs/product/model-api-onboarding.md)。
+PhilosophyOS 的视觉方向不是「AI 产品模板」，而是：
 
-## 本地运行与 AI 配置
+- 古典哲学 × 数字人文
+- 羊皮纸、手稿、博物馆展签
+- Obsidian 式知识探索
+- Apple 官网那种克制的空间叙事
+- 安静、深邃、可长期使用
 
-PhilosophyOS 的浏览器前端只访问本地 FastAPI。API Key 只能放在后端环境变量、本地 `.env` 或后端模型配置接口中，不能使用 `VITE_` 前缀，也不能写进前端代码。
+一句话：打开页面时，应该感觉像走进一座收藏人类思想的数字博物馆。
 
-### 1. 安装后端依赖
+---
+
+## 快速启动 🛠️
+
+### 1. 启动后端
+
+不配置真实模型 key 时，系统会使用 deterministic mode，适合本地演示和自动化测试。
 
 ```powershell
 cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-```
-
-### 2. 启动 deterministic mode
-
-不配置 `OPENAI_API_KEY` 时，系统默认使用确定性降级回复，适合本地演示和自动测试。
-
-```powershell
-cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
 $env:PHILOSOPHYOS_AI_PROVIDER='deterministic'
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-### 3. 启动 OpenAI mode
+后端默认地址：
 
-复制 `.env.example` 作为本机配置参考，然后只在后端 shell 或 `apps/api/.env` 中设置真实 key。
+```text
+http://127.0.0.1:8001
+```
+
+### 2. 启动前端
 
 ```powershell
-cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
-$env:OPENAI_API_KEY='<只在后端设置的 OpenAI API key>'
-$env:OPENAI_MODEL='gpt-5.6'
-$env:PHILOSOPHYOS_AI_PROVIDER='auto'
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+cd C:\Users\30290\Desktop\PhilosophyOS\apps\web
+npm.cmd install
+npm.cmd run dev
 ```
 
-如果使用 OpenAI-compatible 中转站，额外设置 `OPENAI_BASE_URL`。不设置时会使用官方 OpenAI 默认地址。
+前端默认地址：
 
-```powershell
-cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
-$env:OPENAI_API_KEY='<中转站提供的 key>'
-$env:OPENAI_BASE_URL='https://你的中转站地址/v1'
-$env:OPENAI_MODEL='<中转站支持的模型名>'
-$env:OPENAI_API_STYLE='responses'
-$env:PHILOSOPHYOS_AI_PROVIDER='auto'
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```text
+http://127.0.0.1:5174/#today
 ```
 
-如果希望同时保留免费模型、GPT 和 DeepSeek 三套 API，推荐使用 profile 配置。启动后可以在前端顶部的“模型”切换器选择“免费 / GPT / DeepSeek”；`.env` 只负责保存后端密钥和默认 profile。
+### 3. 一键启动
 
-```env
-PHILOSOPHYOS_MODEL_PROFILE=free
-
-FREE_API_KEY=<填入平台免费模型 key，例如豆包/火山方舟>
-FREE_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
-FREE_MODEL=doubao-seed-2-0-lite-260428
-FREE_API_STYLE=responses
-
-GPT_API_KEY=<填入你的 GPT 或 GPT 中转站 key>
-GPT_BASE_URL=https://api.synapai.top/v1
-GPT_MODEL=gpt-5.6
-GPT_API_STYLE=responses
-
-DEEPSEEK_API_KEY=<填入你的 DeepSeek key>
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-v4-flash
-DEEPSEEK_API_STYLE=chat_completions
-
-PHILOSOPHYOS_AI_PROVIDER=auto
-```
-
-免费模型目前建议使用豆包/火山方舟免费额度。后续如果替换成通义、OpenRouter Free 或其他免费模型，只需要改 `FREE_*` 这一组配置，不影响 GPT 和 DeepSeek。
-
-DeepSeek 官方 API 使用 OpenAI-compatible 的 Chat Completions 风格。只想默认启动 DeepSeek 时，将 `apps/api/.env` 改成：
-
-```env
-PHILOSOPHYOS_MODEL_PROFILE=deepseek
-DEEPSEEK_API_KEY=<填入你的 DeepSeek key>
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-v4-flash
-DEEPSEEK_API_STYLE=chat_completions
-PHILOSOPHYOS_AI_PROVIDER=auto
-```
-
-DeepSeek 的 Base URL 默认使用 `https://api.deepseek.com`。模型只建议提供两个选项：
-
-- `deepseek-v4-flash`：默认选项，适合速度和成本优先。
-- `deepseek-v4-pro`：更强回答质量，适合复杂哲学推理。
-
-### 4. 使用本地 `.env` 和一键启动脚本
-
-为了避免每次手动输入环境变量，可以把本机密钥放在 `apps/api/.env`。这个文件已被 `.gitignore` 忽略，不应提交到 GitHub。
-
-```env
-OPENAI_API_KEY=<填入你的新中转站 key>
-OPENAI_BASE_URL=https://api.synapai.top/v1
-OPENAI_MODEL=gpt-5.6
-OPENAI_API_STYLE=responses
-PHILOSOPHYOS_MODEL_PROFILE=gpt
-PHILOSOPHYOS_AI_PROVIDER=auto
-```
-
-配置好后，在项目根目录运行：
+也可以在项目根目录运行：
 
 ```powershell
 cd C:\Users\30290\Desktop\PhilosophyOS
 .\scripts\start-dev.ps1
 ```
 
-如果 PowerShell 拦截 `.ps1` 脚本，可以改用：
+如果 PowerShell 拦截 `.ps1`：
 
 ```powershell
 .\scripts\start-dev.cmd
 ```
 
-脚本会打开两个 PowerShell 窗口：
+---
 
-- 后端：`http://127.0.0.1:8001`
-- 前端：`http://127.0.0.1:5174/#today`
+## 模型 API 配置 🤖
 
-这两个窗口需要保持打开；关闭窗口会停止对应服务。
+PhilosophyOS 的浏览器前端不会直接保存 API Key。真实 key 只能放在后端环境变量、本地 `.env` 或后端模型配置接口中。
 
-### 5. 对话 API smoke test
+常见配置方式：
 
-```powershell
-$body = @{
-  user_message = '即使诚实带来损失，我仍然倾向坚持诚实。'
-  current_mode = 'socratic'
-  requested_mode = 'socratic'
-  topic = '诚实与德性'
-  turn_number = 1
-} | ConvertTo-Json
+```env
+PHILOSOPHYOS_MODEL_PROFILE=free
+PHILOSOPHYOS_AI_PROVIDER=auto
 
-Invoke-WebRequest -UseBasicParsing `
-  -Uri 'http://127.0.0.1:8001/api/v1/dialogue-turns' `
-  -Method Post `
-  -ContentType 'application/json' `
-  -Body $body
+FREE_API_KEY=<豆包/火山方舟 key>
+FREE_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+FREE_MODEL=doubao-seed-2-0-lite-260428
+FREE_API_STYLE=responses
+
+GPT_API_KEY=<OpenAI 或 OpenAI-compatible key>
+GPT_BASE_URL=https://api.openai.com/v1
+GPT_MODEL=gpt-5.6
+GPT_API_STYLE=responses
+
+DEEPSEEK_API_KEY=<DeepSeek key>
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-v4-flash
+DEEPSEEK_API_STYLE=chat_completions
 ```
 
-返回 JSON 中的 `provider` 会显示本轮使用了 `deterministic` 还是 `openai`；如果 OpenAI provider 失败，`provider_fallback_reason` 会说明降级原因。
+普通用户未来应该默认使用 PhilosophyOS 托管模型额度；自带 API Key 更适合高级用户、团队和本地 Beta。
 
-## 数据、备份与隐私边界
+---
 
-- 本地运行状态和日志保存在仓库 `.runtime` 目录，不提交到 Git。
-- 思想档案、会话和模型 profile 存在本地 SQLite；前端只能看到是否已配置和掩码状态，不能读回完整 API Key。
-- 思想档案页提供 JSON 备份、Markdown 导出、导入备份、单条删除和清空全部。
-- `.env`、真实 API Key、`.runtime`、本地数据库和 Obsidian 私人路径都不应该提交到 GitHub。
-- 测试默认不调用真实 GPT、DeepSeek 或豆包额度；E2E 使用隔离端口和 mock API。
+## 数据与隐私边界 🔐
 
-## 下一步
+- 本地运行状态和日志保存在 `.runtime`，不提交到 Git。
+- 思想档案、对话和模型 profile 存在本地 SQLite。
+- 前端只能看到配置状态，不能读回完整 API Key。
+- `.env`、真实 API Key、本地数据库、Obsidian 私人路径都不应该提交到 GitHub。
+- 测试默认不调用真实 GPT、DeepSeek 或豆包额度。
 
-本地 Beta 收口后，下一阶段按 [plans/philosophyos-plan-gap-audit.md](plans/philosophyos-plan-gap-audit.md) 拆分：Obsidian 安全沉淀、思想记忆增强、好友讨论和商业化基础设施。
+---
+
+## 哲学家肖像与版权 🖼️
+
+当前图鉴已经接入部分 Wikimedia Commons 肖像素材，并保留来源 metadata。后续补图时请优先使用：
+
+- Public Domain
+- CC0
+- CC BY
+- CC BY-SA
+
+不要直接使用 Pinterest、百度图片、Getty、Alamy 或来源不明的现代照片。现代思想家的照片尤其要谨慎：找不到明确授权时，宁可使用占位图或后续原创插画方案。
+
+素材目录：
+
+```text
+photo/
+apps/web/public/philosopher-portraits/
+```
+
+缺图清单：
+
+```text
+photo/_missing_portraits_for_manual_download.csv
+```
+
+---
+
+## 文档地图 🗺️
+
+| 文档 | 内容 |
+| --- | --- |
+| [PhilosophyOS-PRD.md](PhilosophyOS-PRD.md) | 产品愿景、需求与版本范围 |
+| [docs/product/mvp-scope.md](docs/product/mvp-scope.md) | MVP 边界、成功标准和演示路径 |
+| [docs/content/western-philosophy-map.md](docs/content/western-philosophy-map.md) | 西方哲学时代、人物与内容深度地图 |
+| [docs/content/source-policy.md](docs/content/source-policy.md) | 来源、版权、引用和版本管理规范 |
+| [docs/architecture/knowledge-model.md](docs/architecture/knowledge-model.md) | 知识实体、关系、记忆和 Obsidian 数据模型 |
+| [docs/product/model-api-onboarding.md](docs/product/model-api-onboarding.md) | 模型 API 申请、Base URL、隐私边界和用户路径 |
+| [docs/product/social-discussion.md](docs/product/social-discussion.md) | 好友关系、私密讨论、权限和安全规范 |
+| [docs/agent/behavior-spec.md](docs/agent/behavior-spec.md) | Agent 模式、工具调用和输出约束 |
+| [docs/evaluation/evaluation-plan.md](docs/evaluation/evaluation-plan.md) | 质量评测维度、门槛和回归流程 |
+| [plans/philosophyos-mvp.plan.md](plans/philosophyos-mvp.plan.md) | MVP 实现计划 |
+
+---
+
+## 开发检查 ✅
+
+前端类型检查：
+
+```powershell
+cd C:\Users\30290\Desktop\PhilosophyOS\apps\web
+npm.cmd run typecheck
+```
+
+后端测试：
+
+```powershell
+cd C:\Users\30290\Desktop\PhilosophyOS\apps\api
+.\.venv\Scripts\python.exe -m pytest
+```
+
+---
+
+## 下一步 🌱
+
+本地 Beta 收口后，下一阶段会继续补齐：
+
+- 更稳的 RAG 与引用链路
+- 更完整的哲学家图鉴与肖像版权清单
+- 思想档案的长期记忆能力
+- 好友私密讨论
+- Obsidian 安全同步
+- 面向商业化的托管模型额度与账户系统
+
+PhilosophyOS 的目标不是替你思考，而是让你的思考有地方生长。
