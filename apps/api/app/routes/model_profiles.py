@@ -157,6 +157,15 @@ def classify_connection_error(error: Exception) -> tuple[ConnectionTestCode, str
 
     status_code = getattr(error, "status_code", None)
     if status_code in {401, 403}:
+        # OpenAI-compatible gateways can expose a provider-specific
+        # `API_KEY_DISABLED` code through the SDK exception body/string.
+        # Keep the response key-free, but make the next action explicit.
+        error_text = str(error).lower()
+        error_body = getattr(error, "body", None)
+        if error_body is not None:
+            error_text = f"{error_text} {error_body!s}".lower()
+        if "api_key_disabled" in error_text or "api key is disabled" in error_text:
+            return "authentication_failed", "API Key 已被服务商禁用：请在服务商后台启用该 Key，或换一枚新的 Key。"
         return "authentication_failed", "认证失败：请检查 API Key 是否正确或是否已启用。"
     if status_code == 404:
         return "model_not_found", "模型不可用：请检查模型名或中转站是否支持该模型。"

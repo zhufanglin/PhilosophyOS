@@ -183,6 +183,7 @@ textarea:focus-visible {
   font-family: Georgia, var(--font-serif);
   font-size: 1rem;
   font-weight: 600;
+  text-transform: none;
 }
 
 .brand-copy {

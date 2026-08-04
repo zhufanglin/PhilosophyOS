@@ -786,11 +786,11 @@ function App() {
     >
       <aside className="side-nav" data-od-id="workspace-navigation">
         <div>
-          <a className="brand" href="#today" aria-label="PhilosophyOS 今日页">
+          <a className="brand" href="#today" aria-label="PhilosophyOS 哲学之眼今日页">
             <span>Φ</span>
             <span className="brand-copy">
               <strong>PhilosophyOS</strong>
-              <small>西方哲学工作区</small>
+              <small>哲学之眼</small>
             </span>
           </a>
           <button
@@ -854,7 +854,7 @@ function App() {
             <span>Φ</span>
             <span className="brand-copy">
               <strong>PhilosophyOS</strong>
-              <small>西方哲学工作区</small>
+              <small>哲学之眼</small>
             </span>
           </div>
           <div className="top-bar-actions">

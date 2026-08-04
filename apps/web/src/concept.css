@@ -83,6 +83,7 @@
   font-family: Georgia, "Noto Sans SC", sans-serif;
   font-size: 1.05rem;
   letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .concept-masthead > p {
