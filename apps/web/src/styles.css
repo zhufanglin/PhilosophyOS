@@ -279,6 +279,47 @@ textarea:focus-visible {
   font-size: 0.88rem;
 }
 
+.side-nav nav > .nav-placeholder {
+  min-height: 36px;
+  color: color-mix(in oklch, var(--ink-muted), transparent 18%);
+  font-size: 0.78rem;
+  opacity: 0.78;
+}
+
+.nav-placeholder > span {
+  min-width: 0;
+  flex: 1;
+}
+
+.nav-placeholder em {
+  color: var(--burgundy);
+  font-size: 0.56rem;
+  font-style: normal;
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.app-frame.nav-collapsed .side-nav nav > .nav-placeholder {
+  width: 42px;
+  justify-content: center;
+  gap: 0;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 0;
+  padding-left: 0;
+  font-size: 0;
+}
+
+.app-frame.nav-collapsed .nav-placeholder > span,
+.app-frame.nav-collapsed .nav-placeholder em {
+  display: none;
+}
+
+.app-frame.nav-collapsed .nav-placeholder svg {
+  width: 18px;
+  height: 18px;
+}
+
 .edition-mark {
   padding-top: 16px;
   border-top: 1px solid var(--rule);

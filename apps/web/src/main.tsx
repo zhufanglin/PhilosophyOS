@@ -1,4 +1,4 @@
-import { Archive, BookMarked, ChevronLeft, ChevronRight, Compass, Landmark, MessageSquare, Search, Settings2, UserRound, X } from "lucide-react";
+import { Archive, BookMarked, ChevronLeft, ChevronRight, Cloud, Compass, Landmark, MessageSquare, Search, Settings2, ShoppingBag, UserRound, X } from "lucide-react";
 import { StrictMode, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -811,6 +811,22 @@ function App() {
             <small className="nav-section-label archive-label">个人馆藏</small>
             <a className={view === "archive" ? "active" : ""} href="#archive" aria-current={view === "archive" ? "page" : undefined}><Archive size={17} /> 思想档案</a>
             <a className={view === "philosophers" ? "active" : ""} href="#philosophers" aria-current={view === "philosophers" ? "page" : undefined}><Landmark size={17} /> 西方哲学家</a>
+            <small className="nav-section-label archive-label">未来能力</small>
+            <span className="nav-placeholder" aria-disabled="true" title="商业化版本开放">
+              <UserRound size={17} />
+              <span>数字身份</span>
+              <em>即将开放</em>
+            </span>
+            <span className="nav-placeholder" aria-disabled="true" title="商业化版本开放">
+              <Cloud size={17} />
+              <span>云同步</span>
+              <em>即将开放</em>
+            </span>
+            <span className="nav-placeholder" aria-disabled="true" title="商业化版本开放">
+              <ShoppingBag size={17} />
+              <span>Avatar 商城</span>
+              <em>即将开放</em>
+            </span>
           </nav>
         </div>
         <div className="edition-mark">
