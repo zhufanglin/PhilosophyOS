@@ -1807,3 +1807,138 @@
     animation: none;
   }
 }
+
+/* Work overview — the homepage structure, turned into a living portfolio index. */
+.work-overview-page {
+  overflow: hidden;
+}
+
+.work-overview-header {
+  min-height: 650px;
+}
+
+.work-overview-hero-space {
+  min-height: 470px;
+}
+
+.work-overview-portrait-wash {
+  top: -205px;
+  right: 0;
+  width: 86%;
+  height: 500px;
+  opacity: 0.52;
+}
+
+.work-overview-feature-card {
+  bottom: 24px;
+}
+
+.work-overview-note-mark {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border: 1px solid var(--framework-burgundy);
+  border-radius: 50%;
+  color: var(--framework-burgundy);
+  font-family: var(--framework-serif);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.work-overview-works-section {
+  padding-bottom: 104px;
+}
+
+.work-overview-index-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--framework-line);
+}
+
+.work-overview-index-card {
+  display: flex;
+  min-height: 242px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px 30px 26px 0;
+  border-bottom: 1px solid var(--framework-line);
+}
+
+.work-overview-index-card:nth-child(even) {
+  padding-right: 0;
+  padding-left: 30px;
+  border-left: 1px solid var(--framework-line);
+}
+
+.work-overview-index-card:last-child {
+  grid-column: 1 / -1;
+  padding-right: 52%;
+}
+
+.work-overview-index-card > span {
+  color: var(--framework-burgundy);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.work-overview-index-card h3 {
+  margin: 44px 0 0;
+  font-family: var(--framework-serif);
+  font-size: 37px;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.work-overview-index-card p {
+  max-width: 330px;
+  margin: 12px 0 0;
+  color: var(--framework-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.work-overview-index-card button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  padding: 17px 0 0;
+  border: 0;
+  border-top: 1px solid var(--framework-line);
+  color: var(--framework-burgundy);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--framework-sans);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.work-overview-index-card button:hover {
+  color: var(--framework-burgundy-deep);
+}
+
+.work-overview-path-section {
+  padding-top: 96px;
+}
+
+@media (max-width: 860px) {
+  .work-overview-index-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .work-overview-index-card,
+  .work-overview-index-card:nth-child(even),
+  .work-overview-index-card:last-child {
+    grid-column: auto;
+    padding: 24px 0;
+    border-left: 0;
+  }
+
+  .work-overview-index-card h3 {
+    margin-top: 28px;
+  }
+}

@@ -1,4 +1,4 @@
-import { Archive, BookMarked, ChevronLeft, ChevronRight, Cloud, Compass, Landmark, MessageSquare, Search, Settings2, ShoppingBag, UserRound, X } from "lucide-react";
+import { Archive, BookMarked, ChevronLeft, ChevronRight, Cloud, Compass, Landmark, LayoutDashboard, MessageSquare, Search, Settings2, ShoppingBag, UserRound, X } from "lucide-react";
 import { StrictMode, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -9,6 +9,7 @@ import { DialoguePage, type ModelProfile } from "./pages/DialoguePage";
 import { DailyQuestionView, TodayPage } from "./pages/TodayPage";
 import { ThoughtArchivePage } from "./pages/ThoughtArchivePage";
 import { PhilosopherAtlasPage } from "./pages/PhilosopherAtlasPage";
+import { WorkOverviewPage } from "./pages/WorkOverviewPage";
 import socratesPortrait from "./assets/philosophers/socrates-louvre.jpg";
 import "./styles.css";
 import "./editorial.css";
@@ -188,9 +189,9 @@ const modelSwitcherItems: Array<{ profile: ModelProfile; label: string }> = [
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8001";
 
-type AppView = "today" | "dialogue" | "explore" | "concept" | "archive" | "philosophers";
+type AppView = "overview" | "today" | "dialogue" | "explore" | "concept" | "archive" | "philosophers";
 
-const appViews: AppView[] = ["today", "dialogue", "explore", "concept", "archive", "philosophers"];
+const appViews: AppView[] = ["overview", "today", "dialogue", "explore", "concept", "archive", "philosophers"];
 
 const settingsArchiveNotes = [
   {
@@ -804,6 +805,7 @@ function App() {
             <span className="nav-collapse-label">{navCollapsed ? "展开" : "收起"}</span>
           </button>
           <nav aria-label="主导航">
+            <a className={view === "overview" ? "active" : ""} href="#overview" aria-current={view === "overview" ? "page" : undefined}><LayoutDashboard size={17} /> 作品总览</a>
             <small className="nav-section-label">每日研习</small>
             <a className={view === "today" ? "active" : ""} href="#today" aria-current={view === "today" ? "page" : undefined}><BookMarked size={17} /> 今日</a>
             <a className={view === "dialogue" ? "active" : ""} href="#dialogue" aria-current={view === "dialogue" ? "page" : undefined}><MessageSquare size={17} /> 对话</a>
@@ -917,6 +919,7 @@ function App() {
           </div>
         </header>
         <div className="page-transition-shell" data-view={view} key={view}>
+          {view === "overview" ? <WorkOverviewPage onNavigate={navigate} /> : null}
           {view === "today" ? (
             <TodayPage
               apiBaseUrl={apiBaseUrl}
@@ -941,6 +944,7 @@ function App() {
       </div>
 
       <nav className="mobile-nav" aria-label="移动端主导航">
+        <a className={view === "overview" ? "active" : ""} href="#overview"><LayoutDashboard size={19} /><span>作品</span></a>
         <a className={view === "today" ? "active" : ""} href="#today"><BookMarked size={19} /><span>今日</span></a>
         <a className={view === "dialogue" ? "active" : ""} href="#dialogue"><MessageSquare size={19} /><span>对话</span></a>
         <a className={view === "explore" ? "active" : ""} href="#explore"><Compass size={19} /><span>探索</span></a>

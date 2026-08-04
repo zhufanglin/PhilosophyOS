@@ -6406,7 +6406,7 @@ h1 {
     bottom: 0;
     left: 0;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     min-height: 62px;
     padding-bottom: env(safe-area-inset-bottom);
     border-top: 1px solid var(--rule);
