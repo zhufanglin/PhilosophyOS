@@ -69,6 +69,29 @@ async def test_dialogue_turn_endpoint_returns_selected_modes(
 
 
 @pytest.mark.anyio
+async def test_dialogue_turn_exposes_exploratory_evidence_status() -> None:
+    """Unknown explanation topics remain a valid response instead of becoming HTTP 500."""
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/dialogue-turns",
+            json={
+                "user_message": "火星殖民地的宪法应该如何设计？",
+                "current_mode": "explain",
+                "requested_mode": "explain",
+                "model_profile": "free",
+                "turn_number": 1,
+            },
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["mode"] == "explain"
+    assert payload["evidence_status"] == "exploratory"
+    assert payload["assistant_message"]
+
+
+@pytest.mark.anyio
 async def test_dialogue_turn_endpoint_rejects_blank_user_message() -> None:
     """Request validation rejects empty user turns before orchestration."""
 

@@ -31,7 +31,7 @@ class ResponsePlan:
 
     message: str
     primary_questions: tuple[str, ...] = ()
-    evidence_status: Literal["supported", "corrected", "insufficient"] | None = None
+    evidence_status: Literal["supported", "corrected", "insufficient", "exploratory"] | None = None
     citation_ids: tuple[str, ...] = ()
 
 

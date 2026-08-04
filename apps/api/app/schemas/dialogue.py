@@ -63,7 +63,7 @@ class DialogueResponse(BaseModel):
     assistant_message: str
     primary_question: str | None = None
     should_ask_followup: bool
-    evidence_status: Literal["supported", "corrected", "insufficient"] | None = None
+    evidence_status: Literal["supported", "corrected", "insufficient", "exploratory"] | None = None
     citation_ids: tuple[str, ...] = ()
     provider: Literal["deterministic", "openai"] = "deterministic"
     provider_model: str | None = None
