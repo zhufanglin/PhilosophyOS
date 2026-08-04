@@ -13,10 +13,12 @@ import {
   Square,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 
 import { DialogueOutline, OutlineStep } from "../components/DialogueOutline";
 import { ReflectionReview } from "../components/ReflectionReview";
 import { DialogueSource, SourceDrawer } from "../components/SourceDrawer";
+import { VoiceInputButton } from "../components/VoiceInputButton";
 import { DailyQuestionView } from "./TodayPage";
 
 type DialogueMode = "socratic" | "explain" | "compare" | "reflect" | "organize";
@@ -44,6 +46,12 @@ type ProgressFlight = {
   fromY: number;
   deltaX: number;
   deltaY: number;
+};
+
+type DialogueFlyingMessage = {
+  id: string;
+  text: string;
+  phase: "source" | "target";
 };
 
 type DialogueTurnResponse = {
@@ -86,11 +94,11 @@ type PendingDialogueTurn = {
 };
 
 const modes = [
-  { id: "socratic" as const, label: "追问", icon: Sparkles },
-  { id: "explain" as const, label: "解释", icon: Lightbulb },
-  { id: "compare" as const, label: "比较", icon: GitCompareArrows },
-  { id: "reflect" as const, label: "反思", icon: Columns3 },
-  { id: "organize" as const, label: "整理", icon: ListTree },
+  { id: "socratic" as const, label: "追问", intent: "继续问你为什么", icon: Sparkles },
+  { id: "explain" as const, label: "解释", intent: "帮你拆清概念", icon: Lightbulb },
+  { id: "compare" as const, label: "比较", intent: "找相反或相邻立场", icon: GitCompareArrows },
+  { id: "reflect" as const, label: "反思", intent: "检查你的前提", icon: Columns3 },
+  { id: "organize" as const, label: "整理", intent: "沉淀成思想节点", icon: ListTree },
 ];
 
 const modelProfileLabels: Record<ModelProfile, string> = {
@@ -134,6 +142,33 @@ const sources: DialogueSource[] = [
 ];
 
 const activeDialogueStorageKey = "philosophyos-active-dialogue-id";
+
+const dialogueMessageSpring = {
+  type: "spring" as const,
+  stiffness: 360,
+  damping: 30,
+  mass: 0.72,
+};
+
+const dialogueSendSpring = {
+  type: "spring" as const,
+  stiffness: 340,
+  damping: 28,
+  mass: 0.8,
+};
+
+function socraticNextQuestion(userTurnCount: number) {
+  if (userTurnCount === 0) {
+    return "先说出你的直觉判断，再指出：是什么理由让你愿意相信它？";
+  }
+  if (userTurnCount === 1) {
+    return "现在试着提出一个反例：在什么情境下，你的判断可能不再成立？";
+  }
+  if (userTurnCount === 2) {
+    return "把这个判断的边界说清楚：你愿意为它承担什么后果？";
+  }
+  return "回看刚才的回答：哪一个前提最值得你重新检查？";
+}
 
 function openingMessage(question: DailyQuestionView) {
   if (question.isHistoricalFollowup) {
@@ -196,10 +231,63 @@ export function DialoguePage({
   const [progressFlight, setProgressFlight] = useState<ProgressFlight | null>(null);
   const [pulseStepId, setPulseStepId] = useState<string | null>(null);
   const [activeContext, setActiveContext] = useState(question.tension);
+  const [flyingMessage, setFlyingMessage] = useState<DialogueFlyingMessage | null>(null);
+  const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sendButtonRef = useRef<HTMLButtonElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
+  const scrollFrameRef = useRef<number | null>(null);
   const progressTimer = useRef<number | null>(null);
   const thinkingCopy = `${modelProfileLabels[thinkingProfile ?? modelProfile]} 正在思考中`;
+
+  function cancelMessageScroll() {
+    if (scrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(scrollFrameRef.current);
+      scrollFrameRef.current = null;
+    }
+  }
+
+  function appendVoiceTranscript(text: string) {
+    setDraft((current) => {
+      const separator = current.trim().length > 0 && !/[\s，。！？；：、]$/.test(current) ? " " : "";
+      return `${current}${separator}${text}`;
+    });
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
+  function findMessageElement(messageId: string) {
+    return messageListRef.current?.querySelector<HTMLElement>(
+      `[data-message-id="${CSS.escape(messageId)}"]`,
+    ) ?? null;
+  }
+
+  function focusDialogueMessage(
+    messageId: string,
+    block: ScrollLogicalPosition = "start",
+  ) {
+    setFocusedMessageId(messageId);
+    cancelMessageScroll();
+    let attempts = 0;
+    const frame = () => {
+      const target = findMessageElement(messageId);
+      if (!target && attempts < 12) {
+        attempts += 1;
+        scrollFrameRef.current = window.requestAnimationFrame(frame);
+        return;
+      }
+      scrollFrameRef.current = null;
+      if (!target) return;
+      target.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block,
+        inline: "nearest",
+      });
+    };
+    scrollFrameRef.current = window.requestAnimationFrame(frame);
+    window.setTimeout(() => {
+      setFocusedMessageId((current) => (current === messageId ? null : current));
+    }, 850);
+  }
 
   async function loadRecentSessions() {
     try {
@@ -244,6 +332,7 @@ export function DialoguePage({
 
   function startNewDialogue() {
     window.localStorage.removeItem(activeDialogueStorageKey);
+    cancelMessageScroll();
     setConversationId(null);
     setSessionQuestion(question.prompt);
     setMode("socratic");
@@ -258,6 +347,8 @@ export function DialoguePage({
     setReviewing(false);
     setFailedTurn(null);
     setActiveContext(question.tension);
+    setFlyingMessage(null);
+    setFocusedMessageId(null);
     window.setTimeout(() => inputRef.current?.focus(), 0);
   }
 
@@ -277,6 +368,7 @@ export function DialoguePage({
   }, [question.id, question.tension]);
   useEffect(() => () => {
     if (progressTimer.current !== null) window.clearTimeout(progressTimer.current);
+    cancelMessageScroll();
   }, []);
 
   const outline = useMemo<OutlineStep[]>(() => {
@@ -337,10 +429,11 @@ export function DialoguePage({
       throw new Error("Dialogue API returned an invalid response");
     }
 
+    const assistantMessageId = crypto.randomUUID();
     setMessages((current) => [
       ...current,
       {
-        id: crypto.randomUUID(),
+        id: assistantMessageId,
         role: "assistant",
         body: payload.assistant_message,
         mode: payload.mode,
@@ -353,6 +446,7 @@ export function DialoguePage({
     setMode(payload.mode);
     setFailedTurn(null);
     void loadRecentSessions();
+    return assistantMessageId;
   }
 
   async function submitAnswer(event: FormEvent<HTMLFormElement>) {
@@ -362,10 +456,12 @@ export function DialoguePage({
 
     const userTurns = messages.filter((message) => message.role === "user").length;
     const nextStepId = userTurns === 0 ? "reason" : userTurns === 1 ? "boundary" : "summary";
+    const userMessageId = crypto.randomUUID();
     const pendingTurn = { answer, mode, turnNumber: userTurns + 1, modelProfile };
+    setFlyingMessage({ id: userMessageId, text: answer, phase: "source" });
     setMessages((current) => [
       ...current,
-      { id: crypto.randomUUID(), role: "user", body: answer },
+      { id: userMessageId, role: "user", body: answer },
     ]);
     setDraft("");
     setFailedTurn(null);
@@ -374,9 +470,18 @@ export function DialoguePage({
 
     animateProgressTo(nextStepId);
     try {
-      await requestAssistantTurn(pendingTurn);
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      await new Promise((resolve) => window.setTimeout(resolve, 60));
+      setFlyingMessage({ id: userMessageId, text: answer, phase: "target" });
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      focusDialogueMessage(userMessageId, "start");
+      await new Promise((resolve) => window.setTimeout(resolve, 420));
+      setFlyingMessage(null);
+      const assistantMessageId = await requestAssistantTurn(pendingTurn);
+      focusDialogueMessage(assistantMessageId, "center");
     } catch {
       setFailedTurn(pendingTurn);
+      setFlyingMessage(null);
     } finally {
       setThinking(false);
       setThinkingProfile(null);
@@ -389,7 +494,8 @@ export function DialoguePage({
     setThinkingProfile(failedTurn.modelProfile);
     setThinking(true);
     try {
-      await requestAssistantTurn(failedTurn);
+      const assistantMessageId = await requestAssistantTurn(failedTurn);
+      focusDialogueMessage(assistantMessageId, "center");
     } catch {
       setFailedTurn(failedTurn);
     } finally {
@@ -407,7 +513,8 @@ export function DialoguePage({
     setThinkingProfile("free");
     setThinking(true);
     try {
-      await requestAssistantTurn(freeTurn);
+      const assistantMessageId = await requestAssistantTurn(freeTurn);
+      focusDialogueMessage(assistantMessageId, "center");
     } catch {
       setFailedTurn(freeTurn);
     } finally {
@@ -439,7 +546,9 @@ export function DialoguePage({
   }
 
   return (
-    <main className="dialogue-page" id="dialogue" data-od-id="reasoning-workspace">
+    <MotionConfig reducedMotion="user">
+      <LayoutGroup id="dialogue-message-flight">
+    <main className="dialogue-page dialogue-native" id="dialogue" data-od-id="reasoning-workspace">
       <header className="dialogue-header" data-od-id="reasoning-header">
         <div className="dialogue-header-toolbar">
           <button className="icon-button" type="button" onClick={onBack} aria-label="返回今日" title="返回今日">
@@ -482,8 +591,8 @@ export function DialoguePage({
           <h1>{sessionQuestion}</h1>
         </div>
 
-        <div className="mode-bar" aria-label="对话模式">
-          <span>研究方法</span>
+        <div className="mode-bar" aria-label="对话意图">
+          <span>下一步让 AI</span>
           <div className="mode-control" role="group" aria-label="选择对话方式">
             {modes.map((item) => {
               const Icon = item.icon;
@@ -492,10 +601,16 @@ export function DialoguePage({
                   className={mode === item.id ? "active" : ""}
                   type="button"
                   key={item.id}
+                  title={`${item.label}：${item.intent}`}
+                  aria-label={`${item.label}：${item.intent}`}
                   aria-pressed={mode === item.id}
                   onClick={() => setMode(item.id)}
                 >
-                  <Icon size={15} /> {item.label}
+                  <Icon size={15} />
+                  <span className="mode-copy">
+                    <strong>{item.label}</strong>
+                    <small>{item.intent}</small>
+                  </span>
                 </button>
               );
             })}
@@ -503,15 +618,26 @@ export function DialoguePage({
         </div>
       </header>
 
-      <div className="dialogue-workspace">
+      <div className="dialogue-workspace dialogue-native-workspace">
         <DialogueOutline steps={outline} pulseStepId={pulseStepId} />
         <section className="conversation" aria-label="哲学对话" data-od-id="reasoning-conversation">
-          <div className="message-list" aria-live="polite">
+          <div className="message-list dialogue-native-messages" ref={messageListRef} aria-live="polite">
             {restoringSession ? (
               <div className="dialogue-restoring" role="status">正在恢复上次思考…</div>
             ) : null}
-            {messages.map((message) => (
-              <article className={`message ${message.role}`} key={message.id}>
+            {messages.map((message) => {
+              const isFlightTarget = flyingMessage?.phase === "target" && message.id === flyingMessage.id;
+              const isLatestAssistant = message.role === "assistant" && message.id === messages[messages.length - 1]?.id;
+              const userTurnCount = messages.filter((item) => item.role === "user").length;
+              return (
+              <motion.article
+                className={`message dialogue-native-message ${message.role}${message.id === focusedMessageId ? " is-focus-anchor" : ""}${isFlightTarget ? " is-flight-target" : ""}`}
+                data-message-id={message.id}
+                key={message.id}
+                initial={isFlightTarget ? false : { opacity: 0, y: 14, x: message.role === "assistant" ? -10 : 0 }}
+                animate={isFlightTarget ? { opacity: 1 } : { opacity: 1, y: 0, x: 0 }}
+                transition={isFlightTarget ? { duration: 0 } : dialogueMessageSpring}
+              >
                 <div className="message-label">
                   <span aria-hidden="true">{message.role === "assistant" ? "Φ" : "你"}</span>
                   <div>
@@ -524,14 +650,59 @@ export function DialoguePage({
                   </div>
                 </div>
                 <div className="message-argument">
-                  <p>{message.body}</p>
+                  <motion.div
+                    className="dialogue-native-message-copy"
+                    layoutId={isFlightTarget ? `dialogue-flight-${flyingMessage?.id}` : undefined}
+                    initial={isFlightTarget ? { opacity: 0.86, scale: 0.94 } : false}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={isFlightTarget ? dialogueSendSpring : { duration: 0.18 }}
+                  >
+                    <p>{message.body}</p>
+                  </motion.div>
+                  {isLatestAssistant && !finished ? (
+                    <motion.div
+                      className="dialogue-native-next-question"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.12, duration: 0.22 }}
+                    >
+                      <span>下一问</span>
+                      <strong>{socraticNextQuestion(userTurnCount)}</strong>
+                    </motion.div>
+                  ) : null}
                 </div>
-              </article>
-            ))}
+              </motion.article>
+              );
+            })}
             {thinking ? (
-              <div className="thinking-state" role="status">
-                <span /><span /><span /> {thinkingCopy}
-              </div>
+              <motion.div
+                className="philosopher-thinking-card"
+                role="status"
+                aria-live="polite"
+                initial={{ opacity: 0, y: 12, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div className="philosopher-thinking-portrait" aria-hidden="true">
+                  {question.portraitUrl ? (
+                    <img src={question.portraitUrl} alt="" />
+                  ) : (
+                    <span>Φ</span>
+                  )}
+                  <i />
+                </div>
+                <div className="philosopher-thinking-copy">
+                  <span>正在沉思</span>
+                  <strong>{question.philosopher || "今日哲学家"} 正在思考你的判断</strong>
+                  <p>{thinkingCopy} · 正在沿着“{activeContext}”检查理由与前提。</p>
+                </div>
+                <div className="philosopher-thinking-pulse" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </motion.div>
             ) : null}
             {failedTurn ? (
               <div className="dialogue-retry-notice" role="status">
@@ -557,26 +728,51 @@ export function DialoguePage({
             {finished ? <div className="dialogue-complete">本轮对话已整理，下一步将确认哪些内容属于你的观点。</div> : null}
           </div>
 
-          <form className="dialogue-composer" onSubmit={submitAnswer} data-od-id="thought-launcher">
+          <form className={`dialogue-composer dialogue-native-composer${flyingMessage ? " is-sending" : ""}`} onSubmit={submitAnswer} data-od-id="thought-launcher">
             <label htmlFor="dialogue-answer">你的回答</label>
-            <textarea
-              id="dialogue-answer"
-              ref={inputRef}
-              rows={3}
-              value={draft}
-              disabled={finished || restoringSession}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder={finished ? "本轮对话已结束" : "写下你的判断或理由…"}
-            />
+            <div className="dialogue-native-input-stage">
+              <textarea
+                id="dialogue-answer"
+                ref={inputRef}
+                rows={3}
+                className={flyingMessage ? "is-flying" : undefined}
+                value={draft}
+                disabled={finished || restoringSession}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={finished ? "本轮对话已结束" : "写下你的判断或理由…"}
+              />
+              <AnimatePresence initial={false}>
+                {flyingMessage?.phase === "source" ? (
+                  <motion.div
+                    className="dialogue-native-send-flight-source"
+                    key={flyingMessage.id}
+                    layoutId={`dialogue-flight-${flyingMessage.id}`}
+                    initial={{ opacity: 0.2, scale: 0.94 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={dialogueSendSpring}
+                    aria-hidden="true"
+                  >
+                    {flyingMessage.text}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
             <div>
               <span>{draft.length}/2000</span>
-              <button ref={sendButtonRef} className="send-button" type="submit" disabled={!draft.trim() || thinking || restoringSession || finished} aria-label="发送回答" title="发送回答">
-                <Send size={18} />
-              </button>
+              <div className="composer-action-cluster">
+                <VoiceInputButton
+                  disabled={thinking || restoringSession || finished || Boolean(flyingMessage)}
+                  onTranscript={appendVoiceTranscript}
+                />
+                <button ref={sendButtonRef} className="send-button" type="submit" disabled={!draft.trim() || thinking || restoringSession || finished} aria-label="发送回答" title="发送回答">
+                  <Send size={18} />
+                </button>
+              </div>
             </div>
           </form>
         </section>
-        <aside className="dialogue-context" aria-label="当前推演上下文" data-od-id="reasoning-track">
+        <aside className="dialogue-context dialogue-native-context" aria-label="当前推演上下文" data-od-id="reasoning-track">
           <div className="context-panel-heading">
             <div>
               <span className="context-panel-kicker">推演轨道</span>
@@ -637,5 +833,7 @@ export function DialoguePage({
 
       <SourceDrawer open={sourcesOpen} sources={sources} onClose={() => setSourcesOpen(false)} />
     </main>
+      </LayoutGroup>
+    </MotionConfig>
   );
 }

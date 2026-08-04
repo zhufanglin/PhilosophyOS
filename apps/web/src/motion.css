@@ -1,0 +1,177 @@
+:root {
+  --page-enter-duration: 500ms;
+  --page-enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --page-stagger-duration: 420ms;
+}
+
+.page-transition-shell {
+  min-width: 0;
+  animation: page-enter var(--page-enter-duration) var(--page-enter-ease) backwards;
+}
+
+.page-transition-shell :where(
+  .today-heading,
+  .dialogue-question-title,
+  .archive-hero,
+  .atlas-hero,
+  .explore-thread-meta
+) {
+  --page-stagger-delay: 60ms;
+}
+
+.page-transition-shell :where(
+  .historical-followup-card,
+  .daily-question,
+  .conversation,
+  .archive-preservation-desk,
+  .weekly-report-draft-panel,
+  .atlas-lens-shelf,
+  .explore-sidebar-tools,
+  .explore-evidence-heading
+) {
+  --page-stagger-delay: 120ms;
+}
+
+.page-transition-shell :where(
+  .thinking-context-panel,
+  .dialogue-context,
+  .archive-insights,
+  .atlas-workspace,
+  .explore-thread-list,
+  .explore-context-card,
+  .explore-evidence-empty
+) {
+  --page-stagger-delay: 180ms;
+}
+
+.page-transition-shell :where(
+  .dialogue-composer,
+  .archive-filter-ledger,
+  .atlas-filter-rail,
+  .explore-composer,
+  .explore-relation-card,
+  .explore-citation-wrap
+) {
+  --page-stagger-delay: 240ms;
+}
+
+.page-transition-shell :where(
+  .daily-actions,
+  .dialogue-header-actions,
+  .archive-preservation-actions,
+  .weekly-report-draft-actions,
+  .atlas-era-timeline,
+  .explore-composer-footer,
+  .explore-sidebar-footer
+) {
+  --page-stagger-delay: 300ms;
+}
+
+.page-transition-shell :where(
+  .today-heading,
+  .dialogue-question-title,
+  .archive-hero,
+  .atlas-hero,
+  .explore-thread-meta,
+  .historical-followup-card,
+  .daily-question,
+  .conversation,
+  .archive-preservation-desk,
+  .weekly-report-draft-panel,
+  .atlas-lens-shelf,
+  .explore-sidebar-tools,
+  .explore-evidence-heading,
+  .thinking-context-panel,
+  .dialogue-context,
+  .archive-insights,
+  .atlas-workspace,
+  .explore-thread-list,
+  .explore-context-card,
+  .explore-evidence-empty,
+  .dialogue-composer,
+  .archive-filter-ledger,
+  .atlas-filter-rail,
+  .explore-composer,
+  .explore-relation-card,
+  .explore-citation-wrap,
+  .daily-actions,
+  .dialogue-header-actions,
+  .archive-preservation-actions,
+  .weekly-report-draft-actions,
+  .atlas-era-timeline,
+  .explore-composer-footer,
+  .explore-sidebar-footer
+) {
+  animation: page-stagger-enter var(--page-stagger-duration) var(--page-enter-ease) var(--page-stagger-delay) backwards;
+}
+
+.page-transition-shell .question-transition-surface {
+  animation: page-enter var(--page-enter-duration) var(--page-enter-ease) backwards;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-stagger-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-shell,
+  .page-transition-shell .question-transition-surface,
+  .page-transition-shell :where(
+    .today-heading,
+    .dialogue-question-title,
+    .archive-hero,
+    .atlas-hero,
+    .explore-thread-meta,
+    .historical-followup-card,
+    .daily-question,
+    .conversation,
+    .archive-preservation-desk,
+    .weekly-report-draft-panel,
+    .atlas-lens-shelf,
+    .explore-sidebar-tools,
+    .explore-evidence-heading,
+    .thinking-context-panel,
+    .dialogue-context,
+    .archive-insights,
+    .atlas-workspace,
+    .explore-thread-list,
+    .explore-context-card,
+    .explore-evidence-empty,
+    .dialogue-composer,
+    .archive-filter-ledger,
+    .atlas-filter-rail,
+    .explore-composer,
+    .explore-relation-card,
+    .explore-citation-wrap,
+    .daily-actions,
+    .dialogue-header-actions,
+    .archive-preservation-actions,
+    .weekly-report-draft-actions,
+    .atlas-era-timeline,
+    .explore-composer-footer,
+    .explore-sidebar-footer
+  ) {
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+  }
+}

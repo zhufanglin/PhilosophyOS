@@ -1,4 +1,4 @@
-import { Archive, BookMarked, Compass, Landmark, MessageSquare, Search, Settings2, UserRound, X } from "lucide-react";
+import { Archive, BookMarked, ChevronLeft, ChevronRight, Compass, Landmark, MessageSquare, Search, Settings2, UserRound, X } from "lucide-react";
 import { StrictMode, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -12,6 +12,9 @@ import { PhilosopherAtlasPage } from "./pages/PhilosopherAtlasPage";
 import socratesPortrait from "./assets/philosophers/socrates-louvre.jpg";
 import "./styles.css";
 import "./editorial.css";
+import "./motion.css";
+import "./dialogue.css";
+import "./framework-experiment.css";
 
 type HealthResponse = {
   status: string;
@@ -231,6 +234,7 @@ function App() {
   const [savingProfile, setSavingProfile] = useState<ModelProfile | null>(null);
   const [modelProfileSaveMessages, setModelProfileSaveMessages] = useState<Partial<Record<ModelProfile, string>>>({});
   const [modelPanelOpen, setModelPanelOpen] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(false);
   const [view, setView] = useState<AppView>(() => {
     const hash = window.location.hash.slice(1).split("?")[0];
     return appViews.includes(hash as AppView) ? hash as AppView : "today";
@@ -776,7 +780,7 @@ function App() {
   return (
     <>
     <div
-      className={`app-frame${thoughtTransition?.phase === "reveal" ? " thought-arriving" : ""}`}
+      className={`app-frame${thoughtTransition?.phase === "reveal" ? " thought-arriving" : ""}${navCollapsed ? " nav-collapsed" : ""}`}
       style={arrivalStyle}
     >
       <aside className="side-nav" data-od-id="workspace-navigation">
@@ -788,6 +792,17 @@ function App() {
               <small>西方哲学工作区</small>
             </span>
           </a>
+          <button
+            className="nav-collapse-toggle"
+            type="button"
+            aria-label={navCollapsed ? "展开模块入口" : "收起模块入口"}
+            title={navCollapsed ? "展开模块入口" : "收起模块入口"}
+            aria-pressed={navCollapsed}
+            onClick={() => setNavCollapsed((value) => !value)}
+          >
+            {navCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            <span className="nav-collapse-label">{navCollapsed ? "展开" : "收起"}</span>
+          </button>
           <nav aria-label="主导航">
             <small className="nav-section-label">每日研习</small>
             <a className={view === "today" ? "active" : ""} href="#today" aria-current={view === "today" ? "page" : undefined}><BookMarked size={17} /> 今日</a>
@@ -885,20 +900,28 @@ function App() {
             <button className="profile-button" type="button" aria-label="个人账户" title="个人账户"><UserRound size={18} /></button>
           </div>
         </header>
-        {view === "today" ? <TodayPage apiBaseUrl={apiBaseUrl} onStart={startDialogue} /> : null}
-        {view === "archive" ? <ThoughtArchivePage apiBaseUrl={apiBaseUrl} /> : null}
-        {view === "philosophers" ? <PhilosopherAtlasPage /> : null}
-        {view === "dialogue" ? (
-          <DialoguePage
-            apiBaseUrl={apiBaseUrl}
-            question={activeQuestion}
-            modelProfile={modelProfile}
-            onModelProfileChange={changeModelProfile}
-            onOpenModelSettings={() => setModelPanelOpen(true)}
-            onBack={() => navigate("today")}
-          />
-        ) : null}
-        {view === "explore" ? <ExplorePage apiBaseUrl={apiBaseUrl} /> : null}
+        <div className="page-transition-shell" data-view={view} key={view}>
+          {view === "today" ? (
+            <TodayPage
+              apiBaseUrl={apiBaseUrl}
+              onStart={startDialogue}
+              onQuestionChange={setActiveQuestion}
+            />
+          ) : null}
+          {view === "archive" ? <ThoughtArchivePage apiBaseUrl={apiBaseUrl} /> : null}
+          {view === "philosophers" ? <PhilosopherAtlasPage /> : null}
+          {view === "dialogue" ? (
+            <DialoguePage
+              apiBaseUrl={apiBaseUrl}
+              question={activeQuestion}
+              modelProfile={modelProfile}
+              onModelProfileChange={changeModelProfile}
+              onOpenModelSettings={() => setModelPanelOpen(true)}
+              onBack={() => navigate("today")}
+            />
+          ) : null}
+          {view === "explore" ? <ExplorePage apiBaseUrl={apiBaseUrl} /> : null}
+        </div>
       </div>
 
       <nav className="mobile-nav" aria-label="移动端主导航">

@@ -1,20 +1,22 @@
 import {
   ArrowRight,
   BookOpenCheck,
-  Clock3,
+  MessageCircle,
+  Network,
   RefreshCw,
-  ShieldCheck,
+  X,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 import kantPortrait from "../assets/philosophers/kant-becker.jpg";
-import sartrePortrait from "../assets/philosophers/sartre-cutout-v2.png";
-import socratesPortrait from "../assets/philosophers/socrates-cutout.png";
+import sartreArchivePortrait from "../assets/philosophers/sartre-1967.jpg";
+import socratesPortrait from "../assets/philosophers/socrates-louvre.jpg";
 
 export type DailyQuestionView = {
   id: string;
   domain: string;
-  difficulty: "入门" | "进阶";
+  difficulty: string;
   era: string;
   period?: string;
   prompt: string;
@@ -35,6 +37,7 @@ export type DailyQuestionView = {
 type TodayPageProps = {
   apiBaseUrl: string;
   onStart: (question: DailyQuestionView) => void;
+  onQuestionChange?: (question: DailyQuestionView) => void;
 };
 
 type ReflectionNextQuestionItem = {
@@ -48,7 +51,7 @@ type ReflectionNextQuestionItem = {
   philosopher_names: string[];
 } | null;
 
-const questions: DailyQuestionView[] = [
+export const dailyQuestions: DailyQuestionView[] = [
   {
     id: "q014",
     domain: "伦理学",
@@ -95,7 +98,7 @@ const questions: DailyQuestionView[] = [
     quote: "存在先于本质。",
     tags: ["存在主义", "自由", "责任"],
     source: "审核问题库 · 30 天内未出现",
-    portraitUrl: sartrePortrait,
+    portraitUrl: sartreArchivePortrait,
   },
 ];
 
@@ -157,15 +160,21 @@ function followupToQuestion(item: NonNullable<ReflectionNextQuestionItem>): Dail
   };
 }
 
-export function TodayPage({ apiBaseUrl, onStart }: TodayPageProps) {
+export function TodayPage({ apiBaseUrl, onStart, onQuestionChange }: TodayPageProps) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [activeConceptIndex, setActiveConceptIndex] = useState(0);
+  const [activeUtility, setActiveUtility] = useState<"history" | "map" | null>(null);
   const [followupQuestion, setFollowupQuestion] = useState<DailyQuestionView | null>(null);
   const [followupLoading, setFollowupLoading] = useState(true);
   const [followupRequestKey, setFollowupRequestKey] = useState(() => window.location.hash);
-  const question = questions[questionIndex];
+  const question = dailyQuestions[questionIndex];
   const todayLabel = formatToday(new Date());
-  const portraitTags = question.tags ?? [question.domain, question.tension, question.era];
+  const portraitVariant = question.englishName?.toLowerCase().includes("sartre") ? " is-sartre" : "";
+
+  useEffect(() => {
+    onQuestionChange?.(question);
+  }, [onQuestionChange, question]);
+
   const conceptDetails = [
     {
       label: question.tags?.[0] ?? question.domain,
@@ -186,8 +195,12 @@ export function TodayPage({ apiBaseUrl, onStart }: TodayPageProps) {
   const activeConcept = conceptDetails[activeConceptIndex] ?? conceptDetails[0];
 
   function chooseAnotherQuestion() {
-    setQuestionIndex((current) => (current + 1) % questions.length);
+    setQuestionIndex((current) => (current + 1) % dailyQuestions.length);
     setActiveConceptIndex(0);
+  }
+
+  function openCurrentPhilosopherAtlas() {
+    window.location.hash = `philosophers?search=${encodeURIComponent(question.philosopher)}`;
   }
 
   useEffect(() => {
@@ -227,209 +240,250 @@ export function TodayPage({ apiBaseUrl, onStart }: TodayPageProps) {
   }, [apiBaseUrl, followupRequestKey]);
 
   return (
-    <main className="today-page" id="today" data-od-id="today-workspace">
-      <header className="today-heading" data-od-id="today-heading">
-        <div>
-          <p className="section-kicker">{todayLabel}</p>
-          <p className="today-heading-title">今日思考</p>
+    <main className="framework-experiment-page today-framework-page" id="today" data-od-id="today-workspace">
+      <div className="framework-demo-shell today-framework-shell">
+        <div className="framework-demo-utility">
+          <span>TODAY / CONTENT-FIRST THINKING</span>
+          <span>PhilosophyOS · 01</span>
         </div>
-        <div className="today-heading-aside">
-          <p>留一点时间，把一个判断想得更清楚。</p>
-          <div className="daily-meta" aria-label="今日练习状态">
-            <span><Clock3 size={15} /> 约 12 分钟</span>
-            <span><ShieldCheck size={15} /> 审核题目</span>
-          </div>
-        </div>
-      </header>
 
-      {followupQuestion || followupLoading ? (
-        <section className="historical-followup-card" aria-label="继续上次未完成追问">
-          <div className="continue-index">
-            <BookOpenCheck size={18} />
-            <span>继续 / 历史追问</span>
-          </div>
-          {followupLoading ? (
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.header
+            key={question.id}
+            className="framework-demo-header today-framework-header"
+            aria-label={`${question.philosopher}今日思想空间`}
+            initial={{ opacity: 0, y: 18, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -14, scale: 0.985 }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+          >
             <div>
-              <span>正在翻找未完成的问题</span>
-              <strong>思想档案检索中</strong>
-              <p>如果最近节点保存了下一步问题，它会出现在这里。</p>
-            </div>
-          ) : followupQuestion ? (
-            <>
-              <div>
-                <span>{followupQuestion.domain} · {followupQuestion.sourceSnapshotTitle}</span>
-                <strong>{followupQuestion.prompt}</strong>
-                <p>来源：{followupQuestion.originalQuestion}</p>
+              <span className="framework-demo-eyebrow">{todayLabel}</span>
+              <h1 className="framework-demo-title">
+                <span>今天，和<em>{question.philosopher}</em></span>
+                <span>一起思考</span>
+                <span className="framework-demo-title-tension">关于{question.tension}。</span>
+              </h1>
+              <p className="framework-demo-lead">
+                从一个真实问题开始，再让对话、引用和思想档案慢慢长出自己的方向。
+                这不是浏览资料，而是进入一个可以持续回来的思想空间。
+              </p>
+              <div className="framework-demo-actions">
+                <button className="framework-demo-primary" type="button" onClick={() => onStart(question)} data-od-id="start-thinking">
+                  开始思考 <ArrowRight size={15} />
+                </button>
+                <button className="framework-demo-secondary" type="button" onClick={chooseAnotherQuestion}>
+                  换一题
+                </button>
               </div>
-              <button className="secondary-button" type="button" onClick={() => onStart(followupQuestion)}>
-                继续这个问题 <ArrowRight size={16} />
-              </button>
-            </>
-          ) : null}
-        </section>
-      ) : null}
+              <div className="framework-demo-note">
+                <span className="framework-demo-avatar-stack" aria-hidden="true">
+                  <i>苏</i>
+                  <i>康</i>
+                  <i>萨</i>
+                </span>
+                <span>从 38 位思想家开始，逐步建立自己的思想地图。</span>
+              </div>
+            </div>
 
-      <section className="daily-question" aria-labelledby="daily-question-title" data-od-id="focus-proposition">
-        <figure className="question-portrait">
-          <div className="museum-portrait-stage" data-era={question.era}>
-            <div className="museum-arch-lines" aria-hidden="true" />
-            <div className="museum-manuscript" aria-hidden="true">
-              <span>λόγος</span>
-              <span>virtus · ratio · freedom</span>
+            <div className="framework-demo-hero-space" aria-label="今日命题预览">
+              <div className={`framework-demo-portrait-wash${portraitVariant}`} aria-hidden="true">
+                <img src={question.portraitUrl} alt="" onError={(event) => { event.currentTarget.hidden = true; }} />
+              </div>
+              <div className="framework-demo-signal">问题<br />是入口</div>
+              <article className="framework-demo-thought-card">
+                <div className="framework-demo-card-meta">
+                  <span>今日命题 · {question.id.toUpperCase()}</span>
+                  <span>{question.domain}</span>
+                </div>
+                <h2>{question.prompt}</h2>
+                <p>{question.quote ?? `${question.philosopher}不会先给你结论，而会先追问：你真正想确认的是什么？`}</p>
+                <button className="framework-demo-card-footer" type="button" onClick={openCurrentPhilosopherAtlas}>
+                  <span>了解{question.philosopher}</span>
+                  <ArrowRight size={15} />
+                </button>
+              </article>
             </div>
-            <div className="portrait-aura" aria-hidden="true" />
-            <div className="portrait-frame">
-              <span className="portrait-fallback" aria-hidden="true">Φ</span>
-              <img
-                key={question.id}
-                src={question.portraitUrl}
-                alt={`${question.philosopher}肖像`}
-                data-philosopher={question.philosopher}
-                onError={(event) => {
-                  event.currentTarget.hidden = true;
-                }}
-              />
-            </div>
-          </div>
-          <figcaption>
-            <span>{question.englishName ?? question.philosopher}</span>
-            <strong>{question.philosopher}</strong>
-            <small>{question.period ?? question.era}</small>
-            {question.lifeSpan ? <small>{question.lifeSpan}</small> : null}
-            <div className="portrait-tags" aria-label="核心思想标签">
-              {portraitTags.map((tag) => (
-                <em key={tag}>{tag}</em>
-              ))}
-            </div>
-          </figcaption>
-        </figure>
+          </motion.header>
+        </AnimatePresence>
 
-        <article className="daily-question-copy">
-          <div className="question-series">
-            <span>今日命题</span>
-            <span>{question.id.toUpperCase()}</span>
-          </div>
-          <div className="question-tags" aria-label="问题分类">
-            <span>{question.domain}</span>
-            <span>{question.difficulty}</span>
-            <span>{question.era}</span>
-          </div>
-          <h1 id="daily-question-title" data-od-id="focus-proposition-title">{question.prompt}</h1>
-          <blockquote className="philosopher-quote">
-            <p>{question.quote ?? "把一个判断想清楚，也是在重新整理自己与世界的关系。"}</p>
-            <cite>— {question.philosopher}</cite>
-          </blockquote>
-          <dl className="question-context">
-            <div>
-              <dt>核心张力</dt>
-              <dd>{question.tension}</dd>
-            </div>
-            <div>
-              <dt>题目来源</dt>
-              <dd>{question.source}</dd>
-            </div>
-          </dl>
-          <div className="daily-actions">
-            <button className="primary-button start-button" type="button" onClick={() => onStart(question)} data-od-id="start-thinking">
-              开始思考 <ArrowRight size={18} />
-            </button>
-            <button className="secondary-button" type="button" onClick={chooseAnotherQuestion}>
-              <RefreshCw size={17} /> 换一题
-            </button>
-          </div>
-        </article>
-
-        <aside className="thinking-context-panel" aria-label="思想上下文" data-od-id="concept-track">
-          <div className="context-panel-heading">
-            <div>
-              <span className="context-panel-kicker">关联现场</span>
-              <h2>命题周围</h2>
-            </div>
-            <span className="context-live"><i />活跃</span>
-          </div>
-
-          <div className="concept-network" aria-label="相关概念">
-            <span className="network-line network-line-one" aria-hidden="true" />
-            <span className="network-line network-line-two" aria-hidden="true" />
-            <span className="network-line network-line-three" aria-hidden="true" />
-            {conceptDetails.map((concept, index) => (
-              <button
-                className={`concept-node concept-node-${index + 1}${activeConceptIndex === index ? " selected" : ""}`}
+        <div className="today-framework-floating-dock" aria-label="今日思考工具">
+          <AnimatePresence initial={false} mode="popLayout">
+            {activeUtility !== "history" ? (
+              <motion.button
+                key="history-widget"
+                layoutId="today-history-widget"
+                className={`today-framework-floating-widget ${followupLoading || followupQuestion ? "is-pending" : ""}`}
                 type="button"
-                key={concept.label}
-                aria-pressed={activeConceptIndex === index}
-                onClick={() => setActiveConceptIndex(index)}
+                onClick={() => setActiveUtility("history")}
+                aria-label="打开历史追问"
+                initial={{ opacity: 0, scale: 0.88, y: 10 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.86, y: 8 }}
+                transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                whileHover={{ y: -3, scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
-                <span>{concept.label}</span>
-                <small>{index === 0 ? "起点" : index === 1 ? "张力" : "追问"}</small>
+                <MessageCircle size={17} />
+                <span>历史追问</span>
+                {followupQuestion ? <i aria-label="有待处理问题" /> : null}
+              </motion.button>
+            ) : null}
+            {activeUtility !== "map" ? (
+              <motion.button
+                key="map-widget"
+                layoutId="today-map-widget"
+                className="today-framework-floating-widget"
+                type="button"
+                onClick={() => setActiveUtility("map")}
+                aria-label="打开思想地图"
+                initial={{ opacity: 0, scale: 0.88, y: 10 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.86, y: 8 }}
+                transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                whileHover={{ y: -3, scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Network size={17} />
+                <span>思想地图</span>
+              </motion.button>
+            ) : null}
+          </AnimatePresence>
+        </div>
+
+        <AnimatePresence initial={false} mode="wait">
+          {activeUtility === "history" ? (
+            <motion.aside
+              key="history-panel"
+              layoutId="today-history-widget"
+              className="today-framework-floating-panel today-framework-floating-panel-history"
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 24 }}
+              transition={{ type: "spring", stiffness: 280, damping: 27 }}
+              aria-label="历史追问面板"
+            >
+              <div className="today-framework-floating-panel-head">
+                <div>
+                  <span className="today-framework-floating-kicker">Continue the thread</span>
+                  <h2>历史追问</h2>
+                </div>
+                <button type="button" onClick={() => setActiveUtility(null)} aria-label="关闭历史追问"><X size={16} /></button>
+              </div>
+              <div className="today-framework-floating-topic">
+                <span>正在探索</span>
+                <strong>{question.tension}</strong>
+                <p>{question.prompt}</p>
+              </div>
+              <div className="today-framework-floating-task">
+                <div className="today-framework-floating-task-icon">
+                  {followupLoading ? <RefreshCw size={15} className="is-spinning" /> : <BookOpenCheck size={15} />}
+                </div>
+                <div>
+                  <span>{followupLoading ? "正在寻找未完成问题" : followupQuestion ? "待继续的思考" : "暂无未完成追问"}</span>
+                  <strong>
+                    {followupLoading ? "思想档案检索中" : followupQuestion ? followupQuestion.prompt : "今天的回答会成为下一次追问的起点"}
+                  </strong>
+                </div>
+              </div>
+              {followupQuestion ? (
+                <button className="today-framework-floating-action" type="button" onClick={() => onStart(followupQuestion)}>
+                  继续这个问题 <ArrowRight size={15} />
+                </button>
+              ) : null}
+            </motion.aside>
+          ) : null}
+
+          {activeUtility === "map" ? (
+            <motion.aside
+              key="map-panel"
+              layoutId="today-map-widget"
+              className="today-framework-floating-panel today-framework-floating-panel-map"
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 24 }}
+              transition={{ type: "spring", stiffness: 280, damping: 27 }}
+              aria-label="思想地图面板"
+            >
+              <div className="today-framework-floating-panel-head">
+                <div>
+                  <span className="today-framework-floating-kicker">Thought relations</span>
+                  <h2>思想地图</h2>
+                </div>
+                <button type="button" onClick={() => setActiveUtility(null)} aria-label="关闭思想地图"><X size={16} /></button>
+              </div>
+              <div className="today-framework-floating-map">
+                <div className="today-framework-map-canvas" aria-label="今日命题相关概念">
+                  <span className="today-framework-map-line today-framework-map-line-one" aria-hidden="true" />
+                  <span className="today-framework-map-line today-framework-map-line-two" aria-hidden="true" />
+                  <span className="today-framework-map-line today-framework-map-line-three" aria-hidden="true" />
+                  <div className="today-framework-map-origin">
+                    <span>今日命题</span>
+                    <strong>{question.tension}</strong>
+                  </div>
+                  {conceptDetails.map((concept, index) => (
+                    <button
+                      className={`today-framework-map-node today-framework-map-node-${index + 1}${activeConceptIndex === index ? " is-active" : ""}`}
+                      type="button"
+                      key={concept.label}
+                      aria-pressed={activeConceptIndex === index}
+                      onClick={() => setActiveConceptIndex(index)}
+                    >
+                      <span>{concept.label}</span>
+                      <small>{concept.relation}</small>
+                    </button>
+                  ))}
+                </div>
+                <div className="today-framework-floating-map-detail">
+                  <span>{activeConcept.relation}</span>
+                  <strong>{activeConcept.label}</strong>
+                  <p>{activeConcept.description}</p>
+                </div>
+              </div>
+              <button className="today-framework-floating-action" type="button" onClick={() => onStart(question)}>
+                从这个概念开始追问 <ArrowRight size={15} />
               </button>
+            </motion.aside>
+          ) : null}
+        </AnimatePresence>
+
+        <section className="framework-demo-section framework-demo-path-section today-framework-method" id="today-method" aria-labelledby="today-method-title">
+          <div className="framework-demo-section-head">
+            <span className="framework-demo-eyebrow">A living archive</span>
+            <div>
+              <h2 id="today-method-title">从一次回答，到一条可校对的思想节点。</h2>
+              <p>PhilosophyOS 不把对话停留在“AI 给答案”。你回答，系统追问，然后把真正发生变化的观点沉淀进档案。</p>
+            </div>
+          </div>
+          <div className="framework-demo-path">
+            {thinkingWorkflow.map((step) => (
+              <article className="framework-demo-path-step" key={step.index}>
+                <strong>{step.index} / {step.title}</strong>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </article>
             ))}
           </div>
+          <p className="today-framework-method-note">这里记录的不是聊天记录本身，而是你在追问中逐渐形成、修正、确认过的思想证据。</p>
+        </section>
 
-          <div className="context-detail">
-            <span>{activeConcept.relation}</span>
-            <strong>{activeConcept.label}</strong>
-            <p>{activeConcept.description}</p>
-            <button type="button" onClick={() => onStart(question)}>
-              从这个概念开始追问 <ArrowRight size={15} />
-            </button>
+        <section className="today-framework-progress" aria-label="最近进度">
+          <div className="today-framework-progress-copy">
+            <span>CONTINUE / 01</span>
+            <strong>自由与因果</strong>
+            <p>已完成 4 轮追问，观点等待确认</p>
           </div>
-
-          <div className="context-ledger">
-            <div>
-              <span>推理路径</span>
-              <strong>3 条</strong>
-            </div>
-            <div>
-              <span>可用来源</span>
-              <strong>2 项</strong>
-            </div>
-            <div>
-              <span>状态</span>
-              <strong>待展开</strong>
-            </div>
+          <div className="today-framework-progress-value">
+            <span>当前轨迹</span>
+            <strong>4 / 5</strong>
           </div>
-        </aside>
-      </section>
+        </section>
 
-      <section className="today-product-narrative" aria-label="PhilosophyOS 工作流程">
-        <div className="narrative-header">
-          <span>思想沉淀方法</span>
-          <h2>从一次回答，到一条可校对的思想节点</h2>
-          <p>
-            PhilosophyOS 不把对话停留在“AI 给答案”。它更像一张思想工作台：你回答，系统追问，
-            然后把真正发生变化的观点沉淀进档案。
-          </p>
-        </div>
-        <ol className="narrative-flow">
-          {thinkingWorkflow.map((step) => (
-            <li className="narrative-step" key={step.index}>
-              <span className="narrative-step-index">{step.index}</span>
-              <strong>{step.title}</strong>
-              <p>{step.description}</p>
-            </li>
-          ))}
-        </ol>
-        <p className="narrative-note">
-          这里记录的不是聊天记录本身，而是你在追问中逐渐形成、修正、确认过的思想证据。
-        </p>
-      </section>
-
-      <section className="today-footnote" aria-label="最近进度">
-        <div className="continue-index">
-          <BookOpenCheck size={18} />
-          <span>继续 / 01</span>
-        </div>
-        <div>
-          <span>上一次思考</span>
-          <strong>自由与因果</strong>
-          <span>已完成 4 轮追问，观点等待确认</span>
-        </div>
-        <div className="progress-value">
-          <span>完成进度</span>
-          <strong>4 / 5</strong>
-        </div>
-      </section>
+        <footer className="framework-demo-footer">
+          <span>PhilosophyOS · Digital philosophy sanctuary</span>
+          <span>Question → Dialogue → Trace</span>
+        </footer>
+      </div>
     </main>
   );
 }

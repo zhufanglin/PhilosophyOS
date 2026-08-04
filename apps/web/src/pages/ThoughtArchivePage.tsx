@@ -4,7 +4,23 @@ import ForceGraph2D, {
   type LinkObject,
   type NodeObject,
 } from "react-force-graph-2d";
-import { ChevronLeft, ChevronRight, Download, RotateCcw, Search, ShieldCheck, Trash2, Upload, X } from "lucide-react";
+import {
+  ArrowRight,
+  BrainCircuit,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  EyeOff,
+  Network,
+  RotateCcw,
+  Route,
+  Search,
+  ShieldCheck,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import {
   useCallback,
   useEffect,
@@ -490,36 +506,76 @@ function buildClusterCenters(clusterCount: number): GraphPosition[] {
 function buildInitialGraphPositions(
   nodes: ThoughtGraphNode[],
   edges: ThoughtGraphEdge[] = [],
+  viewport: { width: number; height: number } = { width: 960, height: 470 },
 ): Record<string, GraphPosition> {
+  const canvasWidth = Math.max(360, viewport.width);
+  const canvasHeight = Math.max(340, viewport.height);
   const positions: Record<string, GraphPosition> = {};
   const clusters = buildGraphClusters(nodes, edges);
-  const centers = buildClusterCenters(clusters.length);
   const degreeByNode = new Map<string, number>();
   edges.forEach((edge) => {
     degreeByNode.set(edge.source, (degreeByNode.get(edge.source) ?? 0) + 1);
     degreeByNode.set(edge.target, (degreeByNode.get(edge.target) ?? 0) + 1);
   });
 
+  const kindOrder: Record<GraphNodeKind, number> = {
+    topic: 0,
+    snapshot: 1,
+    tension: 2,
+    philosopher: 3,
+    tag: 4,
+  };
+  const sortedNodes = (cluster: ThoughtGraphNode[]) =>
+    [...cluster].sort(
+      (first, second) =>
+        (degreeByNode.get(second.id) ?? 0) - (degreeByNode.get(first.id) ?? 0) ||
+        kindOrder[first.kind] - kindOrder[second.kind] ||
+        second.weight - first.weight,
+    );
+
+  // A single connected component should start as an organic constellation:
+  // roomy enough to breathe, but still elastic so dragging one node pulls the
+  // nearby graph instead of feeling like a fixed infographic.
+  if (clusters.length === 1 && clusters[0].length > 0) {
+    const cluster = sortedNodes(clusters[0]);
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+    const radiusX = Math.max(180, canvasWidth * 0.34);
+    const radiusY = Math.max(112, canvasHeight * 0.28);
+    cluster.forEach((node, nodeIndex) => {
+      const seed = graphSeed(`${node.id}:constellation`);
+      const ring = node.kind === "topic" || node.kind === "snapshot" ? 0.42 : node.kind === "tension" ? 0.72 : 0.92;
+      const angle = (nodeIndex / cluster.length) * Math.PI * 2 + seed * 0.9 - Math.PI / 2;
+      const driftX = (graphSeed(`${node.id}:drift-x`) - 0.5) * 62;
+      const driftY = (graphSeed(`${node.id}:drift-y`) - 0.5) * 42;
+      positions[node.id] = {
+        x: Math.min(canvasWidth - 48, Math.max(48, centerX + Math.cos(angle) * radiusX * ring + driftX)),
+        y: Math.min(canvasHeight - 48, Math.max(48, centerY + Math.sin(angle) * radiusY * ring + driftY)),
+      };
+    });
+    return positions;
+  }
+
+  const scaleX = canvasWidth / 960;
+  const scaleY = canvasHeight / 470;
+  const centers = buildClusterCenters(clusters.length).map((center) => ({
+    x: center.x * scaleX,
+    y: center.y * scaleY,
+  }));
+
   clusters.forEach((cluster, clusterIndex) => {
     const center = centers[clusterIndex] ?? { x: 480, y: 235 };
     const columns = Math.min(5, Math.max(2, Math.ceil(Math.sqrt(cluster.length * 1.18))));
     const rows = Math.ceil(cluster.length / columns);
-    const gapX = cluster.length > 14 ? 94 : 108;
-    const gapY = cluster.length > 14 ? 68 : 82;
-    const sortedCluster = [...cluster].sort((first, second) => {
-      const kindOrder: Record<GraphNodeKind, number> = {
-        topic: 0,
-        snapshot: 1,
-        tension: 2,
-        philosopher: 3,
-        tag: 4,
-      };
-      return (
-        (degreeByNode.get(second.id) ?? 0) - (degreeByNode.get(first.id) ?? 0) ||
-        kindOrder[first.kind] - kindOrder[second.kind] ||
-        second.weight - first.weight
-      );
-    });
+    const gapX = Math.max(
+      cluster.length > 14 ? 94 : 108,
+      Math.min(280, (canvasWidth - 96) / Math.max(columns - 1, 1)),
+    );
+    const gapY = Math.max(
+      cluster.length > 14 ? 68 : 82,
+      Math.min(180, (canvasHeight - 96) / Math.max(rows - 1, 1)),
+    );
+    const sortedCluster = sortedNodes(cluster);
 
     sortedCluster.forEach((node, nodeIndex) => {
       const seed = graphSeed(`${node.id}:${clusterIndex}`);
@@ -529,11 +585,11 @@ function buildInitialGraphPositions(
       const organicY = (graphSeed(`${node.id}:y:${clusterIndex}`) - 0.5) * 12;
       positions[node.id] = {
         x: Math.min(
-          918,
+          canvasWidth - 42,
           Math.max(42, center.x + (column - (columns - 1) / 2) * gapX + organicX),
         ),
         y: Math.min(
-          428,
+          canvasHeight - 42,
           Math.max(42, center.y + (row - (rows - 1) / 2) * gapY + organicY),
         ),
       };
@@ -575,6 +631,8 @@ type SnapshotCorrectionResponse = {
   revision: ReflectionSnapshotListItem["snapshot"]["revisions"][number];
 };
 
+type InsightPanelMode = "insight" | "graph" | null;
+
 export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [items, setItems] = useState<ReflectionSnapshotListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -595,6 +653,8 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   const [weeklyReport, setWeeklyReport] = useState<ReflectionWeeklyReportDraft | null>(null);
   const [weeklyReportLoading, setWeeklyReportLoading] = useState(false);
   const [weeklyReportStatus, setWeeklyReportStatus] = useState<string | null>(null);
+  const [insightPanelMode, setInsightPanelMode] = useState<InsightPanelMode>(null);
+  const [archiveToolsOpen, setArchiveToolsOpen] = useState(false);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const timelineCardRefs = useRef<Record<string, HTMLElement | null>>({});
   const highlightTimerRef = useRef<number | null>(null);
@@ -669,6 +729,15 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     };
   }, []);
 
+  useEffect(() => {
+    function closeInsightPanel(event: KeyboardEvent) {
+      if (event.key === "Escape") setInsightPanelMode(null);
+    }
+
+    window.addEventListener("keydown", closeInsightPanel);
+    return () => window.removeEventListener("keydown", closeInsightPanel);
+  }, []);
+
   const topicOptions = useMemo(
     () => [...new Set(items.flatMap((item) => item.snapshot.content?.topic ?? []))].sort((a, b) => a.localeCompare(b, "zh-CN")),
     [items],
@@ -728,6 +797,32 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
     [completedContents],
   );
   const graphData = useMemo(() => buildThoughtGraph(completedSnapshotItems), [completedSnapshotItems]);
+  const latestCompletedItem = completedSnapshotItems[0];
+  const latestCompletedContent = latestCompletedItem?.snapshot.content;
+  const primaryInsight = tensionInsights[0] ?? null;
+  const primaryInsightLabel = primaryInsight?.label ?? latestCompletedContent?.topic ?? "你的问题还在发酵";
+  const primaryInsightCount = primaryInsight?.count ?? (latestCompletedContent ? 1 : 0);
+  const primaryInsightTopics = primaryInsight?.topics ?? latestCompletedContent?.tensions ?? [];
+  const primaryInsightEvidence = primaryInsight?.evidence[0] ?? (
+    latestCompletedItem && latestCompletedContent
+      ? {
+          snapshotId: latestCompletedItem.snapshot.snapshot_id,
+          createdAt: latestCompletedItem.created_at,
+          title: latestCompletedContent.title,
+          topic: latestCompletedContent.topic,
+          question: latestCompletedItem.question,
+          nextQuestion: latestCompletedContent.next_question,
+        }
+      : null
+  );
+  const primaryInsightPhilosophers = useMemo(() => {
+    const fromInsight = primaryInsightEvidence
+      ? completedSnapshotItems
+          .find((item) => item.snapshot.snapshot_id === primaryInsightEvidence.snapshotId)
+          ?.snapshot.content.related_philosophers.map((entry) => entry.name) ?? []
+      : [];
+    return [...new Set([...fromInsight, ...influences.map((influence) => influence.name)])].slice(0, 3);
+  }, [completedSnapshotItems, influences, primaryInsightEvidence]);
 
   function clearFilters() {
     setSearchTerm("");
@@ -887,13 +982,13 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
   }
 
   return (
-    <main className="thought-archive-page" id="archive">
+    <main className={`thought-archive-page thought-insight-space${archiveToolsOpen ? " archive-tools-open" : ""}`} id="archive">
       <header className="archive-hero">
-        <p className="section-kicker">THOUGHT ARCHIVE</p>
-        <h1>思想时间线</h1>
+        <p className="section-kicker">AI INSIGHT SYSTEM</p>
+        <h1>未完成思考</h1>
         <p>
-          这里会把每次对话后的思想节点串起来：哪些观点已经成形，哪些问题还在等待补生成，
-          以及你的哲学思考正在往哪里移动。
+          我会从你的长期对话里寻找那些反复出现、还没有真正结束的问题。它们不是冷冰冰的记录，
+          而是下一次深入思考的入口。
         </p>
         <div className="archive-stats" aria-label="思想档案统计">
           <span><Archive size={16} /> {filteredItems.length} / {items.length} 条记录</span>
@@ -901,6 +996,230 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
           <span><Clock3 size={16} /> {pendingCount} 条待补生成</span>
         </div>
       </header>
+
+      {!loading && !error ? (
+        <button
+          className="archive-tools-toggle"
+          type="button"
+          onClick={() => setArchiveToolsOpen((open) => !open)}
+          aria-expanded={archiveToolsOpen}
+        >
+          {archiveToolsOpen ? <EyeOff size={16} /> : <Archive size={16} />}
+          {archiveToolsOpen ? "收起档案工具" : "打开档案工具"}
+        </button>
+      ) : null}
+
+      {!loading && !error ? (
+        <section className="archive-insight-preview" aria-label="未完成思考预览">
+          <div className="archive-insight-preview-copy">
+            <span><BrainCircuit size={15} /> AI 正在整理的线索</span>
+            <h2>{primaryInsightLabel}</h2>
+            <p>
+              {primaryInsightCount > 0
+                ? `这条线索已经在你的档案中出现 ${primaryInsightCount} 次。它不是一个孤立问题，而是一组还没有完全收束的判断、责任和行动理由。`
+                : "目前线索还很轻，但它已经足够成为下一次对话的入口。"}
+            </p>
+          </div>
+          <div className="archive-insight-preview-grid">
+            <article>
+              <span>AI 发现</span>
+              <strong>
+                {primaryInsightTopics.length > 0
+                  ? primaryInsightTopics.slice(0, 2).join(" · ")
+                  : "问题背后的真实张力"}
+              </strong>
+              <p>系统会把重复出现的主题、张力和哲学家关联在一起，提示你哪里还值得继续想。</p>
+            </article>
+            <article>
+              <span>最近证据</span>
+              <strong>{primaryInsightEvidence?.title ?? "等待新的思想节点"}</strong>
+              <p>{primaryInsightEvidence ? primaryInsightEvidence.question : "完成一次对话后，这里会显示最近留下的思考证据。"}</p>
+            </article>
+            <article>
+              <span>相关思想家</span>
+              <div className="archive-insight-persona-row">
+                {primaryInsightPhilosophers.length > 0
+                  ? primaryInsightPhilosophers.map((name) => (
+                      <small key={name}>{name.slice(0, 1)}<b>{name}</b></small>
+                    ))
+                  : <small>Φ<b>等待形成</b></small>}
+              </div>
+              <p>他们不是装饰标签，而是之后进入对话、图鉴和思想地图的入口。</p>
+            </article>
+          </div>
+          <div className="archive-insight-preview-actions">
+            <button type="button" onClick={() => setInsightPanelMode("insight")}>
+              展开未完成思考 <ArrowRight size={14} />
+            </button>
+            {graphData.nodes.length > 0 ? (
+              <button type="button" onClick={() => setInsightPanelMode("graph")}>
+                查看思想路径 <Network size={14} />
+              </button>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {!loading && !error ? (
+        <LayoutGroup id="thought-insight-space">
+          <div className="thought-insight-dock" aria-label="思想洞察入口">
+            {insightPanelMode !== "insight" ? (
+              <motion.button
+                className={`thought-insight-widget${primaryInsightCount > 0 ? " has-new-insight" : ""}`}
+                type="button"
+                layoutId="thought-insight-widget"
+                onClick={() => setInsightPanelMode("insight")}
+                initial={{ opacity: 0, y: 16, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 360, damping: 28 }}
+              >
+                <span className="thought-insight-widget-icon"><BrainCircuit size={18} /></span>
+                <span>
+                  <strong>未完成思考</strong>
+                  <small>{primaryInsightCount > 0 ? `${primaryInsightCount} 次回到这里` : "正在听你的问题"}</small>
+                </span>
+                {primaryInsightCount > 0 ? <i aria-hidden="true" /> : null}
+              </motion.button>
+            ) : null}
+            {insightPanelMode !== "graph" && graphData.nodes.length > 0 ? (
+              <motion.button
+                className="thought-insight-widget thought-insight-widget-path"
+                type="button"
+                layoutId="thought-graph-widget"
+                onClick={() => setInsightPanelMode("graph")}
+                initial={{ opacity: 0, y: 16, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 360, damping: 28, delay: 0.04 }}
+              >
+                <span className="thought-insight-widget-icon"><Route size={18} /></span>
+                <span>
+                  <strong>思想路径</strong>
+                  <small>{graphData.nodes.length} 个关联节点</small>
+                </span>
+              </motion.button>
+            ) : null}
+          </div>
+
+          <AnimatePresence initial={false} mode="wait">
+            {insightPanelMode === "insight" ? (
+              <motion.aside
+                key="thought-insight-panel"
+                className="thought-insight-drawer"
+                layoutId="thought-insight-widget"
+                initial={{ opacity: 0, y: 20, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.94 }}
+                transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                aria-label="未完成思考洞察"
+              >
+                <div className="thought-insight-drawer-head">
+                  <div>
+                    <span className="thought-insight-kicker">AI INSIGHT / 01</span>
+                    <h2>你似乎还没有结束这个问题。</h2>
+                  </div>
+                  <button type="button" onClick={() => setInsightPanelMode(null)} aria-label="关闭未完成思考"><X size={17} /></button>
+                </div>
+                <div className="thought-insight-focus">
+                  <span>反复回到</span>
+                  <strong>{primaryInsightLabel}</strong>
+                  <p>
+                    {primaryInsightCount > 0
+                      ? `过去的思想节点里，你至少 ${primaryInsightCount} 次回到这条线索。`
+                      : "这条线索还没有形成稳定的次数，但它已经在最近的思考里浮现。"}
+                  </p>
+                </div>
+                <div className="thought-insight-reframe">
+                  <span><Sparkles size={14} /> AI 发现</span>
+                  <p>
+                    {primaryInsightTopics.length > 0
+                      ? `你真正反复探索的，可能不只是“${primaryInsightLabel}”，而是 ${primaryInsightTopics.slice(0, 2).join("、")} 之间如何共存。`
+                      : "这个问题还没有被你用一句话说完，下一次对话可以从它的反例开始。"}
+                  </p>
+                </div>
+                {primaryInsightPhilosophers.length > 0 ? (
+                  <div className="thought-insight-personas">
+                    <span>一起照亮这条线索</span>
+                    <div>
+                      {primaryInsightPhilosophers.map((name) => (
+                        <span className="thought-insight-persona" key={name}>
+                          <b>{name.slice(0, 1)}</b>
+                          <small>{name}</small>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {primaryInsightEvidence ? (
+                  <div className="thought-insight-evidence">
+                    <span>最近一次留下的证据</span>
+                    <strong>{primaryInsightEvidence.title}</strong>
+                    <small>{formatSnapshotTime(primaryInsightEvidence.createdAt)} · {primaryInsightEvidence.question}</small>
+                  </div>
+                ) : null}
+                <div className="thought-insight-actions">
+                  <a href="#dialogue" className="thought-insight-primary">
+                    继续探索 <ArrowRight size={15} />
+                  </a>
+                  {graphData.nodes.length > 0 ? (
+                    <button type="button" onClick={() => setInsightPanelMode("graph")}>
+                      查看思想路径 <Network size={15} />
+                    </button>
+                  ) : null}
+                  {primaryInsightEvidence ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setArchiveToolsOpen(true);
+                        focusTimelineSnapshots([primaryInsightEvidence.snapshotId]);
+                      }}
+                    >
+                      查看证据节点
+                    </button>
+                  ) : null}
+                  <button type="button" className="thought-insight-muted" onClick={() => setInsightPanelMode(null)}>
+                    暂时搁置
+                  </button>
+                </div>
+              </motion.aside>
+            ) : null}
+
+            {insightPanelMode === "graph" && graphData.nodes.length > 0 ? (
+              <motion.aside
+                key="thought-graph-panel"
+                className="thought-insight-drawer thought-graph-drawer"
+                layoutId="thought-graph-widget"
+                initial={{ opacity: 0, y: 20, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.94 }}
+                transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                aria-label="思想路径"
+              >
+                <div className="thought-insight-drawer-head">
+                  <div>
+                    <span className="thought-insight-kicker">DEEP EXPLORATION</span>
+                    <h2>思想路径</h2>
+                  </div>
+                  <button type="button" onClick={() => setInsightPanelMode(null)} aria-label="关闭思想路径"><X size={17} /></button>
+                </div>
+                <p className="thought-graph-drawer-intro">先从一个中心问题出发，再逐层看见它和主题、哲学家、标签之间的关系。</p>
+                <ForceThoughtRelationGraph
+                  focusedSnapshotId={focusedGraphSnapshotId}
+                  graph={graphData}
+                  items={completedSnapshotItems}
+                  onNavigateSnapshots={(snapshotIds) => {
+                    setArchiveToolsOpen(true);
+                    focusTimelineSnapshots(snapshotIds);
+                  }}
+                />
+              </motion.aside>
+            ) : null}
+          </AnimatePresence>
+        </LayoutGroup>
+      ) : null}
 
       {!loading && !error ? (
         <section className="archive-preservation-desk" aria-label="思想档案保全与迁移">
@@ -996,7 +1315,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         </section>
       ) : null}
 
-      {!loading && !error && filteredItems.length > 0 ? (
+      {!loading && !error && archiveToolsOpen && filteredItems.length > 0 ? (
         <section className="archive-insights" aria-label="思想档案洞察">
           <article>
             <span>反复出现的主题</span>
@@ -1028,7 +1347,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         </section>
       ) : null}
 
-      {!loading && !error && completedSnapshotItems.length > 0 ? (
+      {!loading && !error && archiveToolsOpen && completedSnapshotItems.length > 0 ? (
         <section className="tension-insight-panel" aria-label="思想张力聚合">
           <header className="tension-insight-header">
             <div>
@@ -1087,7 +1406,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         </section>
       ) : null}
 
-      {!loading && !error ? (
+      {!loading && !error && archiveToolsOpen ? (
         <section className="philosopher-influence-archive" aria-label="影响我的哲学家">
           <header className="philosopher-influence-header">
             <div>
@@ -1141,11 +1460,11 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         </section>
       ) : null}
 
-      {!loading && !error && evolutionItems.length > 0 ? (
+      {!loading && !error && archiveToolsOpen && evolutionItems.length > 0 ? (
         <ThoughtEvolutionMap items={evolutionItems} />
       ) : null}
 
-      {!loading && !error && graphData.nodes.length > 0 ? (
+      {!loading && !error && archiveToolsOpen && graphData.nodes.length > 0 ? (
         <ForceThoughtRelationGraph
           focusedSnapshotId={focusedGraphSnapshotId}
           graph={graphData}
@@ -1154,7 +1473,7 @@ export function ThoughtArchivePage({ apiBaseUrl }: ThoughtArchivePageProps) {
         />
       ) : null}
 
-      {!loading && !error && filteredItems.length > 0 ? (
+      {!loading && !error && archiveToolsOpen && filteredItems.length > 0 ? (
         <section className="thought-timeline" aria-label="思想节点时间线">
           {filteredItems.map((item) => (
             <TimelineCard
@@ -1362,6 +1681,7 @@ function ForceThoughtRelationGraph({
   const fitTimerRef = useRef<number | null>(null);
   const zoomFrameRef = useRef<number | null>(null);
   const initialFitDoneRef = useRef(false);
+  const dragGuardUntilRef = useRef(0);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [hoverNodeId, setHoverNodeId] = useState<string | null>(null);
   const [pulseNodeId, setPulseNodeId] = useState<string | null>(null);
@@ -1386,24 +1706,28 @@ function ForceThoughtRelationGraph({
   const visibleGraph = graphPages[graphPageIndex] ?? { nodes: [], edges: [] };
 
   const initialPositions = useMemo(
-    () => buildInitialGraphPositions(visibleGraph.nodes, visibleGraph.edges),
-    [visibleGraph.nodes, visibleGraph.edges],
+    () => buildInitialGraphPositions(visibleGraph.nodes, visibleGraph.edges, graphSize),
+    [graphSize, visibleGraph.nodes, visibleGraph.edges],
   );
   const graphData = useMemo(() => {
+    const layoutWidth = Math.max(360, graphSize.width);
+    const layoutHeight = Math.max(340, graphSize.height);
     const nodes: ForceThoughtNode[] = visibleGraph.nodes.map((node) => {
-        const position = initialPositions[node.id] ?? { x: 480, y: 235 };
-        return {
-          ...node,
-          x: position.x - 480,
-          y: position.y - 235,
-        };
-      });
+      const position = initialPositions[node.id] ?? { x: layoutWidth / 2, y: layoutHeight / 2 };
+      return {
+        ...node,
+        x: position.x - layoutWidth / 2,
+        y: position.y - layoutHeight / 2,
+      };
+    });
     const links: ForceThoughtLink[] = visibleGraph.edges.map((edge) => ({ ...edge }));
     return { nodes, links };
-  }, [visibleGraph.nodes, visibleGraph.edges, initialPositions]);
+  }, [graphSize.height, graphSize.width, visibleGraph.nodes, visibleGraph.edges, initialPositions]);
 
   const externalFocusedNodeId = focusedSnapshotId ? `snapshot:${focusedSnapshotId}` : null;
-  const focusedNodeId = hoverNodeId ?? activeNodeId ?? externalFocusedNodeId;
+  const focusedNodeId = draggingNodeId
+    ? null
+    : hoverNodeId ?? activeNodeId ?? externalFocusedNodeId;
   const focusedNode = visibleGraph.nodes.find((node) => node.id === focusedNodeId) ?? null;
   const connectedNodeIds = useMemo(() => {
     if (!focusedNodeId) return new Set<string>();
@@ -1460,18 +1784,48 @@ function ForceThoughtRelationGraph({
   useEffect(() => {
     const viewport = graphViewportRef.current;
     if (!viewport) return undefined;
+    const stage = viewport.parentElement;
     const updateSize = () => {
       const rect = viewport.getBoundingClientRect();
+      const stageRect = stage?.getBoundingClientRect();
       setGraphSize({
-        width: Math.max(300, Math.round(rect.width)),
-        height: Math.max(340, Math.round(rect.height)),
+        width: Math.max(300, Math.round(Math.max(rect.width, stageRect?.width ?? 0))),
+        height: Math.max(340, Math.round(Math.max(rect.height, stageRect?.height ?? 0))),
       });
     };
     updateSize();
     const observer = new ResizeObserver(updateSize);
     observer.observe(viewport);
-    return () => observer.disconnect();
-  }, []);
+    if (stage) observer.observe(stage);
+    const frameIds: number[] = [];
+    const timeoutIds: number[] = [];
+    let frameCount = 0;
+    const syncDuringDrawerGrowth = () => {
+      updateSize();
+      frameCount += 1;
+      if (frameCount < 24) {
+        frameIds.push(window.requestAnimationFrame(syncDuringDrawerGrowth));
+      }
+    };
+    frameIds.push(window.requestAnimationFrame(syncDuringDrawerGrowth));
+    [120, 320, 620].forEach((delay) => {
+      timeoutIds.push(window.setTimeout(updateSize, delay));
+    });
+    return () => {
+      observer.disconnect();
+      frameIds.forEach((frameId) => window.cancelAnimationFrame(frameId));
+      timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, [graphPageIndex, graphData.nodes.length]);
+
+  useEffect(() => {
+    if (!forceGraphRef.current || graphData.nodes.length === 0) return undefined;
+    const fitTimer = window.setTimeout(() => {
+      forceGraphRef.current?.zoomToFit(360, 86);
+      setGraphPlaced(true);
+    }, 90);
+    return () => window.clearTimeout(fitTimer);
+  }, [graphData.nodes.length, graphPageIndex, graphSize.height, graphSize.width]);
 
   useEffect(() => {
     const viewport = graphViewportRef.current;
@@ -1494,26 +1848,30 @@ function ForceThoughtRelationGraph({
     };
 
     const nodeById = new Map(graphData.nodes.map((node) => [node.id, node]));
+    const forceScale = Math.min(
+      3.2,
+      Math.max(1.85, Math.max(graphSize.width / 960, graphSize.height / 470) * 1.8),
+    );
     const linkForce = instance.d3Force("link") as ConfigurableForce | undefined;
     linkForce?.distance?.((link) => {
       const source = nodeById.get(graphEndpointId(link.source));
       const target = nodeById.get(graphEndpointId(link.target));
-      if (link.relation === "共现闭环") return 74;
-      if (link.relation === "思想证据") return 68;
-      if (source?.kind === "snapshot" || target?.kind === "snapshot") return 62;
-      if (source?.kind === "topic" || target?.kind === "topic") return 64;
-      return 58;
+      if (link.relation === "共现闭环") return 74 * forceScale;
+      if (link.relation === "思想证据") return 68 * forceScale;
+      if (source?.kind === "snapshot" || target?.kind === "snapshot") return 62 * forceScale;
+      if (source?.kind === "topic" || target?.kind === "topic") return 64 * forceScale;
+      return 58 * forceScale;
     });
     linkForce?.strength?.(0.38);
 
     const chargeForce = instance.d3Force("charge") as ConfigurableForce | undefined;
     chargeForce?.strength?.((nodeOrLink) => {
       const node = nodeOrLink as ForceThoughtNode;
-      if (node.kind === "topic") return -158;
-      if (node.kind === "snapshot") return -146;
-      return -122;
+      if (node.kind === "topic") return -158 * forceScale;
+      if (node.kind === "snapshot") return -146 * forceScale;
+      return -122 * forceScale;
     });
-    chargeForce?.distanceMax?.(560);
+    chargeForce?.distanceMax?.(560 * forceScale);
     instance.d3ReheatSimulation();
   }, [graphData]);
 
@@ -1581,8 +1939,10 @@ function ForceThoughtRelationGraph({
   }
 
   function scheduleNodePreview(node: NodeObject) {
+    if (performance.now() < dragGuardUntilRef.current) return;
     clearNodePreview();
     hoverTimerRef.current = window.setTimeout(() => {
+      if (performance.now() < dragGuardUntilRef.current) return;
       const nodeId = String(node.id ?? "");
       if (!nodeId) return;
       const point =
@@ -1596,6 +1956,7 @@ function ForceThoughtRelationGraph({
   }
 
   function activateNode(node: NodeObject) {
+    if (performance.now() < dragGuardUntilRef.current) return;
     const nodeId = String(node.id ?? "");
     if (!nodeId) return;
     setActiveNodeId(nodeId);
@@ -1613,13 +1974,13 @@ function ForceThoughtRelationGraph({
 
   function resetLayout() {
     graphData.nodes.forEach((node) => {
-      const position = initialPositions[node.id] ?? { x: 480, y: 235 };
-      node.x = position.x - 480;
-      node.y = position.y - 235;
+      const position = initialPositions[node.id] ?? { x: graphSize.width / 2, y: graphSize.height / 2 };
+      node.x = position.x - graphSize.width / 2;
+      node.y = position.y - graphSize.height / 2;
       node.vx = 0;
       node.vy = 0;
-      node.fx = undefined;
-      node.fy = undefined;
+      node.fx = node.x;
+      node.fy = node.y;
     });
     clearGraphFocus();
     forceGraphRef.current?.d3ReheatSimulation();
@@ -1676,7 +2037,7 @@ function ForceThoughtRelationGraph({
       const pulsing = nodeId === pulseNodeId;
       const scale = Math.max(globalScale, 0.01);
       const radius =
-        (active || dragging ? 4.1 : connected ? 2.8 : Math.min(2.6, 1.75 + node.weight * 0.22)) /
+        (active || dragging ? 6 : connected ? 4.4 : Math.min(4.5, 2.9 + node.weight * 0.36)) /
         scale;
       const nodeColors: Record<GraphNodeKind, string> = {
         topic: "#55595c",
@@ -1709,8 +2070,8 @@ function ForceThoughtRelationGraph({
 
       const compactViewport = graphSize.width < 540;
       const lines = [graphLabelFor(node)];
-      const fontSize = (compactViewport ? 10.2 : 11.2) / scale;
-      const lineHeight = 13.4 / scale;
+      const fontSize = (compactViewport ? 11 : 12.2) / scale;
+      const lineHeight = 14.8 / scale;
       context.font = `540 ${fontSize}px "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif`;
       const labelWidth = Math.max(...lines.map((line) => context.measureText(line).width));
       const labelHeight = lines.length * lineHeight;
@@ -1820,20 +2181,33 @@ function ForceThoughtRelationGraph({
     ) => {
       if (typeof node.x !== "number" || typeof node.y !== "number") return;
       context.beginPath();
-      context.arc(node.x, node.y, Math.max(5, 8 / Math.max(globalScale, 0.01)), 0, Math.PI * 2);
+      context.arc(node.x, node.y, Math.max(7, 11 / Math.max(globalScale, 0.01)), 0, Math.PI * 2);
       context.fillStyle = paintColor;
       context.fill();
     },
     [],
   );
 
+  const linkVisible = useCallback(
+    (link: LinkObject) => {
+      const relation = (link as ForceThoughtLink).relation;
+      const sourceId = graphEndpointId(link.source);
+      const targetId = graphEndpointId(link.target);
+      if (!focusedNodeId) {
+        return relation === "主题" || relation === "张力" || relation === "哲学家";
+      }
+      return sourceId === focusedNodeId || targetId === focusedNodeId;
+    },
+    [focusedNodeId],
+  );
+
   const linkColor = useCallback(
     (link: LinkObject) => {
       const sourceId = graphEndpointId(link.source);
       const targetId = graphEndpointId(link.target);
-      if (!focusedNodeId) return "rgba(98, 105, 112, 0.29)";
+      if (!focusedNodeId) return "rgba(98, 105, 112, 0.16)";
       return sourceId === focusedNodeId || targetId === focusedNodeId
-        ? "rgba(118, 89, 220, 0.72)"
+        ? "rgba(118, 89, 220, 0.6)"
         : "rgba(98, 105, 112, 0.055)";
     },
     [focusedNodeId],
@@ -1843,11 +2217,19 @@ function ForceThoughtRelationGraph({
     (link: LinkObject) => {
       const active =
         graphEndpointId(link.source) === focusedNodeId || graphEndpointId(link.target) === focusedNodeId;
-      if (!focusedNodeId) return 1.05;
-      return active ? 1.65 : 0.34;
+      if (!focusedNodeId) return 0.72;
+      return active ? 1.45 : 0.28;
     },
     [focusedNodeId],
   );
+
+  const linkCurvature = useCallback((link: LinkObject) => {
+    const relation = (link as ForceThoughtLink).relation;
+    if (relation === "哲学家") return 0.18;
+    if (relation === "张力") return -0.12;
+    if (relation === "主题") return 0.08;
+    return 0.22;
+  }, []);
 
   const tooltipPosition = tooltipPoint
     ? (() => {
@@ -1934,16 +2316,17 @@ function ForceThoughtRelationGraph({
               width={graphSize.width}
               height={graphSize.height}
               graphData={graphData}
-              backgroundColor="#f4f4f2"
+        backgroundColor="transparent"
               nodeRelSize={1}
               nodeVal={() => 1}
               nodeLabel={() => ""}
               nodeCanvasObjectMode={() => "replace"}
               nodeCanvasObject={drawNode}
               nodePointerAreaPaint={paintNodePointerArea}
+              linkVisibility={linkVisible}
               linkColor={linkColor}
               linkWidth={linkWidth}
-              linkCurvature={0}
+              linkCurvature={linkCurvature}
               minZoom={graphSize.width < 540 ? 0.28 : 0.5}
               maxZoom={2.4}
               warmupTicks={8}
@@ -1956,19 +2339,26 @@ function ForceThoughtRelationGraph({
               enableZoomInteraction
               onRenderFramePre={resetLabelLayout}
               onNodeHover={(node) => {
+                if (performance.now() < dragGuardUntilRef.current) return;
                 if (node) scheduleNodePreview(node);
                 else clearNodePreview();
               }}
               onNodeClick={activateNode}
               onNodeDrag={(node) => {
+                dragGuardUntilRef.current = performance.now() + 420;
                 setDraggingNodeId(String(node.id ?? ""));
-                setActiveNodeId(String(node.id ?? ""));
+                setActiveNodeId(null);
+                setPulseNodeId(null);
                 clearNodePreview();
               }}
               onNodeDragEnd={(node) => {
-                node.fx = node.x;
-                node.fy = node.y;
+                dragGuardUntilRef.current = performance.now() + 1400;
+                node.fx = undefined;
+                node.fy = undefined;
+                forceGraphRef.current?.d3ReheatSimulation();
                 setDraggingNodeId(null);
+                setActiveNodeId(null);
+                clearNodePreview();
               }}
               onBackgroundClick={clearGraphFocus}
               onZoom={({ k }) => updateZoomLabel(k)}

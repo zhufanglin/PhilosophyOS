@@ -1,0 +1,925 @@
+/* Modern Socratic dialogue workspace */
+.dialogue-native {
+  --dialogue-line: color-mix(in oklch, var(--rule), var(--ink) 8%);
+  --dialogue-line-soft: color-mix(in oklch, var(--rule), transparent 30%);
+  --dialogue-surface: color-mix(in oklch, var(--page), var(--paper-muted) 24%);
+  --dialogue-surface-strong: color-mix(in oklch, var(--page), white 16%);
+  --dialogue-accent: var(--burgundy);
+  min-height: calc(100vh - 64px);
+  min-height: calc(100dvh - 64px);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 4%, color-mix(in oklch, var(--dialogue-accent), transparent 96%), transparent 40%),
+    linear-gradient(90deg, color-mix(in oklch, var(--rule), transparent 74%) 1px, transparent 1px),
+    var(--page);
+  background-size: auto, 64px 100%, auto;
+  color: var(--ink);
+}
+
+.dialogue-native .dialogue-header {
+  border-bottom: 1px solid var(--dialogue-line-soft);
+  background: color-mix(in oklch, var(--page), white 8%);
+  backdrop-filter: blur(14px);
+}
+
+.dialogue-native .dialogue-header-toolbar,
+.dialogue-native .mode-bar {
+  max-width: none;
+  padding-right: 30px;
+  padding-left: 30px;
+}
+
+.dialogue-native .dialogue-question-title {
+  max-width: 980px;
+  padding-right: 30px;
+  padding-left: 30px;
+}
+
+.dialogue-native .dialogue-question-title h1 {
+  max-width: 920px;
+  color: var(--fg);
+  letter-spacing: -0.025em;
+}
+
+.dialogue-native .mode-bar {
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid var(--dialogue-line-soft);
+}
+
+.dialogue-native .mode-bar > span {
+  color: var(--ink-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.dialogue-native .mode-control {
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid var(--dialogue-line-soft);
+  border-radius: 18px;
+  background: color-mix(in oklch, var(--page), white 9%);
+}
+
+.dialogue-native .mode-control button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: var(--ink-muted);
+  background: transparent;
+}
+
+.dialogue-native .mode-control button:hover {
+  color: var(--dialogue-accent);
+  background: color-mix(in oklch, var(--dialogue-accent), transparent 94%);
+}
+
+.dialogue-native .mode-control button.active {
+  border-color: color-mix(in oklch, var(--dialogue-accent), transparent 62%);
+  color: var(--dialogue-accent);
+  background: color-mix(in oklch, var(--dialogue-accent), transparent 93%);
+}
+
+.dialogue-native .mode-copy {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.dialogue-native .mode-copy strong {
+  color: inherit;
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.15;
+}
+
+.dialogue-native .mode-copy small {
+  color: var(--ink-muted);
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dialogue-native .mode-control button.active .mode-copy small,
+.dialogue-native .mode-control button:hover .mode-copy small {
+  color: color-mix(in oklch, var(--dialogue-accent), var(--ink-muted) 38%);
+}
+
+.dialogue-native-workspace {
+  display: grid;
+  min-height: 0;
+  height: calc(100vh - 238px);
+  height: calc(100dvh - 238px);
+  grid-template-columns: 184px minmax(0, 1fr) 320px;
+  gap: 0;
+  padding: 0;
+}
+
+/* Hard reset for the older research-workbench dialogue rules in styles.css.
+   This file is imported after the global stylesheet, so the formal dialogue
+   surface behaves like a native chat space instead of the previous document
+   board. */
+.dialogue-native .message-list,
+.dialogue-native .message,
+.dialogue-native .message.user,
+.dialogue-native .message.assistant,
+.dialogue-native .message-label,
+.dialogue-native .message-argument,
+.dialogue-native .dialogue-composer,
+.dialogue-native .dialogue-composer textarea,
+.dialogue-native .dialogue-composer > div {
+  box-shadow: none;
+}
+
+.dialogue-native .message-list.dialogue-native-messages {
+  display: flex !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  gap: 26px !important;
+  overflow: auto !important;
+  padding: 34px clamp(18px, 3.4vw, 54px) 34px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overscroll-behavior: contain !important;
+  scroll-behavior: smooth !important;
+}
+
+.dialogue-native .message.dialogue-native-message,
+.dialogue-native .message.dialogue-native-message.user,
+.dialogue-native .message.dialogue-native-message.assistant {
+  display: grid !important;
+  gap: 12px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-top: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+.dialogue-native .message.dialogue-native-message.assistant {
+  width: min(100%, 980px) !important;
+  max-width: 980px !important;
+  grid-template-columns: 34px minmax(0, 1fr) !important;
+  margin-right: auto !important;
+  margin-left: 0 !important;
+}
+
+.dialogue-native .message.dialogue-native-message.user {
+  width: min(60%, 680px) !important;
+  max-width: 680px !important;
+  grid-template-columns: minmax(0, 1fr) 34px !important;
+  margin-right: 0 !important;
+  margin-left: auto !important;
+}
+
+.dialogue-native .message.dialogue-native-message.assistant .message-label {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+}
+
+.dialogue-native .message.dialogue-native-message.assistant .message-argument {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+}
+
+.dialogue-native .message.dialogue-native-message .message-label {
+  display: flex !important;
+  grid-column: auto !important;
+  align-items: flex-start !important;
+  gap: 0 !important;
+  min-width: 0 !important;
+}
+
+.dialogue-native .message.dialogue-native-message.user .message-label {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  justify-content: flex-end !important;
+}
+
+.dialogue-native .message.dialogue-native-message .message-label strong,
+.dialogue-native .message.dialogue-native-message .message-label small {
+  display: none !important;
+}
+
+.dialogue-native .message.dialogue-native-message .message-argument {
+  min-width: 0 !important;
+  padding: 0 !important;
+  padding-left: 0 !important;
+  border: 0 !important;
+  border-left: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.dialogue-native .message.dialogue-native-message.user .message-argument {
+  display: flex !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+}
+
+.dialogue-native .message.dialogue-native-message .message-argument p {
+  margin: 0 !important;
+  font-family: var(--font-body, Inter, "Microsoft YaHei", system-ui, sans-serif) !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: normal !important;
+}
+
+.dialogue-native .dialogue-composer::before {
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  display: none !important;
+  content: none !important;
+  pointer-events: none !important;
+}
+
+.dialogue-native .dialogue-composer.dialogue-native-composer {
+  position: relative !important;
+  width: min(calc(100% - clamp(36px, 6.8vw, 108px)), 920px) !important;
+  margin: 0 auto 22px !important;
+  padding: 12px !important;
+  border: 1px solid var(--dialogue-line-soft) !important;
+  border-radius: 22px !important;
+  background: color-mix(in oklch, var(--page), white 12%) !important;
+  box-shadow: 0 18px 42px color-mix(in oklch, var(--ink), transparent 94%) !important;
+  overflow: visible !important;
+}
+
+.dialogue-native .dialogue-composer.dialogue-native-composer > div {
+  background: transparent !important;
+}
+
+.dialogue-native .dialogue-composer.dialogue-native-composer label {
+  display: none !important;
+}
+
+.dialogue-native .dialogue-outline {
+  position: relative;
+  top: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 18px 12px;
+  border: 0;
+  border-right: 1px solid var(--dialogue-line-soft);
+  border-radius: 0;
+  background: color-mix(in oklch, var(--page), var(--paper-muted) 22%);
+}
+
+.dialogue-native .outline-heading {
+  border-bottom-color: var(--dialogue-line-soft);
+}
+
+.dialogue-native .outline-heading > span,
+.dialogue-native .dialogue-outline li > div > span {
+  color: var(--dialogue-accent);
+}
+
+.dialogue-native .outline-heading h2,
+.dialogue-native .dialogue-outline strong {
+  color: var(--fg);
+}
+
+.dialogue-native .dialogue-outline li {
+  border-bottom-color: var(--dialogue-line-soft);
+  color: var(--ink-muted);
+}
+
+.dialogue-native .outline-marker {
+  border: 1px solid var(--dialogue-line);
+  color: var(--dialogue-accent);
+  background: var(--page);
+}
+
+.dialogue-native .dialogue-outline li.complete .outline-marker {
+  border-color: var(--dialogue-accent);
+  color: var(--page);
+  background: var(--dialogue-accent);
+}
+
+.dialogue-native .dialogue-outline li.current .outline-marker {
+  border-color: var(--dialogue-accent);
+  color: var(--dialogue-accent);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--dialogue-accent), transparent 90%);
+}
+
+.dialogue-native .conversation {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 50% 0, color-mix(in oklch, var(--dialogue-accent), transparent 97%), transparent 38%),
+    var(--page);
+}
+
+.dialogue-native-messages {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 26px;
+  overflow: auto;
+  padding: 34px clamp(18px, 3.4vw, 54px) 34px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  scroll-padding-block: clamp(72px, 17vh, 168px) 28px;
+}
+
+.dialogue-native-message {
+  display: grid;
+  max-width: 980px;
+  width: min(100%, 980px);
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  scroll-margin-top: clamp(72px, 17vh, 168px);
+}
+
+.dialogue-native-message.assistant {
+  margin-right: auto;
+  margin-left: 0;
+  background: transparent;
+}
+
+.dialogue-native-message.user {
+  width: min(60%, 680px);
+  margin-right: 0;
+  margin-left: auto;
+  grid-template-columns: minmax(0, 1fr) 34px;
+}
+
+.dialogue-native-message.user .message-label {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.dialogue-native-message.user .message-argument {
+  display: flex;
+  grid-column: 1;
+  grid-row: 1;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.dialogue-native-message .message-label {
+  align-items: flex-start;
+}
+
+.dialogue-native-message .message-label > span {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--dialogue-accent);
+  background: color-mix(in oklch, var(--dialogue-accent), transparent 92%);
+}
+
+.dialogue-native-message.user .message-label > span {
+  border: 1px solid var(--dialogue-line-soft);
+  color: var(--ink-soft);
+  background: color-mix(in oklch, var(--paper-muted), var(--page) 34%);
+}
+
+.dialogue-native-message .message-label strong {
+  color: var(--fg);
+}
+
+.dialogue-native-message .message-label small {
+  color: var(--ink-muted);
+}
+
+.dialogue-native-message .message-argument {
+  min-width: 0;
+  border: 0;
+  color: var(--ink-soft);
+}
+
+.dialogue-native-message-copy {
+  color: var(--ink-soft);
+  width: 100%;
+  font-size: 15px;
+  line-height: 1.92;
+}
+
+.dialogue-native-message-copy p,
+.message-argument .dialogue-native-message-copy p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.dialogue-native-message.user .dialogue-native-message-copy {
+  width: fit-content;
+  max-width: 100%;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in oklch, var(--dialogue-accent), transparent 82%);
+  border-radius: 18px 18px 6px 18px;
+  color: var(--fg);
+  background: color-mix(in oklch, var(--dialogue-accent), var(--page) 94%);
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+.dialogue-native-message.user .dialogue-native-message-copy p {
+  color: var(--fg);
+  text-align: left;
+}
+
+.dialogue-native-message.is-focus-anchor .dialogue-native-message-copy {
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--dialogue-accent), transparent 72%),
+    0 10px 24px color-mix(in oklch, var(--dialogue-accent), transparent 94%);
+}
+
+.dialogue-native-message.is-flight-target {
+  position: relative;
+  z-index: 4;
+}
+
+.dialogue-native-next-question {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border: 1px solid color-mix(in oklch, var(--dialogue-accent), transparent 78%);
+  border-radius: 16px;
+  background: color-mix(in oklch, var(--dialogue-accent), var(--page) 97%);
+}
+
+.dialogue-native-next-question span {
+  color: var(--dialogue-accent);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.dialogue-native-next-question strong {
+  color: var(--fg);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.philosopher-thinking-card {
+  position: relative;
+  display: grid;
+  width: min(100%, 720px);
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin: 2px auto 2px 46px;
+  padding: 14px 16px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--dialogue-accent), transparent 76%);
+  border-radius: 24px;
+  color: var(--ink-soft);
+  background:
+    radial-gradient(circle at 12% 20%, color-mix(in oklch, var(--dialogue-accent), transparent 86%), transparent 30%),
+    linear-gradient(135deg, color-mix(in oklch, var(--page), white 18%), color-mix(in oklch, var(--paper-muted), var(--page) 62%));
+  box-shadow:
+    0 18px 44px color-mix(in oklch, var(--ink), transparent 94%),
+    inset 0 1px 0 rgb(255 255 255 / 52%);
+}
+
+.philosopher-thinking-card::before {
+  position: absolute;
+  inset: 10px 14px auto 98px;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, color-mix(in oklch, var(--dialogue-accent), transparent 52%), transparent);
+}
+
+.philosopher-thinking-card::after {
+  position: absolute;
+  right: -32px;
+  bottom: -46px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  content: "";
+  background: radial-gradient(circle, color-mix(in oklch, var(--gold), transparent 72%), transparent 62%);
+  filter: blur(2px);
+}
+
+.philosopher-thinking-portrait {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--dialogue-accent), transparent 64%);
+  border-radius: 20px;
+  color: var(--dialogue-accent);
+  background:
+    linear-gradient(135deg, color-mix(in oklch, var(--paper-muted), white 18%), color-mix(in oklch, var(--page), var(--gold) 9%));
+  box-shadow: 0 10px 24px color-mix(in oklch, var(--dialogue-accent), transparent 88%);
+}
+
+.philosopher-thinking-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.12) saturate(0.92) contrast(1.02);
+}
+
+.philosopher-thinking-portrait > span {
+  font-family: Georgia, var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.philosopher-thinking-portrait i {
+  position: absolute;
+  inset: -6px;
+  border: 1px solid color-mix(in oklch, var(--dialogue-accent), transparent 42%);
+  border-radius: 24px;
+  opacity: 0.64;
+  animation: philosopher-breath 1.8s ease-in-out infinite;
+}
+
+.philosopher-thinking-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.philosopher-thinking-copy > span {
+  width: fit-content;
+  color: var(--dialogue-accent);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.philosopher-thinking-copy strong {
+  color: var(--fg);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.philosopher-thinking-copy p {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.philosopher-thinking-pulse {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 6px;
+}
+
+.philosopher-thinking-pulse span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dialogue-accent);
+  box-shadow: 0 0 14px color-mix(in oklch, var(--dialogue-accent), transparent 46%);
+  animation: philosopher-dot 1s ease-in-out infinite;
+}
+
+.philosopher-thinking-pulse span:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+.philosopher-thinking-pulse span:nth-child(3) {
+  animation-delay: 280ms;
+}
+
+@keyframes philosopher-breath {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+}
+
+@keyframes philosopher-dot {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0) scale(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1);
+  }
+}
+
+.dialogue-native-composer {
+  position: relative;
+  z-index: 6;
+  width: min(calc(100% - 48px), 880px);
+  margin: 0 auto 26px;
+  padding: 13px 16px 11px;
+  border: 1px solid color-mix(in oklch, var(--rule), var(--ink) 4%);
+  border-radius: 22px;
+  background: color-mix(in oklch, var(--page), white 17%);
+  box-shadow: 0 12px 30px color-mix(in oklch, var(--ink), transparent 94%);
+}
+
+.dialogue-native-composer::before {
+  display: none !important;
+  content: none !important;
+}
+
+.dialogue-native-composer:focus-within {
+  border-color: color-mix(in oklch, var(--dialogue-accent), transparent 38%);
+  box-shadow:
+    0 0 0 4px color-mix(in oklch, var(--dialogue-accent), transparent 93%),
+    0 14px 34px color-mix(in oklch, var(--ink), transparent 93%);
+}
+
+.dialogue-native-composer label,
+.dialogue-native-composer > div > span {
+  color: var(--ink-muted);
+}
+
+.dialogue-native-input-stage {
+  position: relative;
+  min-height: 56px;
+}
+
+.dialogue-native-input-stage textarea {
+  position: relative;
+  z-index: 1;
+  min-height: 56px;
+  padding: 10px 0 4px;
+  color: var(--fg);
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 16px;
+  line-height: 1.62;
+  resize: vertical;
+  transition: opacity 120ms ease;
+}
+
+.dialogue-native-input-stage textarea.is-flying {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dialogue-native-send-flight-source {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  min-height: 56px;
+  overflow: hidden;
+  padding: 10px 0 6px;
+  border-radius: 17px;
+  color: var(--fg);
+  background: color-mix(in oklch, var(--dialogue-accent), var(--page) 94%);
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 16px;
+  line-height: 1.62;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+.dialogue-native-composer > div:last-child {
+  border-top-color: var(--dialogue-line-soft);
+}
+
+.dialogue-native .send-button {
+  color: var(--page);
+  background: var(--dialogue-accent);
+}
+
+.dialogue-native .voice-input-button {
+  border-color: var(--dialogue-line-soft);
+  color: var(--ink-muted);
+  background: color-mix(in oklch, var(--page), white 10%);
+}
+
+.dialogue-native .voice-input-button:hover:not(:disabled) {
+  color: var(--page);
+  border-color: color-mix(in oklch, var(--dialogue-accent), transparent 32%);
+  background: var(--dialogue-accent);
+}
+
+.dialogue-native .voice-input-button.is-listening {
+  width: min(232px, 45vw);
+  color: var(--ink);
+  border-color: color-mix(in oklch, var(--dialogue-accent), transparent 52%);
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--page), white 14%), color-mix(in oklch, var(--paper-raised), transparent 6%));
+}
+
+.dialogue-native .voice-input-button.is-listening:hover:not(:disabled) {
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--page), white 18%), color-mix(in oklch, var(--paper-raised), transparent 2%));
+}
+
+.dialogue-native .send-button:hover:not(:disabled) {
+  box-shadow: 0 10px 24px color-mix(in oklch, var(--dialogue-accent), transparent 84%);
+}
+
+.dialogue-native-context {
+  min-height: 0;
+  overflow: auto;
+  border-left: 1px solid var(--dialogue-line-soft);
+  background: color-mix(in oklch, var(--page), var(--paper-muted) 24%);
+}
+
+.dialogue-native .dialogue-context-status {
+  border-color: var(--dialogue-line-soft);
+  border-radius: 16px;
+  background: color-mix(in oklch, var(--page), white 10%);
+}
+
+.dialogue-native .dialogue-context-status strong,
+.dialogue-native .dialogue-context-note strong {
+  color: var(--fg);
+}
+
+.dialogue-native .dialogue-context-status p,
+.dialogue-native .dialogue-context-note p {
+  color: var(--ink-muted);
+}
+
+.dialogue-native .status-orbit {
+  border-color: color-mix(in oklch, var(--dialogue-accent), transparent 74%);
+}
+
+.dialogue-native .status-orbit i {
+  background: var(--dialogue-accent);
+  box-shadow: 0 0 18px color-mix(in oklch, var(--dialogue-accent), transparent 54%);
+}
+
+.dialogue-native .context-chain-item {
+  border-color: var(--dialogue-line-soft);
+  border-radius: 14px;
+  background: color-mix(in oklch, var(--page), white 8%);
+}
+
+.dialogue-native .context-chain-item.selected {
+  border-color: color-mix(in oklch, var(--dialogue-accent), transparent 62%);
+  background: color-mix(in oklch, var(--dialogue-accent), transparent 94%);
+}
+
+.dialogue-native .dialogue-context-note {
+  border-color: var(--dialogue-line-soft);
+  border-radius: 16px;
+  background: color-mix(in oklch, var(--page), white 10%);
+}
+
+.dialogue-native .context-source-button {
+  border-radius: 999px;
+}
+
+@media (max-width: 1180px) {
+  .dialogue-native-workspace {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .dialogue-native .message.dialogue-native-message.user {
+    width: min(72%, 640px) !important;
+  }
+
+  .dialogue-native-context {
+    display: none;
+  }
+
+  .dialogue-native .dialogue-outline {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .dialogue-native .outline-heading h2,
+  .dialogue-native .outline-heading > span,
+  .dialogue-native .dialogue-outline li > div {
+    display: none;
+  }
+
+  .dialogue-native .dialogue-outline ol {
+    align-items: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .dialogue-native {
+    min-height: calc(100vh - 58px);
+    min-height: calc(100dvh - 58px);
+    overflow: visible;
+  }
+
+  .dialogue-native .dialogue-header-toolbar,
+  .dialogue-native .mode-bar,
+  .dialogue-native .dialogue-question-title {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .dialogue-native-workspace {
+    height: auto;
+    min-height: calc(100vh - 240px);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dialogue-native .dialogue-outline {
+    display: none;
+  }
+
+  .dialogue-native-messages {
+    min-height: calc(100vh - 340px);
+    padding: 24px 14px 24px;
+  }
+
+  .dialogue-native-message.user {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) 30px;
+  }
+
+  .philosopher-thinking-card {
+    width: 100%;
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 12px;
+    margin-left: 0;
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .philosopher-thinking-portrait {
+    width: 54px;
+    height: 54px;
+    border-radius: 17px;
+  }
+
+  .philosopher-thinking-pulse {
+    grid-column: 2;
+    justify-content: flex-start;
+    padding: 2px 0 0;
+  }
+
+  .dialogue-native-composer {
+    width: calc(100% - 28px);
+    margin-bottom: 16px;
+    border-radius: 18px;
+  }
+
+  .dialogue-native .dialogue-header-actions {
+    flex-wrap: wrap;
+  }
+
+  .dialogue-native .mode-bar {
+    align-items: flex-start;
+  }
+
+  .dialogue-native .mode-control {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .dialogue-native .mode-control button {
+    min-width: 112px;
+  }
+
+  .dialogue-native .mode-copy small {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogue-native *,
+  .dialogue-native *::before,
+  .dialogue-native *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
